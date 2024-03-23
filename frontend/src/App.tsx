@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from './hooks/storeHooks';
+import { useAppDispatch } from './hooks/storeHooks';
 
 import './App.css';
 import { Header } from './components/layout/Header';
 import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
+import VacancyList from './components/vacancies/VacancyList';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -16,12 +17,11 @@ const App = (): JSX.Element => {
     fetchVacancies();
   }, [dispatch]);
 
-  const testData = useAppSelector((state) => state.vacancies.vacancies);
-  console.log('testData-->  ', testData);
-
+  
   return (
     <>
       <Header />
+      <VacancyList/>
     </>
   );
 };
