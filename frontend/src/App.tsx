@@ -5,6 +5,8 @@ import './App.css';
 import { Header } from './components/layout/Header';
 import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
 import VacancyList from './components/vacancies/VacancyList';
+import { FormAddVacancy } from './components/vacancies/FormAddVacancy';
+import { Grid } from '@mui/material';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -17,11 +19,14 @@ const App = (): JSX.Element => {
     fetchVacancies();
   }, [dispatch]);
 
-  
   return (
     <>
       <Header />
-      <VacancyList/>
+      <Grid container style={{ padding: '20px' }}>
+        <FormAddVacancy />
+      </Grid>
+
+      <VacancyList />
     </>
   );
 };
