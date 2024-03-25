@@ -1,5 +1,6 @@
 import { Grid, TextField } from '@mui/material';
 import React from 'react';
+
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 
 type UIFormInputPropsType<T extends FieldValues> = {
@@ -8,13 +9,13 @@ type UIFormInputPropsType<T extends FieldValues> = {
   about: string
   register: UseFormRegister<T>;
   error: string | null;
-  required: boolean
 };
 
 export const UIFormInput = <T extends FieldValues>(
   props: UIFormInputPropsType<T>
 ): JSX.Element => {
-  const { type, name, register, required, error, about } = props;
+  const { type, name, register,  error, about } = props;
+  
   return (
     <Grid item xs="auto">
       <TextField
@@ -22,9 +23,10 @@ export const UIFormInput = <T extends FieldValues>(
         variant={'standard'}
         label={about}
         id={name}
+        required
         error={!!error}
         helperText={error}
-        {...register(name, { required })}
+        {...register(name)}
       />
     </Grid>
   );
