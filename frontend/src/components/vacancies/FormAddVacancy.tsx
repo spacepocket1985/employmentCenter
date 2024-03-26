@@ -3,8 +3,15 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Grid, IconButton, Paper } from '@mui/material';
 import { ControlPoint } from '@mui/icons-material';
 
+import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
+import {
+  addNewVacancyToDB,
+  getAllVacanciesFromDB,
+} from '../../store/slices/vacanciesSlice';
 import { UIFormInput } from '../ui/UIFormInput';
 import validationSchemes from '../../utils/validationSchemes';
+import { VacancyType } from '../../types/types';
+import { UIFormSelect } from '../ui/UIFormSelect';
 
 type FormAddVacancyType = {
   title: string;
@@ -24,13 +31,24 @@ export const FormAddVacancy = (): JSX.Element => {
     mode: 'onChange',
   });
 
-  const addNewVacancyHandler: SubmitHandler<FormAddVacancyType> = ({
+  const dispatch = useAppDispatch();
+
+  const educationList = useAppSelector((state) => state.data.education);
+
+  const addNewVacancyHandler: SubmitHandler<FormAddVacancyType> = async ({
     title,
     salary,
     wageRate,
     education,
-  }): void => {
-    console.log(title, salary, wageRate, education);
+  }) => {
+    const newVacancy: VacancyType = {
+      title,
+      salary,
+      wageRate,
+      education,
+    };
+    await dispatch(addNewVacancyToDB(newVacancy));
+    await dispatch(getAllVacanciesFromDB());
     reset();
   };
 
@@ -57,13 +75,6 @@ export const FormAddVacancy = (): JSX.Element => {
           />
           <UIFormInput
             type="text"
-            name="education"
-            about="Образование"
-            register={register}
-            error={errors.education?.message ? errors.education.message : null}
-          />
-          <UIFormInput
-            type="text"
             name="salary"
             about="Зарплата"
             register={register}
@@ -76,6 +87,14 @@ export const FormAddVacancy = (): JSX.Element => {
             register={register}
             error={errors.wageRate?.message ? errors.wageRate.message : null}
           />
+          <UIFormSelect 
+          name='education'
+          label='Образование'
+          data={educationList}
+          register={register}
+          error={errors.education?.message ? errors.education.message : null}
+          />
+
           <IconButton color={'primary'} type="submit" disabled={!isValid}>
             <ControlPoint />
           </IconButton>

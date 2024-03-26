@@ -25,7 +25,6 @@ const App = (): JSX.Element => {
       <Grid container style={{ padding: '20px' }}>
         <FormAddVacancy />
       </Grid>
-
       <VacancyList />
     </>
   );

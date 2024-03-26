@@ -11,8 +11,8 @@ const VacancyList = (): JSX.Element => {
         {vacancies.length === 0 ? (
           <h2>We dont have vacancies, yet</h2>
         ) : (
-          vacancies.map((vacancy, index) => (
-            <Vacancy key={index} vacancy={vacancy} />
+          vacancies.map((vacancy) => (
+            <Vacancy key={vacancy._id} vacancy={vacancy} />
           ))
         )}
       </List>

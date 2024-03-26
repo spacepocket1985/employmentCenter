@@ -1,7 +1,19 @@
-import { ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import {
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  IconButton,
+} from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
 
 import { VacancyType } from '../../types/types';
+import { Delete } from '@mui/icons-material';
+import { useAppDispatch } from '../../hooks/storeHooks';
+import {
+  deleteVacancyFromDB,
+  getAllVacanciesFromDB,
+} from '../../store/slices/vacanciesSlice';
 
 type VacancyItemProps = {
   vacancy: VacancyType;
@@ -9,6 +21,13 @@ type VacancyItemProps = {
 
 export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   const { vacancy } = props;
+  const dispatch = useAppDispatch();
+  const onDeleteClickHandler = async (): Promise<void> => {
+    if (vacancy._id) {
+      await dispatch(deleteVacancyFromDB(vacancy._id));
+      await dispatch(getAllVacanciesFromDB());
+    }
+  };
   return (
     <ListItem>
       <ListItemAvatar>
@@ -18,8 +37,11 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
       </ListItemAvatar>
       <ListItemText
         primary={vacancy.title}
-        secondary={`Salary: ${vacancy.salary}, Wage-rate: ${vacancy.wageRate}, Education: ${vacancy.education}`}
+        secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education}`}
       />
+      <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
+        <Delete />
+      </IconButton>
     </ListItem>
   );
 };

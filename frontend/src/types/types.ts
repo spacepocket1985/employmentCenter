@@ -1,5 +1,5 @@
 export type VacancyType = {
-  id: string;
+  _id?: string;
   title: string;
   wageRate: number;
   education: string;
@@ -8,5 +8,5 @@ export type VacancyType = {
 
 export type VacancyInfoFromDBType = {
   msg: string;
-  vacancies: Array<VacancyType>;
+  vacancies: Array<VacancyType> | VacancyType;
 };

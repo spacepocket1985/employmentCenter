@@ -3,8 +3,7 @@ import * as Yup from 'yup';
 const validationSchema = Yup.object({
   title: Yup.string()
     .required('Поле обязательное')
-    .min(2, 'Минимум три символа')
-    .matches(/^[A-ZА-ЯЁa-zа-яё]+$/, 'Введите строковые символы'),
+    .min(2, 'Минимум три символа'),
   salary: Yup.number()
     .required('Поле обязательное')
     .typeError('Salary should be number')
