@@ -1,12 +1,12 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Grid, IconButton, Paper } from '@mui/material';
-import { ControlPoint } from '@mui/icons-material';
+import { Button, Grid, Paper } from '@mui/material';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 import {
   addNewVacancyToDB,
   getAllVacanciesFromDB,
+  updateVacancyFromDB,
 } from '../../store/slices/vacanciesSlice';
 import { UIFormInput } from '../ui/UIFormInput';
 import validationSchemes from '../../utils/validationSchemes';
@@ -20,7 +20,12 @@ type FormAddVacancyType = {
   wageRate: number;
 };
 
-export const FormAddVacancy = (): JSX.Element => {
+type FormAddVacancyPropsType = {
+  isEditMode?: boolean;
+  vacancy?: VacancyType;
+};
+
+export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
   const {
     register,
     handleSubmit,
@@ -35,19 +40,32 @@ export const FormAddVacancy = (): JSX.Element => {
 
   const educationList = useAppSelector((state) => state.data.education);
 
-  const addNewVacancyHandler: SubmitHandler<FormAddVacancyType> = async ({
+  const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
     title,
     salary,
     wageRate,
     education,
+    _id,
   }) => {
     const newVacancy: VacancyType = {
       title,
       salary,
       wageRate,
       education,
+      _id,
     };
-    await dispatch(addNewVacancyToDB(newVacancy));
+    console.log('isEditMode ==>', props.isEditMode);
+    if (props.isEditMode)
+      await dispatch(
+        updateVacancyFromDB({
+          title,
+          salary,
+          wageRate,
+          education,
+          _id: props.vacancy?._id,
+        })
+      );
+    else await dispatch(addNewVacancyToDB(newVacancy));
     await dispatch(getAllVacanciesFromDB());
     reset();
   };
@@ -61,7 +79,7 @@ export const FormAddVacancy = (): JSX.Element => {
       <form onSubmit={handleSubmit(addNewVacancyHandler)}>
         <Grid
           container
-          spacing={1}
+          spacing={2}
           direction="row"
           justifyContent="center"
           alignItems="center"
@@ -72,6 +90,7 @@ export const FormAddVacancy = (): JSX.Element => {
             about="Вакансия"
             register={register}
             error={errors.title?.message ? errors.title.message : null}
+            defaultValue={props.vacancy?.title}
           />
           <UIFormInput
             type="text"
@@ -79,6 +98,7 @@ export const FormAddVacancy = (): JSX.Element => {
             about="Зарплата"
             register={register}
             error={errors.salary?.message ? errors.salary.message : null}
+            defaultValue={props.vacancy?.salary}
           />
           <UIFormInput
             type="text"
@@ -86,18 +106,27 @@ export const FormAddVacancy = (): JSX.Element => {
             about="Ставка"
             register={register}
             error={errors.wageRate?.message ? errors.wageRate.message : null}
+            defaultValue={props.vacancy?.wageRate}
           />
-          <UIFormSelect 
-          name='education'
-          label='Образование'
-          data={educationList}
-          register={register}
-          error={errors.education?.message ? errors.education.message : null}
+          <UIFormSelect
+            name="education"
+            label="Образование"
+            data={educationList}
+            defaultValue={props.vacancy?.education || ''}
+            register={register}
+            error={errors.education?.message ? errors.education.message : null}
+            
           />
-
-          <IconButton color={'primary'} type="submit" disabled={!isValid}>
-            <ControlPoint />
-          </IconButton>
+          <Button
+            style={{ marginLeft: '15px', marginTop: '10px' }}
+            variant="contained"
+            color={'primary'}
+            type="submit"
+            disabled={!isValid}
+            size="small"
+          >
+            {props.isEditMode ? 'Сохранить' : 'Добавить'}
+          </Button>
         </Grid>
       </form>
     </Paper>

@@ -38,6 +38,14 @@ const vacanciesSlice = createSlice({
         state.vacancies.push(action.payload);
       }
     });
+    builder.addCase(updateVacancyFromDB.fulfilled, (state, action) => {
+      if (action.payload) {
+        const vacancyIdForChange = state.vacancies.findIndex(
+          (item) => item._id === action.payload?._id
+        );
+        state.vacancies[vacancyIdForChange] = action.payload;
+      }
+    });
   },
 });
 
@@ -64,14 +72,14 @@ export const getAllVacanciesFromDB = createAsyncThunk(
 
 export const addNewVacancyToDB = createAsyncThunk(
   'vacancies/addNewVacancy',
-  async (newVacancy: VacancyType, thunkAPI) => {
+  async (vacancy: VacancyType, thunkAPI) => {
     try {
       const response = await fetch('http://localhost:5000/vacancies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newVacancy),
+        body: JSON.stringify(vacancy),
       });
 
       if (!response.ok) {
@@ -112,6 +120,43 @@ export const deleteVacancyFromDB = createAsyncThunk(
       if (error instanceof Error) {
         thunkAPI.dispatch(
           errorActions.setError('Ошибка при удалении вакансии')
+        );
+      }
+    }
+  }
+);
+
+export const updateVacancyFromDB = createAsyncThunk(
+  'vacancies/updateVacancy',
+  async (vacancy: VacancyType, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/vacancies/${vacancy._id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: vacancy.title,
+            wageRate: vacancy.wageRate,
+            education: vacancy.education,
+            salary: vacancy.salary,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Ошибка при обновлении вакансии');
+      }
+
+      const responseData: VacancyInfoFromDBType = await response.json();
+
+      return responseData.vacancies as VacancyType;
+    } catch (error) {
+      if (error instanceof Error) {
+        thunkAPI.dispatch(
+          errorActions.setError('Ошибка при обновлении вакансии')
         );
       }
     }

@@ -2,34 +2,33 @@ import { Grid, InputLabel, Select, MenuItem } from '@mui/material';
 
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 
-
 type UIFormSelectPropsType<T extends FieldValues> = {
   name: Path<T>;
   label: string;
   register: UseFormRegister<T>;
   error: string | null;
   data: Array<string>;
+  defaultValue?: string
+
 };
 
 export const UIFormSelect = <T extends FieldValues>(
   props: UIFormSelectPropsType<T>
 ): JSX.Element => {
-  const { data, name, label, register, error } = props;
-
-
-
+  const { data, name, label, register, error,defaultValue } = props;
 
   return (
     <Grid item xs="auto">
-      <InputLabel style={{ textAlign:  'right', fontSize: '12px' }}>{label}</InputLabel>
+      <InputLabel style={{ textAlign: 'right', fontSize: '12px' }}>
+        {label}
+      </InputLabel>
       <Select
-        size='small'
+        size="small"
         variant={'standard'}
         id={name}
         required
         error={!!error}
-        defaultValue={data[1]}
-        
+        defaultValue={defaultValue }
         {...register(name)}
       >
         {data.map((item, index) => (
@@ -42,3 +41,4 @@ export const UIFormSelect = <T extends FieldValues>(
     </Grid>
   );
 };
+

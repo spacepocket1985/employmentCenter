@@ -15,19 +15,25 @@ import {
   getAllVacanciesFromDB,
 } from '../../store/slices/vacanciesSlice';
 
+import { UIModal } from '../ui/UIModal';
+import { FormAddVacancy } from './FormAddVacancy';
+
 type VacancyItemProps = {
   vacancy: VacancyType;
 };
 
 export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   const { vacancy } = props;
+
   const dispatch = useAppDispatch();
+
   const onDeleteClickHandler = async (): Promise<void> => {
     if (vacancy._id) {
       await dispatch(deleteVacancyFromDB(vacancy._id));
       await dispatch(getAllVacanciesFromDB());
     }
   };
+
   return (
     <ListItem>
       <ListItemAvatar>
@@ -39,6 +45,8 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education}`}
       />
+      <UIModal><FormAddVacancy isEditMode={true} vacancy={vacancy}/></UIModal >
+
       <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
         <Delete />
       </IconButton>

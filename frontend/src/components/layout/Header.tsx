@@ -5,7 +5,7 @@ export const Header = (): JSX.Element => {
     <AppBar position={'static'}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          TEC2 Employment Center
+          Список вакансий Гродненской ТЭЦ-2
         </Typography>
         <Button color={'inherit'}>Login</Button>
       </Toolbar>
