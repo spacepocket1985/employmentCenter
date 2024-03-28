@@ -12,6 +12,7 @@ import { UIFormInput } from '../ui/UIFormInput';
 import validationSchemes from '../../utils/validationSchemes';
 import { VacancyType } from '../../types/types';
 import { UIFormSelect } from '../ui/UIFormSelect';
+import { useState } from 'react';
 
 type FormAddVacancyType = {
   title: string;
@@ -23,6 +24,7 @@ type FormAddVacancyType = {
 type FormAddVacancyPropsType = {
   isEditMode?: boolean;
   vacancy?: VacancyType;
+  handleClose?: () => void;
 };
 
 export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
@@ -37,6 +39,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
   });
 
   const dispatch = useAppDispatch();
+  const [resetSelect, setResetSelect] = useState(false);
 
   const educationList = useAppSelector((state) => state.data.education);
 
@@ -54,8 +57,8 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
       education,
       _id,
     };
-    console.log('isEditMode ==>', props.isEditMode);
-    if (props.isEditMode)
+
+    if (props.isEditMode && props.handleClose) {
       await dispatch(
         updateVacancyFromDB({
           title,
@@ -65,9 +68,15 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           _id: props.vacancy?._id,
         })
       );
-    else await dispatch(addNewVacancyToDB(newVacancy));
+      props.handleClose();
+    } else await dispatch(addNewVacancyToDB(newVacancy));
     await dispatch(getAllVacanciesFromDB());
     reset();
+    setResetSelect(true);
+  };
+
+  const handleResetSelect = () => {
+    setResetSelect(false); // 
   };
 
   return (
@@ -108,15 +117,17 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             error={errors.wageRate?.message ? errors.wageRate.message : null}
             defaultValue={props.vacancy?.wageRate}
           />
-          <UIFormSelect
+          { <UIFormSelect
             name="education"
             label="Образование"
             data={educationList}
-            defaultValue={props.vacancy?.education || ''}
+            defaultValue={props.vacancy?.education}
             register={register}
+            resetSelect={resetSelect}
+            onResetSelect={handleResetSelect}
             error={errors.education?.message ? errors.education.message : null}
-            
-          />
+          /> }
+
           <Button
             style={{ marginLeft: '15px', marginTop: '10px' }}
             variant="contained"

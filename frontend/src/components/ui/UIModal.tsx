@@ -22,7 +22,7 @@ const styleCloseBtn = {
 };
 
 type UIModalPropsType = {
-  children?: React.ReactNode
+  children: (handleClose: () => void) => React.ReactNode
 }
 
 export const UIModal = (props: UIModalPropsType): JSX.Element => {
@@ -46,7 +46,7 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
           >
             Закрыть
           </Button>
-          {props.children}
+          {props.children(handleClose)}
         </Box>
       </Modal>
     </div>

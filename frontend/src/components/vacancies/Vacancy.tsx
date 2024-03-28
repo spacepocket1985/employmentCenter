@@ -45,7 +45,17 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education}`}
       />
-      <UIModal><FormAddVacancy isEditMode={true} vacancy={vacancy}/></UIModal >
+      <UIModal>
+        {(handleClose) => (
+          <>
+            <FormAddVacancy
+              isEditMode={true}
+              vacancy={vacancy}
+              handleClose={handleClose}
+            />
+          </>
+        )}
+      </UIModal>
 
       <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
         <Delete />
