@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Vacancy } from "../models/todo.models";
+import { Vacancy } from "../models/vacancy.models";
 import { StatusCodes } from "http-status-codes";
 
 class VacancyController {
@@ -13,18 +13,15 @@ class VacancyController {
     }
 
     const newVacancy = await Vacancy.create(req.body);
+    console.log("newVacancy ", newVacancy);
     res
       .status(StatusCodes.CREATED)
-      .json({ vacancy: newVacancy, msg: "Vacancy has been created!" });
+      .json({ vacancies: newVacancy, msg: "Vacancy has been created!" });
   };
 
   // get all vacancies
-  getVacancies= async (req: Request, res: Response) => {
+  getVacancies = async (req: Request, res: Response) => {
     const vacancies = await Vacancy.find({}).sort("-createdAt");
-
-    if (vacancies?.length === 0) {
-      throw new Error("Vacancies list is empty!");
-    }
 
     res
       .status(StatusCodes.OK)
@@ -46,9 +43,13 @@ class VacancyController {
   // update vacancy
   updateVacancy = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const updatedVacancy = await Vacancy.findByIdAndUpdate({ _id: id }, req.body, {
-      new: true,
-    });
+    const updatedVacancy = await Vacancy.findByIdAndUpdate(
+      { _id: id },
+      req.body,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedVacancy) {
       throw new Error("Requested vacancy not found!");
@@ -56,7 +57,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ vavancy: updatedVacancy, msg: "Vacancy has been updated" });
+      .json({ vacancies: updatedVacancy, msg: "Vacancy has been updated" });
   };
 
   // delete vacancy
@@ -70,7 +71,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ todo: deletedVacancy, msg: "Vacancy has been deleted" });
+      .json({ vacancies: deletedVacancy, msg: "Vacancy has been deleted" });
   };
 }
 

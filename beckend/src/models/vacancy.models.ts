@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 
 // Creating an interface
 interface Vacancy {
+  id: string;
   title: string;
   wageRate: number;
   education: string;
