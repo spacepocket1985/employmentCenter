@@ -9,7 +9,7 @@ const VacancyList = (): JSX.Element => {
     <Box display="flex" justifyContent="center">
       <List>
         {vacancies.length === 0 ? (
-          <h2>We dont have vacancies, yet</h2>
+          <h2>В данный момент у нас нет свободный вакансий.</h2>
         ) : (
           vacancies.map((vacancy) => (
             <Vacancy key={vacancy._id} vacancy={vacancy} />

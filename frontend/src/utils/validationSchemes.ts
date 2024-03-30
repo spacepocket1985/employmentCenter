@@ -13,6 +13,7 @@ const validationSchema = Yup.object({
     .typeError('WageRate should be number')
     .min(0, 'No negative values'),
   education: Yup.string().required('Поле обязательное'),
+  experience: Yup.string().required('Поле обязательное'),
 });
 
 export default validationSchema;

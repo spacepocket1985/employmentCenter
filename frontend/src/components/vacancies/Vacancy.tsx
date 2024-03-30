@@ -43,7 +43,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
       </ListItemAvatar>
       <ListItemText
         primary={vacancy.title}
-        secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education}`}
+        secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}`}
       />
       <UIModal>
         {(handleClose) => (

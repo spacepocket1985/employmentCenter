@@ -11,12 +11,12 @@ import {
 import { UIFormInput } from '../ui/UIFormInput';
 import validationSchemes from '../../utils/validationSchemes';
 import { VacancyType } from '../../types/types';
-import { UIFormSelect } from '../ui/UIFormSelect';
-import { useState } from 'react';
+import { UISimpleSelect } from '../ui/UISimpleSelect';
 
 type FormAddVacancyType = {
   title: string;
   education: string;
+  experience: string;
   salary: number;
   wageRate: number;
 };
@@ -39,15 +39,16 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
   });
 
   const dispatch = useAppDispatch();
-  const [resetSelect, setResetSelect] = useState(false);
 
   const educationList = useAppSelector((state) => state.data.education);
+  const experienceList = useAppSelector((state) => state.data.experience);
 
   const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
     title,
     salary,
     wageRate,
     education,
+    experience,
     _id,
   }) => {
     const newVacancy: VacancyType = {
@@ -55,6 +56,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
       salary,
       wageRate,
       education,
+      experience,
       _id,
     };
 
@@ -65,6 +67,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           salary,
           wageRate,
           education,
+          experience,
           _id: props.vacancy?._id,
         })
       );
@@ -72,11 +75,6 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     } else await dispatch(addNewVacancyToDB(newVacancy));
     await dispatch(getAllVacanciesFromDB());
     reset();
-    setResetSelect(true);
-  };
-
-  const handleResetSelect = () => {
-    setResetSelect(false); // 
   };
 
   return (
@@ -117,7 +115,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             error={errors.wageRate?.message ? errors.wageRate.message : null}
             defaultValue={props.vacancy?.wageRate}
           />
-          { <UIFormSelect
+          {/* <UIFormSelect
             name="education"
             label="Образование"
             data={educationList}
@@ -126,8 +124,25 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             resetSelect={resetSelect}
             onResetSelect={handleResetSelect}
             error={errors.education?.message ? errors.education.message : null}
-          /> }
-
+          /> */}
+          <UISimpleSelect
+            name="education"
+            label="Образование"
+            data={educationList}
+            defaultValue={props.vacancy?.education}
+            register={register}
+            type={'string'}
+            error={errors.education?.message ? errors.education.message : null}
+          />
+          <UISimpleSelect
+            name="experience"
+            label="Опыт работы"
+            data={experienceList}
+            defaultValue={props.vacancy?.experience}
+            register={register}
+            type={'string'}
+            error={errors.experience?.message ? errors.experience.message : null}
+          />
           <Button
             style={{ marginLeft: '15px', marginTop: '10px' }}
             variant="contained"

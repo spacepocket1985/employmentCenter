@@ -22,6 +22,7 @@ const vacanciesSlice = createSlice({
           salary: action.payload.salary,
           education: action.payload.education,
           wageRate: action.payload.wageRate,
+          experience: action.payload.experience,
         },
         ...state.vacancies,
       ];
@@ -141,6 +142,7 @@ export const updateVacancyFromDB = createAsyncThunk(
             title: vacancy.title,
             wageRate: vacancy.wageRate,
             education: vacancy.education,
+            experience: vacancy.experience,
             salary: vacancy.salary,
           }),
         }

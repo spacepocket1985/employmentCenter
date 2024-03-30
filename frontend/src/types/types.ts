@@ -3,6 +3,7 @@ export type VacancyType = {
   title: string;
   wageRate: number;
   education: string;
+  experience: string;
   salary: number;
 };
 
