@@ -6,6 +6,7 @@ interface Vacancy {
   title: string;
   wageRate: number;
   education: string;
+  experience: string;
   salary: number;
 }
 
@@ -23,6 +24,10 @@ const vacancySchema = new Schema<Vacancy>(
     education: {
       type: String,
       required: [true, "Education should not be empty!"],
+    },
+    experience: {
+      type: String,
+      required: [true, "Experience should not be empty!"],
     },
     salary: {
       type: Number,
