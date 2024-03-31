@@ -2,12 +2,12 @@ import { configureStore } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 
 import vacanciesReducer from './slices/vacanciesSlice';
-import errorSlice from './slices/errorSlice';
+import infoReducer from './slices/infoSlice';
 import dataReducer from './slices/dataSlice';
 
 const rootReducer = combineReducers({
   vacancies: vacanciesReducer,
-  errors: errorSlice,
+  info: infoReducer,
   data: dataReducer,
 });
 

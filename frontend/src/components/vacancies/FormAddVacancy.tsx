@@ -5,7 +5,6 @@ import { Button, Grid, Paper } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 import {
   addNewVacancyToDB,
-  getAllVacanciesFromDB,
   updateVacancyFromDB,
 } from '../../store/slices/vacanciesSlice';
 import { UIFormInput } from '../ui/UIFormInput';
@@ -73,7 +72,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
       );
       props.handleClose();
     } else await dispatch(addNewVacancyToDB(newVacancy));
-    await dispatch(getAllVacanciesFromDB());
+    
     reset();
   };
 
