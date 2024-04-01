@@ -35,7 +35,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   return (
     <ListItem>
       <ListItemAvatar>
-        <Avatar>
+        <Avatar style={{ backgroundColor: '#1976d2' }}>
           <WorkIcon />
         </Avatar>
       </ListItemAvatar>
@@ -55,8 +55,8 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         )}
       </UIModal>
 
-      <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
-        <Delete />
+      <IconButton aria-label="delete" onClick={onDeleteClickHandler} >
+        <Delete style={{ color: '#1976d2' }}/>
       </IconButton>
     </ListItem>
   );

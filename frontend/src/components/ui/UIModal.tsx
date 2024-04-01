@@ -33,7 +33,7 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
   return (
     <div>
       <IconButton aria-label="edit" onClick={handleOpen}>
-        <EditIcon />
+        <EditIcon style={{ color: '#1976d2' }}/>
       </IconButton>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
