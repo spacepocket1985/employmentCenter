@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Vacancy } from "../models/vacancy.models";
+import { Vacancy } from "../models/vacancy.model";
 import { StatusCodes } from "http-status-codes";
 
 class VacancyController {
@@ -11,7 +11,7 @@ class VacancyController {
         "Title, salary, education and wage rate must be provided."
       );
     }
-
+ 
     const newVacancy = await Vacancy.create(req.body);
     console.log("newVacancy ", newVacancy);
     res
