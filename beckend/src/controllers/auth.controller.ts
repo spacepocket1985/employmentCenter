@@ -11,13 +11,20 @@ class AuthController {
       throw new Error('Name and password must be provided.');
     }
 
-    const newUser = await User.create(req.body);
+    const candidate = await User.findOne({ name });
+    if (candidate) {
+      res
+        .status(StatusCodes.CONFLICT)
+        .json({ msg: `User with this name (${name}) is already registered.` });
+    } else {
+      const newUser = await User.create(req.body);
 
-    console.log('new User ', newUser);
+      console.log('new User ', newUser);
 
-    res
-      .status(StatusCodes.CREATED)
-      .json({ user: newUser, msg: 'New user has been created!' });
+      res
+        .status(StatusCodes.CREATED)
+        .json({ user: newUser, msg: 'New user has been created!' });
+    }
   };
 }
 

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const connectDB = (url: any) => {
-    mongoose.connect("mongodb://localhost:27017/task_app");
+    mongoose.connect("mongodb://localhost:27017/employmentCenter");
 }
 
 export default connectDB
