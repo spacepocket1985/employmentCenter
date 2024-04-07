@@ -4,7 +4,8 @@ import { userAuthController } from "../controllers/auth.controller";
 
 const router = express.Router();
 
-router.route("/signIn").post(userAuthController.register)
+router.route("/register").post(userAuthController.register)
+router.route("/login").post(userAuthController.login)
 
 
 

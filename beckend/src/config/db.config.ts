@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import keys from "./keys";
 
 const connectDB = (url: any) => {
-    mongoose.connect("mongodb://localhost:27017/employmentCenter");
-}
+  mongoose.connect(keys.mongoURI);
+};
 
-export default connectDB
+export default connectDB;
