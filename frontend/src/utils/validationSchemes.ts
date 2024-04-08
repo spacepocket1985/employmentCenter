@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 
-const validationSchema = Yup.object({
+export const vacancyValidationSchema = Yup.object({
   title: Yup.string()
     .required('Поле обязательное')
     .min(2, 'Минимум три символа'),
@@ -16,4 +16,9 @@ const validationSchema = Yup.object({
   experience: Yup.string().required('Поле обязательное'),
 });
 
-export default validationSchema;
+export const loginValidationSchema = Yup.object({
+  name: Yup.string()
+    .required('Поле обязательное')
+    .min(2, 'Минимум три символа'),
+  password: Yup.string().required('Поле обязательное'),
+});

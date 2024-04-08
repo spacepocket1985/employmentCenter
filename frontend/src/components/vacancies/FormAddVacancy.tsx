@@ -8,9 +8,10 @@ import {
   updateVacancyFromDB,
 } from '../../store/slices/vacanciesSlice';
 import { UIFormInput } from '../ui/UIFormInput';
-import validationSchemes from '../../utils/validationSchemes';
+
 import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
+import { vacancyValidationSchema } from '../../utils/validationSchemes';
 
 type FormAddVacancyType = {
   title: string;
@@ -33,7 +34,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     reset,
     formState: { errors, isValid },
   } = useForm<FormAddVacancyType>({
-    resolver: yupResolver(validationSchemes),
+    resolver: yupResolver(vacancyValidationSchema),
     mode: 'onChange',
   });
 
