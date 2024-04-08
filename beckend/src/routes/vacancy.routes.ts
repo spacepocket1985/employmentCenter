@@ -1,9 +1,17 @@
 import express from "express";
+import passport from 'passport';
+
 import { vacancyController } from "../controllers/vacancies.controller";
 
 const router = express.Router();
 
 router.route("/").post(vacancyController.createVacancy).get(vacancyController.getVacancies);
+
+// Example with Passport
+// .get(
+//   passport.authenticate('jwt', { session: false }),
+//   vacancyController.getVacancies
+// );
 
 router
   .route("/:id")
