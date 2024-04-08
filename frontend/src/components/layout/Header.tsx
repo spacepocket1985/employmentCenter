@@ -1,4 +1,8 @@
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
+
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 import { infoActions } from '../../store/slices/infoSlice';
 import { UserAuth } from '../auth/auth';
@@ -22,9 +26,9 @@ export const Header = (): JSX.Element => {
           Список вакансий Гродненской ТЭЦ-2
         </Typography>
         {login && <UserAuth />}
-        <Button color={'inherit'} onClick={handleClick}>
-          {!login ? 'Login' : 'Logout'}
-        </Button>
+        <IconButton onClick={handleClick}>
+          <AccountCircleIcon style={{ color: 'white' }} />
+        </IconButton>
       </Toolbar>
     </AppBar>
   );
