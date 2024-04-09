@@ -73,7 +73,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
       );
       props.handleClose();
     } else await dispatch(addNewVacancyToDB(newVacancy));
-    
+
     reset();
   };
 
@@ -141,7 +141,9 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             defaultValue={props.vacancy?.experience}
             register={register}
             type={'string'}
-            error={errors.experience?.message ? errors.experience.message : null}
+            error={
+              errors.experience?.message ? errors.experience.message : null
+            }
           />
           <Button
             style={{ marginLeft: '15px', marginTop: '10px' }}

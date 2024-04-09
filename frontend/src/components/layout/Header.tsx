@@ -1,11 +1,11 @@
-import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
-import LoginIcon from '@mui/icons-material/Login';
+import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 import { infoActions } from '../../store/slices/infoSlice';
 import { UserAuth } from '../auth/auth';
+import { UIModal } from '../ui/UIModal';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -22,13 +22,14 @@ export const Header = (): JSX.Element => {
   return (
     <AppBar position={'static'}>
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Список вакансий Гродненской ТЭЦ-2
-        </Typography>
-        {login && <UserAuth />}
-        <IconButton onClick={handleClick}>
-          <AccountCircleIcon style={{ color: 'white' }} />
-        </IconButton>
+        <Grid container justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" component="div">
+            Список вакансий Гродненской ТЭЦ-2
+          </Typography>
+          <UIModal iconType="account" iconColor="#fff">
+            {(handleClose) => <UserAuth handleClose={handleClose} />}
+          </UIModal>
+        </Grid>
       </Toolbar>
     </AppBar>
   );

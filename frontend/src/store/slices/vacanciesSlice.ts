@@ -88,7 +88,7 @@ const handleAsyncThunk = async (
 
     thunkAPI.dispatch(infoActions.clearError());
     thunkAPI.dispatch(infoActions.setSuccess(params.successMessage));
-
+    console.log(responseData)
     return responseData.vacancies;
   } catch (error) {
     if (error instanceof Error) {

@@ -10,9 +10,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import { VacancyType } from '../../types/types';
 import { Delete } from '@mui/icons-material';
 import { useAppDispatch } from '../../hooks/storeHooks';
-import {
-  deleteVacancyFromDB,
-} from '../../store/slices/vacanciesSlice';
+import { deleteVacancyFromDB } from '../../store/slices/vacanciesSlice';
 
 import { UIModal } from '../ui/UIModal';
 import { FormAddVacancy } from './FormAddVacancy';
@@ -43,7 +41,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}`}
       />
-      <UIModal>
+      <UIModal iconType="edit" iconColor="#1976d2">
         {(handleClose) => (
           <>
             <FormAddVacancy
@@ -55,8 +53,8 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         )}
       </UIModal>
 
-      <IconButton aria-label="delete" onClick={onDeleteClickHandler} >
-        <Delete style={{ color: '#1976d2' }}/>
+      <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
+        <Delete style={{ color: '#1976d2' }} />
       </IconButton>
     </ListItem>
   );

@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { Button, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const style = {
   position: 'absolute' as const,
@@ -22,18 +23,31 @@ const styleCloseBtn = {
 };
 
 type UIModalPropsType = {
-  children: (handleClose: () => void) => React.ReactNode
-}
+  children: (handleClose: () => void) => React.ReactNode;
+  iconType: 'edit' | 'account';
+  iconColor: string;
+};
 
 export const UIModal = (props: UIModalPropsType): JSX.Element => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const renderIcon = () => {
+    switch (props.iconType) {
+      case 'edit':
+        return <EditIcon style={{ color: props.iconColor }} />;
+      case 'account':
+        return <AccountCircleIcon style={{ color: props.iconColor }} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       <IconButton aria-label="edit" onClick={handleOpen}>
-        <EditIcon style={{ color: '#1976d2' }}/>
+        {renderIcon()}
       </IconButton>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
