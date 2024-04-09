@@ -11,3 +11,8 @@ export type VacancyInfoFromDBType = {
   msg: string;
   vacancies: Array<VacancyType> | VacancyType;
 };
+
+export type InfoFromDBType<T> = {
+  msg: string;
+  data: T;
+};

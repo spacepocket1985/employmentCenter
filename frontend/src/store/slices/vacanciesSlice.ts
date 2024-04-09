@@ -1,6 +1,9 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { VacancyInfoFromDBType, VacancyType } from '../../types/types';
+import {
+  InfoFromDBType,
+  VacancyType,
+} from '../../types/types';
 import { infoActions } from './infoSlice';
 
 export type VacanciesStateType = {
@@ -65,12 +68,12 @@ const vacanciesSlice = createSlice({
   },
 });
 
-const handleAsyncThunk = async (
+const handleAsyncThunk = async <T>(
   params: AsyncThunkParams,
   thunkAPI: {
     dispatch: (action: unknown) => void;
   }
-): Promise<VacancyType | VacancyType[]> => {
+): Promise<T> => {
   try {
     const response = await fetch(params.url, {
       method: params.method,
@@ -84,24 +87,24 @@ const handleAsyncThunk = async (
       throw new Error(params.errorMessage);
     }
 
-    const responseData: VacancyInfoFromDBType = await response.json();
+    const responseData: InfoFromDBType<T> = await response.json();
 
     thunkAPI.dispatch(infoActions.clearError());
     thunkAPI.dispatch(infoActions.setSuccess(params.successMessage));
-    console.log(responseData)
-    return responseData.vacancies;
+    console.log(responseData);
+    return responseData.data;
   } catch (error) {
     if (error instanceof Error) {
       thunkAPI.dispatch(infoActions.setError(params.errorMessage));
     }
-    return [];
+    return [] as T;
   }
 };
 
 export const getAllVacanciesFromDB = createAsyncThunk(
   'vacancies/getvacancies',
   async (_, thunkAPI) => {
-    return handleAsyncThunk(
+    return handleAsyncThunk<VacancyType[]>(
       {
         url: 'http://localhost:5000/vacancies',
         method: 'GET',
@@ -109,7 +112,7 @@ export const getAllVacanciesFromDB = createAsyncThunk(
         errorMessage: 'Ошибка при получении вакансий',
       },
       thunkAPI
-    ) as Promise<VacancyType[]>;
+    );
   }
 );
 
