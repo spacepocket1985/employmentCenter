@@ -16,7 +16,7 @@ class VacancyController {
     console.log("newVacancy ", newVacancy);
     res
       .status(StatusCodes.CREATED)
-      .json({ vacancies: newVacancy, msg: "Vacancy has been created!" });
+      .json({ data: newVacancy, msg: "Vacancy has been created!" });
   };
 
   // get all vacancies
@@ -25,7 +25,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ vacancies, msg: "All vacancies have been fetched!" });
+      .json({ data: vacancies, msg: "All vacancies have been fetched!" });
   };
 
   //Get a single vacancy
@@ -37,7 +37,7 @@ class VacancyController {
       throw new Error("Requested vacancy not found!");
     }
 
-    res.status(StatusCodes.OK).json({ vacancy, msg: "Success" });
+    res.status(StatusCodes.OK).json({ data: vacancy, msg: "Success" });
   };
 
   // update vacancy
@@ -57,7 +57,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ vacancies: updatedVacancy, msg: "Vacancy has been updated" });
+      .json({ data: updatedVacancy, msg: "Vacancy has been updated" });
   };
 
   // delete vacancy
@@ -71,7 +71,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ vacancies: deletedVacancy, msg: "Vacancy has been deleted" });
+      .json({ data: deletedVacancy, msg: "Vacancy has been deleted" });
   };
 }
 
