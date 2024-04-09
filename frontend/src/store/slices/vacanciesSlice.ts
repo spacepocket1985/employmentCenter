@@ -58,7 +58,7 @@ const vacanciesSlice = createSlice({
     builder.addCase(deleteVacancyFromDB.fulfilled, (state, action) => {
       if (action.payload) {
         state.vacancies = state.vacancies.filter((vanancy) => {
-          vanancy._id !== action.payload._id;
+          return vanancy._id !== action.payload._id;
         });
       }
     });
