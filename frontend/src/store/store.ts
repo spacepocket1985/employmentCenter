@@ -4,11 +4,13 @@ import { combineReducers } from 'redux';
 import vacanciesReducer from './slices/vacanciesSlice';
 import infoReducer from './slices/infoSlice';
 import dataReducer from './slices/dataSlice';
+import userReducer from "./slices/userSlice"
 
 const rootReducer = combineReducers({
   vacancies: vacanciesReducer,
   info: infoReducer,
   data: dataReducer,
+  user: userReducer
 });
 
 export const store = configureStore({ reducer: rootReducer });

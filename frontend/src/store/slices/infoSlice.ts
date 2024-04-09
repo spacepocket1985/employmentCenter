@@ -4,17 +4,13 @@ type infoSliceStateType = {
   successMessage: string | null;
   errorMessage: string | null;
   loading: boolean;
-  user: boolean;
-  login: boolean
-
 };
 
 const initialState: infoSliceStateType = {
   successMessage: null,
   errorMessage: null,
   loading: false,
-  login: false,
-  user: false,
+
 };
 
 const infoSlice = createSlice({
@@ -29,12 +25,6 @@ const infoSlice = createSlice({
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
-    },
-    logInUser: (state) => {
-      state.login = true;
-    },
-    logOutUser: (state) => {
-      state.login = false;
     },
     clearError: () => {
       return initialState;

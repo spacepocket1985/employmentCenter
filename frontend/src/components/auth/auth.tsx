@@ -2,16 +2,13 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Grid } from '@mui/material';
 
-import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
+import { useAppDispatch } from '../../hooks/storeHooks';
 
 import { UIFormInput } from '../ui/UIFormInput';
 
 import { loginValidationSchema } from '../../utils/validationSchemes';
-
-type UserType = {
-  name: string;
-  password: string;
-};
+import { UserType } from '../../types/types';
+import { login } from '../../store/slices/userSlice';
 
 type UserAuthPropsType = {
   handleClose?: () => void;
@@ -30,13 +27,13 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
 
   const dispatch = useAppDispatch();
 
-  const user = useAppSelector((state) => state.info.user);
+
 
   const loginHandler: SubmitHandler<UserType> = async ({
     name,
     password,
   }) => {
-    console.log(name, password);
+    await dispatch(login({name,password}))
     if (props.handleClose) props.handleClose();
 
     reset();

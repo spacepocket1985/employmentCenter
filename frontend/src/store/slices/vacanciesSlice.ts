@@ -68,7 +68,7 @@ const vacanciesSlice = createSlice({
   },
 });
 
-const handleAsyncThunk = async <T>(
+export const handleAsyncThunk = async <T>(
   params: AsyncThunkParams,
   thunkAPI: {
     dispatch: (action: unknown) => void;
@@ -119,7 +119,7 @@ export const getAllVacanciesFromDB = createAsyncThunk(
 export const addNewVacancyToDB = createAsyncThunk(
   'vacancies/addNewVacancy',
   async (vacancy: VacancyType, thunkAPI) => {
-    return handleAsyncThunk(
+    return handleAsyncThunk<VacancyType>(
       {
         url: 'http://localhost:5000/vacancies',
         method: 'POST',
@@ -128,14 +128,14 @@ export const addNewVacancyToDB = createAsyncThunk(
         errorMessage: 'Ошибка при добавлении вакансии',
       },
       thunkAPI
-    ) as Promise<VacancyType>;
+    );
   }
 );
 
 export const deleteVacancyFromDB = createAsyncThunk(
   'vacancies/deleteVacancy',
   async (id: string, thunkAPI) => {
-    return handleAsyncThunk(
+    return handleAsyncThunk<VacancyType>(
       {
         url: `http://localhost:5000/vacancies/${id}`,
         method: 'DELETE',
@@ -143,14 +143,14 @@ export const deleteVacancyFromDB = createAsyncThunk(
         errorMessage: 'Ошибка при удалении вакансии',
       },
       thunkAPI
-    ) as Promise<VacancyType>;
+    );
   }
 );
 
 export const updateVacancyFromDB = createAsyncThunk(
   'vacancies/updateVacancy',
   async (vacancy: VacancyType, thunkAPI) => {
-    return handleAsyncThunk(
+    return handleAsyncThunk<VacancyType>(
       {
         url: `http://localhost:5000/vacancies/${vacancy._id}`,
         method: 'PATCH',
@@ -165,7 +165,7 @@ export const updateVacancyFromDB = createAsyncThunk(
         errorMessage: 'Ошибка при обновлении вакансии',
       },
       thunkAPI
-    ) as Promise<VacancyType>;
+    );
   }
 );
 
