@@ -1,12 +1,11 @@
 import { hash, compare } from "bcryptjs";
-import { sign, verify } from 'jsonwebtoken';
+import { sign, verify } from "jsonwebtoken";
 
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { User } from "../models/user.model";
 import keys from "../config/keys";
-
 
 class AuthController {
   register = async (req: Request, res: Response) => {
@@ -46,14 +45,19 @@ class AuthController {
       if (passwordResult) {
         //token generate, passwords matched
 
-        const token = sign({
-          name: candidate.name,
-          userId: candidate._id
-        }, keys.jwt, {expiresIn: 60*60});
+        const token = sign(
+          {
+            name: candidate.name,
+            userId: candidate._id,
+          },
+          keys.jwt,
+          { expiresIn: 60 * 60 }
+        );
 
-        res.status(StatusCodes.OK)
-        .json({token: `Bearer ${token}`})
-
+        res.status(StatusCodes.OK).json({
+          data: { token: `Bearer ${token}`, name },
+          msg: "Sucsess login",
+        });
       } else {
         res
           .status(StatusCodes.UNAUTHORIZED)
