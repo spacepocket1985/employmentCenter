@@ -15,7 +15,12 @@ const initialState: UserInfoFromDBType = {
 const userSlice = createSlice({
   name: 'userSlice',
   initialState,
-  reducers: {},
+  reducers: {
+    logOutUser: (state) => {
+      state.name = null;
+      state.token = null;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (state, action) => {
       if (action.payload) {

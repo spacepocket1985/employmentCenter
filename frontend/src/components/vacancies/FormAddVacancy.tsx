@@ -13,6 +13,8 @@ import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
 
+
+
 type FormAddVacancyType = {
   title: string;
   education: string;
@@ -72,7 +74,9 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
         })
       );
       props.handleClose();
-    } else await dispatch(addNewVacancyToDB(newVacancy));
+    } else {
+      await dispatch(addNewVacancyToDB(newVacancy));
+    }
 
     reset();
   };

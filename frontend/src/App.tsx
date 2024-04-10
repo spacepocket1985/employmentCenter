@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAppDispatch } from './hooks/storeHooks';
+import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
 
 import './App.css';
 import { Header } from './components/layout/Header';
@@ -10,10 +10,11 @@ import { Grid } from '@mui/material';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.name);
 
   useEffect(() => {
     const fetchVacancies = async () => {
-      await dispatch(getAllVacanciesFromDB());
+      dispatch(getAllVacanciesFromDB());
     };
 
     fetchVacancies();
@@ -23,7 +24,7 @@ const App = (): JSX.Element => {
     <>
       <Header />
       <Grid container style={{ padding: '20px' }}>
-        <FormAddVacancy />
+        {user && <FormAddVacancy />}
       </Grid>
       <VacancyList />
     </>

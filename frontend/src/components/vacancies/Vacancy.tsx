@@ -9,7 +9,7 @@ import WorkIcon from '@mui/icons-material/Work';
 
 import { VacancyType } from '../../types/types';
 import { Delete } from '@mui/icons-material';
-import { useAppDispatch } from '../../hooks/storeHooks';
+import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 import { deleteVacancyFromDB } from '../../store/slices/vacanciesSlice';
 
 import { UIModal } from '../ui/UIModal';
@@ -23,10 +23,11 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   const { vacancy } = props;
 
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.name);
 
   const onDeleteClickHandler = async (): Promise<void> => {
     if (vacancy._id) {
-      await dispatch(deleteVacancyFromDB(vacancy._id));
+      dispatch(deleteVacancyFromDB(vacancy._id));
     }
   };
 
@@ -41,7 +42,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}`}
       />
-      <UIModal iconType="edit" iconColor="#1976d2">
+      {user && <>      <UIModal iconType="edit" iconColor="#1976d2">
         {(handleClose) => (
           <>
             <FormAddVacancy
@@ -55,7 +56,8 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
 
       <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
         <Delete style={{ color: '#1976d2' }} />
-      </IconButton>
+      </IconButton></>}
+
     </ListItem>
   );
 };

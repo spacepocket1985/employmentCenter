@@ -1,22 +1,19 @@
 import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
-import { infoActions } from '../../store/slices/infoSlice';
+
 import { UserAuth } from '../auth/auth';
 import { UIModal } from '../ui/UIModal';
+import { userActions } from '../../store/slices/userSlice';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user.name);
 
-  const user = useAppSelector((state) => state.info.user);
-  const login = useAppSelector((state) => state.info.login);
-
-  const handleClick = () => {
-    login
-      ? dispatch(infoActions.logOutUser())
-      : dispatch(infoActions.logInUser());
+  const onLogOutClickHandler = () => {
+    dispatch(userActions.logOutUser());
   };
 
   return (
@@ -26,9 +23,15 @@ export const Header = (): JSX.Element => {
           <Typography variant="h6" component="div">
             Список вакансий Гродненской ТЭЦ-2
           </Typography>
-          <UIModal iconType="account" iconColor="#fff">
-            {(handleClose) => <UserAuth handleClose={handleClose} />}
-          </UIModal>
+          {user ? (
+            <IconButton aria-label="logOut" onClick={onLogOutClickHandler}>
+              <LogoutIcon style={{ color: '#fff' }} />
+            </IconButton>
+          ) : (
+            <UIModal iconType="account" iconColor="#fff">
+              {(handleClose) => <UserAuth handleClose={handleClose} />}
+            </UIModal>
+          )}
         </Grid>
       </Toolbar>
     </AppBar>
