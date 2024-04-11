@@ -21,7 +21,7 @@ export const Header = (): JSX.Element => {
       <Toolbar>
         <Grid container justifyContent="space-between" alignItems="center">
           <Typography variant="h6" component="div">
-            Список вакансий Гродненской ТЭЦ-2
+            Вакансии Гродненской ТЭЦ-2
           </Typography>
           {user ? (
             <IconButton aria-label="logOut" onClick={onLogOutClickHandler}>

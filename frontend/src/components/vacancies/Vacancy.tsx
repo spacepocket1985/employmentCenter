@@ -32,7 +32,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   };
 
   return (
-    <ListItem>
+    <ListItem sx={{borderBottom: '1px solid grey'}}>
       <ListItemAvatar>
         <Avatar style={{ backgroundColor: '#1976d2' }}>
           <WorkIcon />

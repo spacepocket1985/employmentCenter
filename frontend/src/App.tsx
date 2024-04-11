@@ -7,6 +7,7 @@ import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
 import VacancyList from './components/vacancies/VacancyList';
 import { FormAddVacancy } from './components/vacancies/FormAddVacancy';
 import { Grid } from '@mui/material';
+import { Footer } from './components/layout/Footer';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -27,6 +28,7 @@ const App = (): JSX.Element => {
         {user && <FormAddVacancy />}
       </Grid>
       <VacancyList />
+      <Footer/>
     </>
   );
 };
