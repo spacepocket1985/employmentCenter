@@ -1,13 +1,14 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
-import { Button, IconButton } from '@mui/material';
+import { Button, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 
 const style = {
   position: 'absolute' as const,
-  top: '20%',
+  top: '30%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
   bgcolor: 'background.paper',
@@ -23,9 +24,11 @@ const styleCloseBtn = {
 };
 
 type UIModalPropsType = {
-  children: (handleClose: () => void) => React.ReactNode;
-  iconType: 'edit' | 'account';
+  children: (handleClose?: () => void) => React.ReactNode;
+  iconType: 'edit' | 'account' | 'thumbUp';
   iconColor: string;
+  iconLabel?: string;
+  iconStyle?: string;
 };
 
 export const UIModal = (props: UIModalPropsType): JSX.Element => {
@@ -36,9 +39,11 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
   const renderIcon = () => {
     switch (props.iconType) {
       case 'edit':
-        return <EditIcon style={{ color: props.iconColor }} />;
+        return <EditIcon />;
       case 'account':
-        return <AccountCircleIcon style={{ color: props.iconColor }} />;
+        return <AccountCircleIcon />;
+      case 'thumbUp':
+        return <ThumbUpAltIcon />;
       default:
         return null;
     }
@@ -46,8 +51,11 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
 
   return (
     <div>
-      <IconButton aria-label="edit" onClick={handleOpen}>
+      <IconButton aria-label="edit" onClick={handleOpen} style={{ color: props.iconColor}}>
         {renderIcon()}
+        <Typography variant="subtitle2" component="span">
+          {props.iconLabel}
+        </Typography>
       </IconButton>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>

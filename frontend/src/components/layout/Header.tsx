@@ -20,7 +20,7 @@ export const Header = (): JSX.Element => {
     <AppBar position={'static'}>
       <Toolbar>
         <Grid container justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" component="div">
+          <Typography variant="h6" component="div" style={{flexGrow:'1'}}>
             Вакансии Гродненской ТЭЦ-2
           </Typography>
           {user ? (

@@ -32,7 +32,7 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   };
 
   return (
-    <ListItem sx={{borderBottom: '1px solid grey'}}>
+    <ListItem sx={{ borderBottom: '1px solid grey' }}>
       <ListItemAvatar>
         <Avatar style={{ backgroundColor: '#1976d2' }}>
           <WorkIcon />
@@ -42,22 +42,24 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}, Ставка: ${vacancy.wageRate}, Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}`}
       />
-      {user && <>      <UIModal iconType="edit" iconColor="#1976d2">
-        {(handleClose) => (
-          <>
-            <FormAddVacancy
-              isEditMode={true}
-              vacancy={vacancy}
-              handleClose={handleClose}
-            />
-          </>
-        )}
-      </UIModal>
-
-      <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
-        <Delete style={{ color: '#1976d2' }} />
-      </IconButton></>}
-
+      {user && (
+        <>
+          <UIModal iconType="edit" iconColor="#1976d2">
+            {(handleClose) => (
+              <>
+                <FormAddVacancy
+                  isEditMode={true}
+                  vacancy={vacancy}
+                  handleClose={handleClose}
+                />
+              </>
+            )}
+          </UIModal>
+          <IconButton aria-label="delete" onClick={onDeleteClickHandler}>
+            <Delete style={{ color: '#1976d2' }} />
+          </IconButton>
+        </>
+      )}
     </ListItem>
   );
 };

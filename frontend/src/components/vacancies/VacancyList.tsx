@@ -6,7 +6,7 @@ import { Vacancy } from './Vacancy';
 const VacancyList = (): JSX.Element => {
   const vacancies = useAppSelector((state) => state.vacancies.vacancies);
   return (
-    <Box display="flex" justifyContent="center">
+    <Box display="flex" justifyContent="center" alignItems="center" flexDirection='column'>
       <List>
         {vacancies.length === 0 ? (
           <h2>В данный момент у нас нет свободный вакансий.</h2>
