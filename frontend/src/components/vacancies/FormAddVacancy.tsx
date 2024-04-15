@@ -13,8 +13,6 @@ import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
 
-
-
 type FormAddVacancyType = {
   title: string;
   education: string;
@@ -119,16 +117,6 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             error={errors.wageRate?.message ? errors.wageRate.message : null}
             defaultValue={props.vacancy?.wageRate}
           />
-          {/* <UIFormSelect
-            name="education"
-            label="Образование"
-            data={educationList}
-            defaultValue={props.vacancy?.education}
-            register={register}
-            resetSelect={resetSelect}
-            onResetSelect={handleResetSelect}
-            error={errors.education?.message ? errors.education.message : null}
-          /> */}
           <UISimpleSelect
             name="education"
             label="Образование"

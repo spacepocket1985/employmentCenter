@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
+import { toast, ToastContainer} from 'react-toastify';
 import { Grid } from '@mui/material';
 
-import './App.css';
+import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
+
+
 import { Header } from './components/layout/Header';
 import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
 import VacancyList from './components/vacancies/VacancyList';
 import { Advantages } from './components/advantages/Advantages';
 import { FormAddVacancy } from './components/vacancies/FormAddVacancy';
 import { Footer } from './components/layout/Footer';
+
+import './App.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -22,6 +27,12 @@ const App = (): JSX.Element => {
     fetchVacancies();
   }, [dispatch]);
 
+  const infoMsg = useAppSelector((state) => state.info.successMessage);
+
+  useEffect(() => {
+    if (infoMsg) toast.info(infoMsg);
+  }, [infoMsg]);
+
   return (
     <>
       <Header />
@@ -31,6 +42,7 @@ const App = (): JSX.Element => {
       <Advantages/>
       <VacancyList />
       <Footer/>
+      <ToastContainer />
     </>
   );
 };
