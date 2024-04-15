@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { handleAsyncThunk } from './vacanciesSlice';
+import { handleAsyncThunk, serverEndPoint } from './vacanciesSlice';
 import { UserType } from '../../types/types';
 
 type UserInfoFromDBType = {
@@ -36,7 +36,7 @@ export const login = createAsyncThunk(
   async (user: UserType, thunkAPI) => {
     return handleAsyncThunk<UserInfoFromDBType>(
       {
-        url: 'http://localhost:5000/auth/login',
+        url: `${serverEndPoint}/auth/login`,
         method: 'POST',
         body: user,
         successMessage: 'Пользователь успешно залогинен',

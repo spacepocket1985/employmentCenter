@@ -10,6 +10,8 @@ export type VacanciesStateType = {
   vacancies: VacancyType[];
 };
 
+export const serverEndPoint = 'http://10.182.1.143:5000';
+
 type AsyncThunkParams = {
   url: string;
   method: string;
@@ -106,7 +108,7 @@ export const getAllVacanciesFromDB = createAsyncThunk(
   async (_, thunkAPI) => {
     return handleAsyncThunk<VacancyType[]>(
       {
-        url: 'http://localhost:5000/vacancies',
+        url: `${serverEndPoint}/vacancies`,
         method: 'GET',
         successMessage: 'Вакансии успешно загружены',
         errorMessage: 'Ошибка при получении вакансий',
@@ -121,7 +123,7 @@ export const addNewVacancyToDB = createAsyncThunk(
   async (vacancy: VacancyType, thunkAPI) => {
     return handleAsyncThunk<VacancyType>(
       {
-        url: 'http://localhost:5000/vacancies',
+        url: `${serverEndPoint}/vacancies`,
         method: 'POST',
         body: vacancy,
         successMessage: 'Вакансия успешно добавлена',
@@ -137,7 +139,7 @@ export const deleteVacancyFromDB = createAsyncThunk(
   async (id: string, thunkAPI) => {
     return handleAsyncThunk<VacancyType>(
       {
-        url: `http://localhost:5000/vacancies/${id}`,
+        url: `${serverEndPoint}/vacancies/${id}`,
         method: 'DELETE',
         successMessage: 'Вакансия успешно удалена',
         errorMessage: 'Ошибка при удалении вакансии',
@@ -146,13 +148,12 @@ export const deleteVacancyFromDB = createAsyncThunk(
     );
   }
 );
-
 export const updateVacancyFromDB = createAsyncThunk(
   'vacancies/updateVacancy',
   async (vacancy: VacancyType, thunkAPI) => {
     return handleAsyncThunk<VacancyType>(
       {
-        url: `http://localhost:5000/vacancies/${vacancy._id}`,
+        url: `${serverEndPoint}vacancies/${vacancy._id}`,
         method: 'PATCH',
         body: {
           title: vacancy.title,
