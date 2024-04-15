@@ -93,7 +93,7 @@ export const handleAsyncThunk = async <T>(
 
     thunkAPI.dispatch(infoActions.clearError());
     thunkAPI.dispatch(infoActions.setSuccess(params.successMessage));
-    console.log(responseData);
+
     return responseData.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -153,7 +153,7 @@ export const updateVacancyFromDB = createAsyncThunk(
   async (vacancy: VacancyType, thunkAPI) => {
     return handleAsyncThunk<VacancyType>(
       {
-        url: `${serverEndPoint}vacancies/${vacancy._id}`,
+        url: `${serverEndPoint}/vacancies/${vacancy._id}`,
         method: 'PATCH',
         body: {
           title: vacancy.title,

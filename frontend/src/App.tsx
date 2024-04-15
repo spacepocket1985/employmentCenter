@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
-import { toast, ToastContainer} from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { Grid } from '@mui/material';
 
 import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
-
 
 import { Header } from './components/layout/Header';
 import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
@@ -27,11 +26,14 @@ const App = (): JSX.Element => {
     fetchVacancies();
   }, [dispatch]);
 
-  const infoMsg = useAppSelector((state) => state.info.successMessage);
+  const { successMessage, errorMessage } = useAppSelector(
+    (state) => state.info
+  );
 
   useEffect(() => {
-    if (infoMsg) toast.info(infoMsg);
-  }, [infoMsg]);
+    if (successMessage) toast.info(successMessage);
+    if (errorMessage) toast.error(errorMessage);
+  }, [successMessage, errorMessage]);
 
   return (
     <>
@@ -39,9 +41,9 @@ const App = (): JSX.Element => {
       <Grid container style={{ padding: '20px' }}>
         {user && <FormAddVacancy />}
       </Grid>
-      <Advantages/>
+      <Advantages />
       <VacancyList />
-      <Footer/>
+      <Footer />
       <ToastContainer />
     </>
   );

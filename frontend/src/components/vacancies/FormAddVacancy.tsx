@@ -40,8 +40,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
 
   const dispatch = useAppDispatch();
 
-  const educationList = useAppSelector((state) => state.data.education);
-  const experienceList = useAppSelector((state) => state.data.experience);
+  const {education, experience} = useAppSelector((state) => state.data);
 
   const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
     title,
@@ -120,7 +119,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           <UISimpleSelect
             name="education"
             label="Образование"
-            data={educationList}
+            data={education}
             defaultValue={props.vacancy?.education}
             register={register}
             type={'string'}
@@ -129,7 +128,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           <UISimpleSelect
             name="experience"
             label="Опыт работы"
-            data={experienceList}
+            data={experience}
             defaultValue={props.vacancy?.experience}
             register={register}
             type={'string'}
