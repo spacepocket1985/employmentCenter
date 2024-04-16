@@ -20,7 +20,7 @@ export const Header = (): JSX.Element => {
     <AppBar position={'static'}>
       <Toolbar>
         <Grid container justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" component="div" style={{flexGrow:'1'}}>
+          <Typography variant="h6" component="div" style={{ flexGrow: '1' }}>
             Вакансии Гродненской ТЭЦ-2
           </Typography>
           {user ? (
@@ -28,7 +28,7 @@ export const Header = (): JSX.Element => {
               <LogoutIcon style={{ color: '#fff' }} />
             </IconButton>
           ) : (
-            <UIModal iconType="account" iconColor="#fff" top='15%'>
+            <UIModal iconType="account" iconButtonStyle={{color:'#fff'}} top="15%">
               {(handleClose) => <UserAuth handleClose={handleClose} />}
             </UIModal>
           )}

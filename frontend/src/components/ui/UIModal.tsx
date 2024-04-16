@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 
-const defaultTop = '30%'; 
+const defaultTop = '30%';
 
 const style = {
   position: 'absolute' as const,
@@ -27,11 +27,10 @@ const styleCloseBtn = {
 
 type UIModalPropsType = {
   children: (handleClose?: () => void) => React.ReactNode;
-  iconType: 'edit' | 'account' | 'thumbUp';
-  iconColor: string;
+  iconType?: 'edit' | 'account' | 'thumbUp';
   iconLabel?: string;
-  iconStyle?: string;
   top?: string;
+  iconButtonStyle?: React.CSSProperties;
 };
 
 export const UIModal = (props: UIModalPropsType): JSX.Element => {
@@ -54,12 +53,16 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
 
   const customStyle = {
     ...style,
-    top: props.top || defaultTop, 
+    top: props.top || defaultTop,
   };
 
   return (
     <div>
-      <IconButton aria-label="edit" onClick={handleOpen} style={{ color: props.iconColor}}>
+      <IconButton
+        aria-label="edit"
+        onClick={handleOpen}
+        style={{ color: '#1976d2', ...props.iconButtonStyle }}
+      >
         {renderIcon()}
         <Typography variant="subtitle1" component="span">
           {props.iconLabel}

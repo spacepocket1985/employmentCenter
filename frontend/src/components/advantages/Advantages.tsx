@@ -19,9 +19,13 @@ import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded';
 import { UIModal } from '../ui/UIModal';
 
 const advantagesData = [
-  { title: 'Cвоевременная выплата зарплаты два раза в месяц.', icon: PaidRoundedIcon },
   {
-    title: 'Регулярные выплаты к праздникам (8 марта, День независимости, День энергетика, День матери, "овощные").',
+    title: 'Cвоевременная выплата зарплаты два раза в месяц.',
+    icon: PaidRoundedIcon,
+  },
+  {
+    title:
+      'Регулярные выплаты к праздникам (8 марта, День независимости, День энергетика, День матери, "овощные").',
     icon: SavingsRoundedIcon,
   },
   {
@@ -29,7 +33,8 @@ const advantagesData = [
     icon: SchoolRoundedIcon,
   },
   {
-    title: 'Хорошие санитарно-бытовые условия, здравпункт, сезонные прививки бесплатно.',
+    title:
+      'Хорошие санитарно-бытовые условия, здравпункт, сезонные прививки бесплатно.',
     icon: MapsHomeWorkRoundedIcon,
   },
   {
@@ -40,8 +45,15 @@ const advantagesData = [
     title: 'Возможность льготного оздоровления в санатории «Энергетик».',
     icon: HolidayVillageRoundedIcon,
   },
-  { title: 'Свой цех обшественного питания. Наличие столовй и буфета.', icon: RestaurantMenuRoundedIcon },
-  { title: 'Доставка к месту работы и обратно заказным транспортом по пяти маршрутам.', icon: DirectionsBusFilledRoundedIcon },
+  {
+    title: 'Свой цех обшественного питания. Наличие столовй и буфета.',
+    icon: RestaurantMenuRoundedIcon,
+  },
+  {
+    title:
+      'Доставка к месту работы и обратно заказным транспортом по пяти маршрутам.',
+    icon: DirectionsBusFilledRoundedIcon,
+  },
   {
     title: 'Дружелюбная и поддерживающая рабочая атмосфера.',
     icon: PeopleRoundedIcon,
@@ -49,13 +61,11 @@ const advantagesData = [
 ];
 
 export const Advantages = () => {
-  
-
   const renderItems = advantagesData.map((item, index) => {
     return (
       <ListItem key={index}>
         <ListItemAvatar>
-          <Avatar style={{ backgroundColor: '#1976d2'}}>
+          <Avatar style={{ backgroundColor: '#1976d2' }}>
             <item.icon />
           </Avatar>
         </ListItemAvatar>
@@ -67,9 +77,13 @@ export const Advantages = () => {
   return (
     <UIModal
       iconType="thumbUp"
-      iconColor="#1976d2"
-      iconLabel="Наши условия и приемущества."
-      top='40%'
+      iconLabel="Наши условия и приемущества"
+      iconButtonStyle={{
+        borderRadius: '10px',
+        color: '#fff',
+        backgroundColor: '#1976d2',
+      }}
+      top="40%"
     >
       {() => <List>{renderItems}</List>}
     </UIModal>

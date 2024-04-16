@@ -42,7 +42,7 @@ const App = (): JSX.Element => {
   return (
     <>
       <Header />
-      <Grid container style={{ padding: '20px' }}>
+      <Grid container style={{ padding: '10px' }}>
         {user && <FormAddVacancy />}
         {isLoading && <Spinner />}
       </Grid>
