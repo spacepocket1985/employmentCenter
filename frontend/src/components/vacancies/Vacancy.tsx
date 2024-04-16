@@ -14,9 +14,11 @@ import { deleteVacancyFromDB } from '../../store/slices/vacanciesSlice';
 
 import { UIModal } from '../ui/UIModal';
 import { FormAddVacancy } from './FormAddVacancy';
+import { Link } from 'react-router-dom';
 
 type VacancyItemProps = {
   vacancy: VacancyType;
+  vacancyStyle?:React.CSSProperties;
 };
 
 export const Vacancy = (props: VacancyItemProps): JSX.Element => {
@@ -32,16 +34,17 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   };
 
   return (
-    <ListItem sx={{ borderBottom: '1px solid grey' }}>
+    <ListItem style={{ borderBottom: '1px solid grey',...props.vacancyStyle }}>
       <ListItemAvatar>
         <Avatar style={{ backgroundColor: '#1976d2' }}>
           <WorkIcon />
         </Avatar>
       </ListItemAvatar>
+      <Link to={`/vacancy/${props.vacancy._id!}`} style={{ textDecoration: 'none', color:'#000' }}>
       <ListItemText
         primary={vacancy.title}
         secondary={`Зарплата: ${vacancy.salary}. Ставка: ${vacancy.wageRate}. Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}.`}
-      />
+      /></Link>
       {user && (
         <>
           <UIModal iconType="edit">

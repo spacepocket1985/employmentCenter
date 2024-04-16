@@ -25,7 +25,8 @@ const initialState: VacanciesStateType = {
 const vacanciesSlice = createSlice({
   name: 'vacancies',
   initialState,
-  reducers: {},
+  reducers: {
+  },
   extraReducers: (builder) => {
     builder.addCase(getAllVacanciesFromDB.fulfilled, (state, action) => {
       if (action.payload) {

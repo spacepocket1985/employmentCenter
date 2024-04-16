@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { Grid } from '@mui/material';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
 
@@ -10,10 +11,11 @@ import VacancyList from './components/vacancies/VacancyList';
 import { Advantages } from './components/advantages/Advantages';
 import { FormAddVacancy } from './components/vacancies/FormAddVacancy';
 import { Footer } from './components/layout/Footer';
+import { Spinner } from './components/spinner/Spinner';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { Spinner } from './components/spinner/Spinner';
+import { AppRouter } from './routes/AppRouter';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -40,17 +42,17 @@ const App = (): JSX.Element => {
   }, [successMessage, errorMessage]);
 
   return (
-    <>
+    <Router>
       <Header />
       <Grid container style={{ padding: '10px' }}>
         {user && <FormAddVacancy />}
         {isLoading && <Spinner />}
       </Grid>
       <Advantages />
-      <VacancyList />
       <Footer />
       <ToastContainer />
-    </>
+      <AppRouter />
+    </Router>
   );
 };
 
