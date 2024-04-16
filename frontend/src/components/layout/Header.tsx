@@ -28,7 +28,7 @@ export const Header = (): JSX.Element => {
               <LogoutIcon style={{ color: '#fff' }} />
             </IconButton>
           ) : (
-            <UIModal iconType="account" iconColor="#fff">
+            <UIModal iconType="account" iconColor="#fff" top='15%'>
               {(handleClose) => <UserAuth handleClose={handleClose} />}
             </UIModal>
           )}

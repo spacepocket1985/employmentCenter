@@ -13,30 +13,37 @@ import LocalHospitalRoundedIcon from '@mui/icons-material/LocalHospitalRounded';
 import HolidayVillageRoundedIcon from '@mui/icons-material/HolidayVillageRounded';
 import RestaurantMenuRoundedIcon from '@mui/icons-material/RestaurantMenuRounded';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
+import DirectionsBusFilledRoundedIcon from '@mui/icons-material/DirectionsBusFilledRounded';
+import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded';
 
 import { UIModal } from '../ui/UIModal';
 
 const advantagesData = [
-  { title: 'Достойная заработная плата', icon: PaidRoundedIcon },
+  { title: 'Cвоевременная выплата зарплаты два раза в месяц.', icon: PaidRoundedIcon },
   {
-    title: 'Дополнительные выплаты к государственным праздникам',
+    title: 'Регулярные выплаты к праздникам (8 марта, День независимости, День энергетика, День матери, "овощные").',
     icon: SavingsRoundedIcon,
   },
   {
-    title: 'Возможность обучения и профессионального развития',
+    title: 'Возможность обучения и профессионального развития.',
     icon: SchoolRoundedIcon,
   },
   {
-    title: 'Наличие медицинского страхования',
+    title: 'Хорошие санитарно-бытовые условия, здравпункт, сезонные прививки бесплатно.',
+    icon: MapsHomeWorkRoundedIcon,
+  },
+  {
+    title: 'Наличие медицинского страхования.',
     icon: LocalHospitalRoundedIcon,
   },
   {
-    title: 'Возможность льготного оздоровления в санатории «Энергетик»',
+    title: 'Возможность льготного оздоровления в санатории «Энергетик».',
     icon: HolidayVillageRoundedIcon,
   },
-  { title: 'Наличие столовй и буфета', icon: RestaurantMenuRoundedIcon },
+  { title: 'Свой цех обшественного питания. Наличие столовй и буфета.', icon: RestaurantMenuRoundedIcon },
+  { title: 'Доставка к месту работы и обратно заказным транспортом по пяти маршрутам.', icon: DirectionsBusFilledRoundedIcon },
   {
-    title: 'Дружелюбная и поддерживающая рабочая атмосфера',
+    title: 'Дружелюбная и поддерживающая рабочая атмосфера.',
     icon: PeopleRoundedIcon,
   },
 ];
@@ -62,6 +69,7 @@ export const Advantages = () => {
       iconType="thumbUp"
       iconColor="#1976d2"
       iconLabel="Наши приемущества"
+      top='40%'
     >
       {() => <List>{renderItems}</List>}
     </UIModal>

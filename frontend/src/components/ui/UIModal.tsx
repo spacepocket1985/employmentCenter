@@ -6,9 +6,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 
+const defaultTop = '30%'; 
+
 const style = {
   position: 'absolute' as const,
-  top: '30%',
+  top: defaultTop,
   left: '50%',
   transform: 'translate(-50%, -50%)',
   bgcolor: 'background.paper',
@@ -29,6 +31,7 @@ type UIModalPropsType = {
   iconColor: string;
   iconLabel?: string;
   iconStyle?: string;
+  top?: string;
 };
 
 export const UIModal = (props: UIModalPropsType): JSX.Element => {
@@ -49,6 +52,11 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
     }
   };
 
+  const customStyle = {
+    ...style,
+    top: props.top || defaultTop, 
+  };
+
   return (
     <div>
       <IconButton aria-label="edit" onClick={handleOpen} style={{ color: props.iconColor}}>
@@ -58,7 +66,7 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
         </Typography>
       </IconButton>
       <Modal open={open} onClose={handleClose}>
-        <Box sx={style}>
+        <Box sx={customStyle}>
           <Button
             aria-label="close"
             onClick={handleClose}
