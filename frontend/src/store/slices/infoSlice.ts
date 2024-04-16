@@ -9,7 +9,7 @@ type infoSliceStateType = {
 const initialState: infoSliceStateType = {
   successMessage: null,
   errorMessage: null,
-  loading: false,
+  loading: true,
 
 };
 

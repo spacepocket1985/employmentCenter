@@ -13,10 +13,12 @@ import { Footer } from './components/layout/Footer';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
+import { Spinner } from './components/spinner/Spinner';
 
 const App = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.name);
+  const isLoading = useAppSelector((state) => state.info.loading);
 
   useEffect(() => {
     const fetchVacancies = async () => {
@@ -42,6 +44,7 @@ const App = (): JSX.Element => {
       <Header />
       <Grid container style={{ padding: '20px' }}>
         {user && <FormAddVacancy />}
+        {isLoading && <Spinner />}
       </Grid>
       <Advantages />
       <VacancyList />

@@ -1,9 +1,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { useDispatch } from 'react-redux';
 
-import {
-  InfoFromDBType,
-  VacancyType,
-} from '../../types/types';
+import { InfoFromDBType, VacancyType } from '../../types/types';
 import { infoActions } from './infoSlice';
 
 export type VacanciesStateType = {
@@ -27,20 +25,7 @@ const initialState: VacanciesStateType = {
 const vacanciesSlice = createSlice({
   name: 'vacancies',
   initialState,
-  reducers: {
-    addNewVacancy: (state, action: PayloadAction<VacancyType>) => {
-      state.vacancies = [
-        {
-          title: action.payload.title,
-          salary: action.payload.salary,
-          education: action.payload.education,
-          wageRate: action.payload.wageRate,
-          experience: action.payload.experience,
-        },
-        ...state.vacancies,
-      ];
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder.addCase(getAllVacanciesFromDB.fulfilled, (state, action) => {
       if (action.payload) {
@@ -93,6 +78,7 @@ export const handleAsyncThunk = async <T>(
 
     thunkAPI.dispatch(infoActions.clearError());
     thunkAPI.dispatch(infoActions.setSuccess(params.successMessage));
+    thunkAPI.dispatch(infoActions.setLoading(false));
 
     return responseData.data;
   } catch (error) {
