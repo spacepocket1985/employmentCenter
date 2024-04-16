@@ -6,11 +6,11 @@ export const vacancyValidationSchema = Yup.object({
     .min(2, 'Минимум три символа'),
   salary: Yup.number()
     .required('Поле обязательное')
-    .typeError('Salary should be number')
-    .min(0, 'No negative values'),
+    .typeError('Необходимо вести число')
+    .min(0, 'Только положительные числа'),
   wageRate: Yup.number()
     .required('Поле обязательное')
-    .typeError('WageRate should be number')
+    .typeError('Необходимо вести число')
     .min(0, 'No negative values'),
   education: Yup.string().required('Поле обязательное'),
   experience: Yup.string().required('Поле обязательное'),

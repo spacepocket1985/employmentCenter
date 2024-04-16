@@ -55,7 +55,7 @@ export const Advantages = () => {
     return (
       <ListItem key={index}>
         <ListItemAvatar>
-          <Avatar style={{ backgroundColor: '#1976d2' }}>
+          <Avatar style={{ backgroundColor: '#1976d2'}}>
             <item.icon />
           </Avatar>
         </ListItemAvatar>
@@ -68,7 +68,7 @@ export const Advantages = () => {
     <UIModal
       iconType="thumbUp"
       iconColor="#1976d2"
-      iconLabel="Наши приемущества"
+      iconLabel="Наши условия и приемущества."
       top='40%'
     >
       {() => <List>{renderItems}</List>}

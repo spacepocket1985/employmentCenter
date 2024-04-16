@@ -31,8 +31,10 @@ const App = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (successMessage) toast.info(successMessage);
-    if (errorMessage) toast.error(errorMessage);
+    if (successMessage)
+      toast.info(successMessage, { position: 'top-left', autoClose: 2000 });
+    if (errorMessage)
+      toast.error(errorMessage, { position: 'top-left', autoClose: 2000 });
   }, [successMessage, errorMessage]);
 
   return (
