@@ -3,7 +3,6 @@ import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
 
-import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 
 import { UserAuth } from '../auth/auth';

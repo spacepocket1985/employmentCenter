@@ -27,13 +27,8 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
 
   const dispatch = useAppDispatch();
 
-
-
-  const loginHandler: SubmitHandler<UserType> = async ({
-    name,
-    password,
-  }) => {
-    await dispatch(login({name,password}))
+  const loginHandler: SubmitHandler<UserType> = async ({ name, password }) => {
+    await dispatch(login({ name, password }));
     if (props.handleClose) props.handleClose();
 
     reset();
