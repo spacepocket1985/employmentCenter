@@ -12,7 +12,6 @@ import { UIFormInput } from '../ui/UIFormInput';
 import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
-import { UITextArea } from '../ui/UITextArea';
 
 type FormAddVacancyType = {
   title: string;
@@ -94,7 +93,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           container
           spacing={2}
           direction="row"
-          justifyContent="center"
+          justifyContent='flex-start'
           alignItems="center"
         >
           <UIFormInput
@@ -104,6 +103,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             register={register}
             error={errors.title?.message ? errors.title.message : null}
             defaultValue={props.vacancy?.title}
+            gridSize={4}
           />
           <UIFormInput
             type="text"
@@ -121,21 +121,6 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             error={errors.wageRate?.message ? errors.wageRate.message : null}
             defaultValue={props.vacancy?.wageRate}
           />
-          <UIFormInput
-            type="text"
-            name="additionalInformation"
-            about="Дополнительно"
-            register={register}
-            error={
-              errors.additionalInformation?.message
-                ? errors.additionalInformation.message
-                : null
-            }
-            defaultValue={props.vacancy?.additionalInformation}
-            multiline={true}
-            maxRows={8}
-          />
-
           <UISimpleSelect
             name="education"
             label="Образование"
@@ -156,6 +141,24 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
               errors.experience?.message ? errors.experience.message : null
             }
           />
+
+          <UIFormInput
+            type="text"
+            name="additionalInformation"
+            about="Дополнительно"
+            register={register}
+            error={
+              errors.additionalInformation?.message
+                ? errors.additionalInformation.message
+                : null
+            }
+            defaultValue={props.vacancy?.additionalInformation}
+            multiline={true}
+            maxRows={8}
+            gridSize={6}
+            
+          />
+
           <Button
             style={{ marginLeft: '15px', marginTop: '10px' }}
             variant="contained"

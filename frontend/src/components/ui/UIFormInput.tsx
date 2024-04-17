@@ -12,6 +12,8 @@ type UIFormInputPropsType<T extends FieldValues> = {
   defaultValue?: string | number;
   multiline?: boolean;
   maxRows?: number;
+  gridSize?: number;
+  fullWidth?: boolean
 };
 
 export const UIFormInput = <T extends FieldValues>(
@@ -26,10 +28,12 @@ export const UIFormInput = <T extends FieldValues>(
     defaultValue,
     multiline,
     maxRows,
+    gridSize,
+    
   } = props;
 
   return (
-    <Grid item xs="auto">
+    <Grid item xs={gridSize || 'auto'}>
       <TextField
         type={type}
         variant={'standard'}
@@ -42,6 +46,7 @@ export const UIFormInput = <T extends FieldValues>(
         defaultValue={defaultValue}
         multiline={multiline}
         maxRows={maxRows}
+        fullWidth
       />
     </Grid>
   );
