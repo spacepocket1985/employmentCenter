@@ -1,7 +1,9 @@
 import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 
 import LogoutIcon from '@mui/icons-material/Logout';
+import HomeIcon from '@mui/icons-material/Home';
 
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 
 import { UserAuth } from '../auth/auth';
@@ -18,10 +20,27 @@ export const Header = (): JSX.Element => {
     dispatch(userActions.logOutUser());
   };
 
+  const handleGoTEC2Click = () => {
+    window.location.href = 'http://tec23.grodno.energo.net/';
+  };
+
   return (
     <AppBar position={'static'}>
       <Toolbar>
         <Grid container justifyContent="space-between" alignItems="center">
+          <IconButton
+            onClick={handleGoTEC2Click}
+            style={{
+              borderRadius: '10px',
+              color: '#fff',
+              backgroundColor: '#1976d2',
+            }}
+          >
+            <HomeIcon style={{ color: '#fff', marginRight: '5px' }} />
+            <Typography variant="subtitle2" component="span">
+              {'Сайт ТЭЦ-2'}
+            </Typography>
+          </IconButton>
           <Typography variant="h6" component="div" style={{ flexGrow: '1' }}>
             <Link
               to={RoutePaths.HOME}
