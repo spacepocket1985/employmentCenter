@@ -10,12 +10,23 @@ type UIFormInputPropsType<T extends FieldValues> = {
   register: UseFormRegister<T>;
   error: string | null;
   defaultValue?: string | number;
+  multiline?: boolean;
+  maxRows?: number;
 };
 
 export const UIFormInput = <T extends FieldValues>(
   props: UIFormInputPropsType<T>
 ): JSX.Element => {
-  const { type, name, register, error, about, defaultValue } = props;
+  const {
+    type,
+    name,
+    register,
+    error,
+    about,
+    defaultValue,
+    multiline,
+    maxRows,
+  } = props;
 
   return (
     <Grid item xs="auto">
@@ -29,6 +40,8 @@ export const UIFormInput = <T extends FieldValues>(
         helperText={error}
         {...register(name)}
         defaultValue={defaultValue}
+        multiline={multiline}
+        maxRows={maxRows}
       />
     </Grid>
   );

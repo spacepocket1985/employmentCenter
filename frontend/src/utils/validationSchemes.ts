@@ -14,6 +14,7 @@ export const vacancyValidationSchema = Yup.object({
     .min(0, 'No negative values'),
   education: Yup.string().required('Поле обязательное'),
   experience: Yup.string().required('Поле обязательное'),
+  additionalInformation: Yup.string().required('Поле обязательное'),
 });
 
 export const loginValidationSchema = Yup.object({

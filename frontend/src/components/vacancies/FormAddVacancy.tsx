@@ -12,6 +12,7 @@ import { UIFormInput } from '../ui/UIFormInput';
 import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
+import { UITextArea } from '../ui/UITextArea';
 
 type FormAddVacancyType = {
   title: string;
@@ -19,6 +20,7 @@ type FormAddVacancyType = {
   experience: string;
   salary: number;
   wageRate: number;
+  additionalInformation: string;
 };
 
 type FormAddVacancyPropsType = {
@@ -40,7 +42,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
 
   const dispatch = useAppDispatch();
 
-  const {education, experience} = useAppSelector((state) => state.data);
+  const { education, experience } = useAppSelector((state) => state.data);
 
   const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
     title,
@@ -49,6 +51,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     education,
     experience,
     _id,
+    additionalInformation,
   }) => {
     const newVacancy: VacancyType = {
       title,
@@ -57,6 +60,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
       education,
       experience,
       _id,
+      additionalInformation,
     };
 
     if (props.isEditMode && props.handleClose) {
@@ -68,6 +72,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           education,
           experience,
           _id: props.vacancy?._id,
+          additionalInformation,
         })
       );
       props.handleClose();
@@ -116,6 +121,21 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             error={errors.wageRate?.message ? errors.wageRate.message : null}
             defaultValue={props.vacancy?.wageRate}
           />
+          <UIFormInput
+            type="text"
+            name="additionalInformation"
+            about="Дополнительно"
+            register={register}
+            error={
+              errors.additionalInformation?.message
+                ? errors.additionalInformation.message
+                : null
+            }
+            defaultValue={props.vacancy?.additionalInformation}
+            multiline={true}
+            maxRows={8}
+          />
+
           <UISimpleSelect
             name="education"
             label="Образование"

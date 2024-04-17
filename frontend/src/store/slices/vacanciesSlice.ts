@@ -148,6 +148,8 @@ export const updateVacancyFromDB = createAsyncThunk(
           education: vacancy.education,
           experience: vacancy.experience,
           salary: vacancy.salary,
+          additionalInformation: vacancy.additionalInformation
+          
         },
         successMessage: 'Вакансия успешно обновлена',
         errorMessage: 'Ошибка при обновлении вакансии',

@@ -5,6 +5,7 @@ export type VacancyType = {
   education: string;
   experience: string;
   salary: number;
+  additionalInformation: string;
 };
 
 export type UserType = {
@@ -21,5 +22,3 @@ export type InfoFromDBType<T> = {
   msg: string;
   data: T;
 };
-
-

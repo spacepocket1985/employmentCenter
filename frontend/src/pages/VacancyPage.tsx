@@ -24,7 +24,7 @@ export const VacancyPage = (): JSX.Element => {
       textAlign={'center'}
     >
       <List>
-        <Vacancy vacancy={requestedVacancy} vacancyStyle={{borderBottom: 'none'}}/>
+        <Vacancy vacancy={requestedVacancy} vacancyStyle={{borderBottom: 'none'}} key={requestedVacancy._id}/>
         <ListItem >
           <ListItemAvatar>
             <Avatar style={{ backgroundColor: '#1976d2' }}>
@@ -33,8 +33,8 @@ export const VacancyPage = (): JSX.Element => {
           </ListItemAvatar>
 
             <ListItemText
-              primary={'Дополнительные требования'}
-              secondary={'---'}
+              primary={'Дополнительные информация'}
+              secondary={requestedVacancy.additionalInformation}
             />
           
         </ListItem>
