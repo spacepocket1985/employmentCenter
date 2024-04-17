@@ -61,10 +61,10 @@ export const UIModal = (props: UIModalPropsType): JSX.Element => {
       <IconButton
         aria-label="edit"
         onClick={handleOpen}
-        style={{ color: '#1976d2', ...props.iconButtonStyle }}
+        style={{ color: '#1976d2', marginRight:'5px', ...props.iconButtonStyle }}
       >
         {renderIcon()}
-        <Typography variant="subtitle1" component="span">
+        <Typography variant="subtitle2" component="span">
           {props.iconLabel}
         </Typography>
       </IconButton>

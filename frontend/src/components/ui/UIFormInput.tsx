@@ -13,7 +13,7 @@ type UIFormInputPropsType<T extends FieldValues> = {
   multiline?: boolean;
   maxRows?: number;
   gridSize?: number;
-  fullWidth?: boolean
+  fullWidth?: boolean;
 };
 
 export const UIFormInput = <T extends FieldValues>(
@@ -29,7 +29,6 @@ export const UIFormInput = <T extends FieldValues>(
     multiline,
     maxRows,
     gridSize,
-    
   } = props;
 
   return (

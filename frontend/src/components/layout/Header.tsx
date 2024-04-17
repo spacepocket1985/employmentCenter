@@ -8,6 +8,7 @@ import { UserAuth } from '../auth/auth';
 import { UIModal } from '../ui/UIModal';
 import { userActions } from '../../store/slices/userSlice';
 import { Link } from 'react-router-dom';
+import { RoutePaths } from '../../routes/routePaths';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -23,7 +24,7 @@ export const Header = (): JSX.Element => {
         <Grid container justifyContent="space-between" alignItems="center">
           <Typography variant="h6" component="div" style={{ flexGrow: '1' }}>
             <Link
-              to="/"
+              to={RoutePaths.HOME}
               style={{
                 textAlign: 'center',
                 textDecoration: 'none',
