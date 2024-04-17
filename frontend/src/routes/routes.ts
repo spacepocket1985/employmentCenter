@@ -10,6 +10,10 @@ export const publicRoutes = [
     Page: HomePage,
   },
   {
+    path: RoutePaths.EMPLOYMENTCENTER,
+    Page: HomePage,
+  },
+  {
     path: RoutePaths.VACANCY,
     Page: VacancyPage,
   },
