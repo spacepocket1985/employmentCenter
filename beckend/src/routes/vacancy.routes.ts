@@ -1,5 +1,5 @@
 import express from "express";
-import passport from 'passport';
+//import passport from 'passport';
 
 import { vacancyController } from "../controllers/vacancies.controller";
 
