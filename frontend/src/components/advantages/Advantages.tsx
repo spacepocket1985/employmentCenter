@@ -60,7 +60,7 @@ const advantagesData = [
   },
 ];
 
-export const Advantages = () => {
+export const Advantages = ():JSX.Element => {
   const renderItems = advantagesData.map((item, index) => {
     return (
       <ListItem key={index}>

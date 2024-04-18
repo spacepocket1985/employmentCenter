@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from './hooks/storeHooks';
 
 import { Header } from './components/layout/Header';
 import { getAllVacanciesFromDB } from './store/slices/vacanciesSlice';
-import VacancyList from './components/vacancies/VacancyList';
 import { Advantages } from './components/advantages/Advantages';
 import { FormAddVacancy } from './components/vacancies/FormAddVacancy';
 import { Footer } from './components/layout/Footer';

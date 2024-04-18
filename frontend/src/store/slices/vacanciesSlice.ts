@@ -1,5 +1,4 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { useDispatch } from 'react-redux';
+import {  createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { InfoFromDBType, VacancyType } from '../../types/types';
 import { infoActions } from './infoSlice';
