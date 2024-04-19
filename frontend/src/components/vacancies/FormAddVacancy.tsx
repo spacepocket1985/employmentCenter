@@ -2,16 +2,17 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Grid, Paper } from '@mui/material';
 
-import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
-import {
-  addNewVacancyToDB,
-  updateVacancyFromDB,
-} from '../../store/slices/vacanciesSlice';
+import { useAppSelector } from '../../hooks/storeHooks';
 import { UIFormInput } from '../ui/UIFormInput';
 
 import { VacancyType } from '../../types/types';
 import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
+import {
+  useAddNewVacancyMutation,
+  useGetAllVacanciesQuery,
+  useUpdateVacancyMutation,
+} from '../../store/slices/vacanciesApiSlice';
 
 type FormAddVacancyType = {
   title: string;
@@ -39,8 +40,9 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     mode: 'onChange',
   });
 
-  const dispatch = useAppDispatch();
-
+  const [addNewVacancy] = useAddNewVacancyMutation();
+  const [updateVacancy] = useUpdateVacancyMutation();
+  
   const { education, experience } = useAppSelector((state) => state.data);
 
   const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
@@ -63,22 +65,20 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     };
 
     if (props.isEditMode && props.handleClose) {
-      await dispatch(
-        updateVacancyFromDB({
-          title,
-          salary,
-          wageRate,
-          education,
-          experience,
-          _id: props.vacancy?._id,
-          additionalInformation,
-        })
-      );
+      await updateVacancy({
+        title,
+        salary,
+        wageRate,
+        education,
+        experience,
+        _id: props.vacancy?._id,
+        additionalInformation,
+      });
       props.handleClose();
     } else {
-      await dispatch(addNewVacancyToDB(newVacancy));
+      await addNewVacancy(newVacancy);
     }
-
+    
     reset();
   };
 
@@ -93,7 +93,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
           container
           spacing={2}
           direction="row"
-          justifyContent='flex-start'
+          justifyContent="flex-start"
           alignItems="center"
         >
           <UIFormInput
@@ -156,7 +156,6 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
             multiline={true}
             maxRows={8}
             gridSize={6}
-            
           />
 
           <Button

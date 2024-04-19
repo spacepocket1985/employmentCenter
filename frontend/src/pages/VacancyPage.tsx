@@ -16,24 +16,20 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 import { Vacancy } from '../components/vacancies/Vacancy';
-import { useAppSelector } from '../hooks/storeHooks';
 import { RoutePaths } from '../routes/routePaths';
+import { useGetVacancyQuery } from '../store/slices/vacanciesApiSlice';
 
 export const VacancyPage = (): JSX.Element => {
-  const { vacancies } = useAppSelector((state) => state.vacancies);
   const { vacancyId } = useParams();
-
   const navigate = useNavigate();
+
+  const { data: results} = useGetVacancyQuery(vacancyId!);
+
+  if (!results) return <h4>Запрашиваемая вакансия не найдена</h4>;
 
   const handleClick = () => {
     navigate(RoutePaths.HOME);
   };
-
-  const requestedVacancy = vacancies.find((vavancy) => {
-    return vavancy._id === vacancyId;
-  });
-
-  if (!requestedVacancy) return <h4>Запрашиваемая вакансия не найдена</h4>;
 
   return (
     <Box
@@ -45,9 +41,9 @@ export const VacancyPage = (): JSX.Element => {
     >
       <List>
         <Vacancy
-          vacancy={requestedVacancy}
+          vacancy={results.data}
           vacancyStyle={{ borderBottom: 'none' }}
-          key={requestedVacancy._id}
+          key={results.data._id}
         />
         <ListItem>
           <ListItemAvatar>
@@ -58,7 +54,7 @@ export const VacancyPage = (): JSX.Element => {
 
           <ListItemText
             primary={'Дополнительные информация'}
-            secondary={requestedVacancy.additionalInformation}
+            secondary={results.data.additionalInformation}
           />
         </ListItem>
         <ListItem>

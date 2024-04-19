@@ -9,42 +9,47 @@ import WorkIcon from '@mui/icons-material/Work';
 
 import { VacancyType } from '../../types/types';
 import { Delete } from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
-import { deleteVacancyFromDB } from '../../store/slices/vacanciesSlice';
+import { useAppSelector } from '../../hooks/storeHooks';
 
 import { UIModal } from '../ui/UIModal';
 import { FormAddVacancy } from './FormAddVacancy';
 import { Link } from 'react-router-dom';
+import { useDeleteVacancyMutation } from '../../store/slices/vacanciesApiSlice';
 
 type VacancyItemProps = {
   vacancy: VacancyType;
-  vacancyStyle?:React.CSSProperties;
+  vacancyStyle?: React.CSSProperties;
 };
 
 export const Vacancy = (props: VacancyItemProps): JSX.Element => {
   const { vacancy } = props;
 
-  const dispatch = useAppDispatch();
+  const [deleteVacancy] = useDeleteVacancyMutation();
+
   const user = useAppSelector((state) => state.user.name);
 
   const onDeleteClickHandler = async (): Promise<void> => {
     if (vacancy._id) {
-      dispatch(deleteVacancyFromDB(vacancy._id));
+      deleteVacancy(vacancy._id);
     }
   };
 
   return (
-    <ListItem style={{ borderBottom: '1px solid grey',...props.vacancyStyle }}>
+    <ListItem style={{ borderBottom: '1px solid grey', ...props.vacancyStyle }}>
       <ListItemAvatar>
         <Avatar style={{ backgroundColor: '#1976d2' }}>
           <WorkIcon />
         </Avatar>
       </ListItemAvatar>
-      <Link to={`/vacancy/${props.vacancy._id!}`} style={{ textDecoration: 'none', color:'#000' }}>
-      <ListItemText
-        primary={vacancy.title}
-        secondary={`Зарплата: ${vacancy.salary}. Ставка: ${vacancy.wageRate}. Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}.`}
-      /></Link>
+      <Link
+        to={`/vacancy/${props.vacancy._id!}`}
+        style={{ textDecoration: 'none', color: '#000' }}
+      >
+        <ListItemText
+          primary={vacancy.title}
+          secondary={`Зарплата: ${vacancy.salary}. Ставка: ${vacancy.wageRate}. Образование: ${vacancy.education} Опыт работы: ${vacancy.experience}.`}
+        />
+      </Link>
       {user && (
         <>
           <UIModal iconType="edit">
