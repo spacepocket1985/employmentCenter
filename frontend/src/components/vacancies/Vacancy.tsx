@@ -1,3 +1,4 @@
+import React, { useCallback } from 'react';
 import {
   ListItem,
   ListItemAvatar,
@@ -16,23 +17,24 @@ import { FormAddVacancy } from './FormAddVacancy';
 import { Link } from 'react-router-dom';
 import { useDeleteVacancyMutation } from '../../store/slices/vacanciesApiSlice';
 
+
 type VacancyItemProps = {
   vacancy: VacancyType;
   vacancyStyle?: React.CSSProperties;
 };
 
-export const Vacancy = (props: VacancyItemProps): JSX.Element => {
+export const Vacancy = React.memo((props: VacancyItemProps): JSX.Element => {
   const { vacancy } = props;
 
   const [deleteVacancy] = useDeleteVacancyMutation();
 
   const user = useAppSelector((state) => state.user.name);
 
-  const onDeleteClickHandler = async (): Promise<void> => {
+  const onDeleteClickHandler = useCallback(async () => {
     if (vacancy._id) {
       deleteVacancy(vacancy._id);
     }
-  };
+  }, [deleteVacancy, vacancy._id]);
 
   return (
     <ListItem style={{ borderBottom: '1px solid grey', ...props.vacancyStyle }}>
@@ -70,4 +72,4 @@ export const Vacancy = (props: VacancyItemProps): JSX.Element => {
       )}
     </ListItem>
   );
-};
+});

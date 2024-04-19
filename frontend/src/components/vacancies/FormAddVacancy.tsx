@@ -10,7 +10,6 @@ import { UISimpleSelect } from '../ui/UISimpleSelect';
 import { vacancyValidationSchema } from '../../utils/validationSchemes';
 import {
   useAddNewVacancyMutation,
-  useGetAllVacanciesQuery,
   useUpdateVacancyMutation,
 } from '../../store/slices/vacanciesApiSlice';
 
@@ -42,7 +41,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
 
   const [addNewVacancy] = useAddNewVacancyMutation();
   const [updateVacancy] = useUpdateVacancyMutation();
-  
+
   const { education, experience } = useAppSelector((state) => state.data);
 
   const addNewVacancyHandler: SubmitHandler<VacancyType> = async ({
@@ -78,7 +77,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     } else {
       await addNewVacancy(newVacancy);
     }
-    
+
     reset();
   };
 

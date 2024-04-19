@@ -1,5 +1,5 @@
 import { Box, List } from '@mui/material';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useAppSelector } from '../../hooks/storeHooks';
 
@@ -16,7 +16,6 @@ const VacancyList = (): JSX.Element => {
   } = useGetAllVacanciesQuery();
 
   const isMutation = useAppSelector((state) => state.vacanciesApi.mutations);
-  console.log('mutation ===>  ', isMutation);
 
   useEffect(() => {
     if (isMutation && !isMutation.isLoading && !isMutation.isError) {
@@ -30,17 +29,19 @@ const VacancyList = (): JSX.Element => {
   const error = isError ? (
     <h2>{`Ошибка при загрузке вакансий. ${results?.msg}`}</h2>
   ) : null;
-  const content = !(isFetching || isError) ? (
-    <List>
-      {!vacancies ? (
-        <h2>В данный момент у нас нет свободный вакансий.</h2>
-      ) : (
-        vacancies.map((vacancy) => (
-          <Vacancy key={vacancy._id} vacancy={vacancy} />
-        ))
-      )}
-    </List>
-  ) : null;
+  const content = useCallback(() => {
+    return !(isFetching || isError) ? (
+      <List>
+        {!vacancies ? (
+          <h2>В данный момент у нас нет свободный вакансий.</h2>
+        ) : (
+          vacancies.map((vacancy) => (
+            <Vacancy key={vacancy._id} vacancy={vacancy} />
+          ))
+        )}
+      </List>
+    ) : null;
+  }, [isFetching, isError, vacancies]);
 
   return (
     <Box
@@ -51,7 +52,7 @@ const VacancyList = (): JSX.Element => {
     >
       {spinner}
       {error}
-      {content}
+      {content()}
     </Box>
   );
 };

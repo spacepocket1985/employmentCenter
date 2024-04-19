@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { Grid } from '@mui/material';
 import { BrowserRouter as Router } from 'react-router-dom';
 
