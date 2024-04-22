@@ -1,7 +1,5 @@
 import { Box, List } from '@mui/material';
-import { useCallback, useEffect } from 'react';
-
-import { useAppSelector } from '../../hooks/storeHooks';
+import { useCallback } from 'react';
 
 import { useGetAllVacanciesQuery } from '../../store/slices/vacanciesApiSlice';
 import { Spinner } from '../spinner/Spinner';
@@ -12,19 +10,10 @@ const VacancyList = (): JSX.Element => {
     data: results,
     isFetching,
     isError,
-    refetch,
   } = useGetAllVacanciesQuery();
 
-  const isMutation = useAppSelector((state) => state.vacanciesApi.mutations);
-
-  useEffect(() => {
-    if (isMutation && !isMutation.isLoading && !isMutation.isError) {
-      refetch(); // Повторный запрос списка вакансий после завершения мутации
-    }
-  }, [isMutation, refetch]);
-
   const vacancies = results?.data;
-
+  
   const spinner = isFetching ? <Spinner /> : null;
   const error = isError ? (
     <h2>{`Ошибка при загрузке вакансий. ${results?.msg}`}</h2>

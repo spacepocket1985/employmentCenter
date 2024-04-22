@@ -9,10 +9,12 @@ export const baseUrl = '/vacancies';
  export const vacanciesApiSlice = createApi({
   reducerPath: 'vacanciesApi',
   baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }), // Установка базового URL для запросов
+  tagTypes: ['Vacancies'], 
   endpoints: (builder) => ({
     // Запрос для получения всех вакансий
     getAllVacancies: builder.query<InfoFromDBType<VacancyType[]>, void>({
       query: () => baseUrl,
+      providesTags: () => ['Vacancies'] 
     }),
     getVacancy: builder.query<InfoFromDBType<VacancyType>, string>({
       query: (id) => ({
@@ -27,6 +29,7 @@ export const baseUrl = '/vacancies';
         method: 'POST',
         body: vacancy,
       }),
+      invalidatesTags: ['Vacancies'] 
     }),
     // Мутация для обновления вакансии
     updateVacancy: builder.mutation<InfoFromDBType<VacancyType>, VacancyType>({
@@ -35,6 +38,7 @@ export const baseUrl = '/vacancies';
         method: 'PATCH',
         body: vacancy,
       }),
+      invalidatesTags: ['Vacancies']
     }),
     // Мутация для удаления вакансии
     deleteVacancy: builder.mutation<InfoFromDBType<void>, string>({
@@ -42,6 +46,7 @@ export const baseUrl = '/vacancies';
         url: `/vacancies/${id}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Vacancies']
     }),
   }),
 });
