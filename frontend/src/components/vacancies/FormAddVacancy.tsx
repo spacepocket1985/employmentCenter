@@ -13,6 +13,11 @@ import {
   useUpdateVacancyMutation,
 } from '../../store/slices/vacanciesApiSlice';
 
+import {
+  handleSucssestResult,
+  handleError,
+} from '../../utils/handleRequestResult';
+
 type FormAddVacancyType = {
   title: string;
   education: string;
@@ -72,10 +77,17 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
         experience,
         _id: props.vacancy?._id,
         additionalInformation,
-      });
+      })
+        .unwrap()
+        .then(handleSucssestResult)
+        .catch(handleError);
+
       props.handleClose();
     } else {
-      await addNewVacancy(newVacancy);
+      await addNewVacancy(newVacancy)
+        .unwrap()
+        .then(handleSucssestResult)
+        .catch(handleError);
     }
 
     reset();

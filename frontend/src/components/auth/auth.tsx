@@ -8,7 +8,13 @@ import { UIFormInput } from '../ui/UIFormInput';
 
 import { loginValidationSchema } from '../../utils/validationSchemes';
 import { UserType } from '../../types/types';
-import { login } from '../../store/slices/userSlice';
+import { useLoginUserMutation } from '../../store/slices/vacanciesApiSlice';
+
+import { userActions } from '../../store/slices/userSlice';
+import {
+  handleSucssestResult,
+  handleError,
+} from '../../utils/handleRequestResult';
 
 type UserAuthPropsType = {
   handleClose?: () => void;
@@ -25,10 +31,18 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
     mode: 'onChange',
   });
 
+  const [loginUser] = useLoginUserMutation();
   const dispatch = useAppDispatch();
 
   const loginHandler: SubmitHandler<UserType> = async ({ name, password }) => {
-    await dispatch(login({ name, password }));
+    await loginUser({ name, password })
+      .unwrap()
+      .then((result) => {
+        dispatch(userActions.logInUser(result.data));
+        handleSucssestResult(result);
+      })
+      .catch(handleError);
+
     if (props.handleClose) props.handleClose();
 
     reset();

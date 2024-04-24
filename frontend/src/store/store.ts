@@ -2,7 +2,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 
 import vacanciesReducer from './slices/vacanciesSlice';
-import infoReducer from './slices/infoSlice';
 import dataReducer from './slices/dataSlice';
 import userReducer from './slices/userSlice';
 import { vacanciesApiSlice } from './slices/vacanciesApiSlice';
@@ -10,7 +9,6 @@ import { vacanciesApiSlice } from './slices/vacanciesApiSlice';
 const rootReducer = combineReducers({
   vacancies: vacanciesReducer,
   [vacanciesApiSlice.reducerPath]: vacanciesApiSlice.reducer,
-  info: infoReducer,
   data: dataReducer,
   user: userReducer,
 });

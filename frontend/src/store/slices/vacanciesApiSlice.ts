@@ -1,62 +1,69 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import { InfoFromDBType, VacancyType } from '../../types/types';
+import { InfoFromDBType, UserInfoFromDBType, UserType, VacancyType } from '../../types/types';
 
-export const serverEndPoint = 'http://10.182.1.143:5000';
-export const baseUrl = '/vacancies';
+export const serverEndPoint = 'http://10.182.1.143:5000/';
+export const vacancyUrl = '/vacancies';
+export const authUrl = '/auth/login';
 
-// Создание API Slice с использованием RTK Query
- export const vacanciesApiSlice = createApi({
+
+export const vacanciesApiSlice = createApi({
   reducerPath: 'vacanciesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }), // Установка базового URL для запросов
-  tagTypes: ['Vacancies'], 
+  baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }), 
+  tagTypes: ['Vacancies'],
   endpoints: (builder) => ({
-    // Запрос для получения всех вакансий
+
     getAllVacancies: builder.query<InfoFromDBType<VacancyType[]>, void>({
-      query: () => baseUrl,
-      providesTags: () => ['Vacancies'] 
+      query: () => vacancyUrl,
+      providesTags: () => ['Vacancies'],
     }),
     getVacancy: builder.query<InfoFromDBType<VacancyType>, string>({
       query: (id) => ({
-        url: `/vacancies/${id}`,
+        url: `${vacancyUrl}/${id}`,
         method: 'GET',
       }),
     }),
-    // Мутация для добавления новой вакансии
+
     addNewVacancy: builder.mutation<InfoFromDBType<VacancyType>, VacancyType>({
       query: (vacancy) => ({
-        url: baseUrl,
+        url: vacancyUrl,
         method: 'POST',
         body: vacancy,
       }),
-      invalidatesTags: ['Vacancies'] 
+      invalidatesTags: ['Vacancies'],
     }),
-    // Мутация для обновления вакансии
+
     updateVacancy: builder.mutation<InfoFromDBType<VacancyType>, VacancyType>({
       query: (vacancy) => ({
-        url: `${baseUrl}/${vacancy._id}`,
+        url: `${vacancyUrl}/${vacancy._id}`,
         method: 'PATCH',
         body: vacancy,
       }),
-      invalidatesTags: ['Vacancies']
+      invalidatesTags: ['Vacancies'],
     }),
-    // Мутация для удаления вакансии
+
     deleteVacancy: builder.mutation<InfoFromDBType<void>, string>({
       query: (id) => ({
-        url: `/vacancies/${id}`,
+        url: `${vacancyUrl}/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Vacancies']
+      invalidatesTags: ['Vacancies'],
+    }),
+    loginUser: builder.mutation<InfoFromDBType<UserInfoFromDBType>, UserType>({
+      query: (user) => ({
+        url: authUrl,
+        method: 'POST',
+        body: user,
+      }),
     }),
   }),
 });
 
-// Экспорт хуков для использования в компонентах
 export const {
   useGetAllVacanciesQuery,
   useGetVacancyQuery,
   useAddNewVacancyMutation,
   useUpdateVacancyMutation,
   useDeleteVacancyMutation,
+  useLoginUserMutation
 } = vacanciesApiSlice;
-

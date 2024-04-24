@@ -1,13 +1,12 @@
-import {  createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { InfoFromDBType, VacancyType } from '../../types/types';
-import { infoActions } from './infoSlice';
+
+import { serverEndPoint } from './vacanciesApiSlice';
 
 export type VacanciesStateType = {
   vacancies: VacancyType[];
 };
-
-export const serverEndPoint = 'http://10.182.1.143:5000';
 
 type AsyncThunkParams = {
   url: string;
@@ -24,8 +23,7 @@ const initialState: VacanciesStateType = {
 const vacanciesSlice = createSlice({
   name: 'vacancies',
   initialState,
-  reducers: {
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder.addCase(getAllVacanciesFromDB.fulfilled, (state, action) => {
       if (action.payload) {
@@ -76,14 +74,10 @@ export const handleAsyncThunk = async <T>(
 
     const responseData: InfoFromDBType<T> = await response.json();
 
-    thunkAPI.dispatch(infoActions.clearError());
-    thunkAPI.dispatch(infoActions.setSuccess(params.successMessage));
-    thunkAPI.dispatch(infoActions.setLoading(false));
-
     return responseData.data;
   } catch (error) {
     if (error instanceof Error) {
-      thunkAPI.dispatch(infoActions.setError(params.errorMessage));
+      throw new Error(error.message);
     }
     return [] as T;
   }
@@ -147,8 +141,7 @@ export const updateVacancyFromDB = createAsyncThunk(
           education: vacancy.education,
           experience: vacancy.experience,
           salary: vacancy.salary,
-          additionalInformation: vacancy.additionalInformation
-          
+          additionalInformation: vacancy.additionalInformation,
         },
         successMessage: 'Вакансия успешно обновлена',
         errorMessage: 'Ошибка при обновлении вакансии',

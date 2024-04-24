@@ -1,11 +1,7 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { handleAsyncThunk, serverEndPoint } from './vacanciesSlice';
-import { UserType } from '../../types/types';
-
-type UserInfoFromDBType = {
-  name: string | null;
-  token: string | null;
-};
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { handleAsyncThunk } from './vacanciesSlice';
+import { UserInfoFromDBType, UserType } from '../../types/types';
+import { serverEndPoint } from './vacanciesApiSlice';
 
 const initialState: UserInfoFromDBType = {
   name: null,
@@ -19,6 +15,10 @@ const userSlice = createSlice({
     logOutUser: (state) => {
       state.name = null;
       state.token = null;
+    },
+    logInUser: (state, action: PayloadAction<UserInfoFromDBType>) => {
+      state.name = action.payload.name;
+      state.token = action.payload.token;
     },
   },
   extraReducers: (builder) => {

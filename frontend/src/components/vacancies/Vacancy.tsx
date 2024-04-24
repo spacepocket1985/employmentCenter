@@ -16,7 +16,10 @@ import { UIModal } from '../ui/UIModal';
 import { FormAddVacancy } from './FormAddVacancy';
 import { Link } from 'react-router-dom';
 import { useDeleteVacancyMutation } from '../../store/slices/vacanciesApiSlice';
-
+import {
+  handleSucssestResult,
+  handleError,
+} from '../../utils/handleRequestResult';
 
 type VacancyItemProps = {
   vacancy: VacancyType;
@@ -32,7 +35,10 @@ export const Vacancy = React.memo((props: VacancyItemProps): JSX.Element => {
 
   const onDeleteClickHandler = useCallback(async () => {
     if (vacancy._id) {
-      deleteVacancy(vacancy._id);
+      await deleteVacancy(vacancy._id)
+        .unwrap()
+        .then(handleSucssestResult)
+        .catch(handleError);
     }
   }, [deleteVacancy, vacancy._id]);
 

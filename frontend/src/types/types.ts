@@ -13,12 +13,19 @@ export type UserType = {
   password: string;
 };
 
-export type VacancyInfoFromDBType = {
-  msg: string;
-  vacancies: Array<VacancyType> | VacancyType;
+export type UserInfoFromDBType = {
+  name: string | null;
+  token: string | null;
 };
 
 export type InfoFromDBType<T> = {
   msg: string;
   data: T;
+};
+
+export type ErrorDataType = {
+  status: number;
+  data: {
+    message: string;
+  };
 };
