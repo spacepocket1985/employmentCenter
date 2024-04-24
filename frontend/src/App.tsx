@@ -18,25 +18,6 @@ const App = (): JSX.Element => {
   
   const user = useAppSelector((state) => state.user.name);
 
-  // useEffect(() => {
-  //   const fetchVacancies = async () => {
-  //     dispatch(getAllVacanciesFromDB());
-  //   };
-
-  //   fetchVacancies();
-  // }, [dispatch]);
-
-  // const { successMessage, errorMessage } = useAppSelector(
-  //   (state) => state.info
-  // );
-
-  // useEffect(() => {
-  //   if (successMessage)
-  //     toast.info(successMessage, { position: 'top-left', autoClose: 2000 });
-  //   if (errorMessage)
-  //     toast.error(errorMessage, { position: 'top-left', autoClose: 2000 });
-  // }, [successMessage, errorMessage]);
-
   return (
     <Router>
       <Header />
