@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { Vacancy } from "../models/vacancy.model";
-import { StatusCodes } from "http-status-codes";
+import { Request, Response } from 'express';
+import { Vacancy } from '../models/vacancy.model';
+import { StatusCodes } from 'http-status-codes';
 
 class VacancyController {
   createVacancy = async (req: Request, res: Response) => {
@@ -8,24 +8,27 @@ class VacancyController {
 
     if (!title || !salary || !education || !wageRate) {
       throw new Error(
-        "Title, salary, education and wage rate must be provided."
+        'Title, salary, education and wage rate must be provided.'
       );
     }
- 
+
     const newVacancy = await Vacancy.create(req.body);
-    console.log("newVacancy ", newVacancy);
+
     res
       .status(StatusCodes.CREATED)
-      .json({ data: newVacancy, msg: "Vacancy has been created!" });
+      .json({
+        data: newVacancy,
+        msg: `Вакансия  - ${title}, успешно создана!`,
+      });
   };
 
   // get all vacancies
   getVacancies = async (req: Request, res: Response) => {
-    const vacancies = await Vacancy.find({}).sort("-createdAt");
+    const vacancies = await Vacancy.find({}).sort('-createdAt');
 
     res
       .status(StatusCodes.OK)
-      .json({ data: vacancies, msg: "All vacancies have been fetched!" });
+      .json({ data: vacancies, msg: 'All vacancies have been fetched!' });
   };
 
   //Get a single vacancy
@@ -34,10 +37,10 @@ class VacancyController {
     const vacancy = await Vacancy.findById({ _id: id });
 
     if (!vacancy) {
-      throw new Error("Requested vacancy not found!");
+      throw new Error('Requested vacancy not found!');
     }
 
-    res.status(StatusCodes.OK).json({ data: vacancy, msg: "Success" });
+    res.status(StatusCodes.OK).json({ data: vacancy, msg: 'Success' });
   };
 
   // update vacancy
@@ -52,12 +55,12 @@ class VacancyController {
     );
 
     if (!updatedVacancy) {
-      throw new Error("Requested vacancy not found!");
+      throw new Error('Requested vacancy not found!');
     }
 
     res
       .status(StatusCodes.OK)
-      .json({ data: updatedVacancy, msg: "Vacancy has been updated" });
+      .json({ data: updatedVacancy, msg: 'Вакансия успешно создана!' });
   };
 
   // delete vacancy
@@ -66,12 +69,12 @@ class VacancyController {
     const deletedVacancy = await Vacancy.findByIdAndDelete({ _id: id });
 
     if (!deletedVacancy) {
-      throw new Error("Requested vacancy not found!");
+      throw new Error('Requested vacancy not found!');
     }
 
     res
       .status(StatusCodes.OK)
-      .json({ data: deletedVacancy, msg: "Vacancy has been deleted" });
+      .json({ data: deletedVacancy, msg: 'Вакансия успешно удалена!' });
   };
 }
 

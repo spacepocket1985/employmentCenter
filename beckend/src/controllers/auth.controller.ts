@@ -61,12 +61,12 @@ class AuthController {
       } else {
         res
           .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "Password mismatch. Try again." });
+          .json({ message: "Пароль не верен. Попробуйте еще раз!" });
       }
     } else {
       res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: `User with this name (${name}) not found` });
+        .json({ message: `Пользователь с именем (${name}) не найден!` });
     }
   };
 }
