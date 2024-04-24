@@ -27,8 +27,6 @@ class AuthController {
         password: hashedPassword,
       });
 
-      console.log("new User ", newUser);
-
       res
         .status(StatusCodes.CREATED)
         .json({ user: newUser, msg: "New user has been created!" });

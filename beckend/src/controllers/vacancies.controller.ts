@@ -1,9 +1,15 @@
 import { Request, Response } from 'express';
-import { Vacancy } from '../models/vacancy.model';
+import { Vacancy, VacancyType } from '../models/vacancy.model';
 import { StatusCodes } from 'http-status-codes';
+import { RequestWithBody, RequestWithParams } from '../types/types';
+import { vacancyCreateModel } from '../models/vacancyCreateModel';
+import { vacancyViewModel } from '../models/vacancyViewModel';
 
 class VacancyController {
-  createVacancy = async (req: Request, res: Response) => {
+  createVacancy = async (
+    req: RequestWithBody<vacancyCreateModel>,
+    res: Response<vacancyViewModel<VacancyType>>
+  ) => {
     const { title, salary, wageRate, education } = req.body;
 
     if (!title || !salary || !education || !wageRate) {
@@ -14,16 +20,17 @@ class VacancyController {
 
     const newVacancy = await Vacancy.create(req.body);
 
-    res
-      .status(StatusCodes.CREATED)
-      .json({
-        data: newVacancy,
-        msg: `Вакансия  - ${title}, успешно создана!`,
-      });
+    res.status(StatusCodes.CREATED).json({
+      data: newVacancy,
+      msg: `Вакансия  - ${title}, успешно создана!`,
+    });
   };
 
   // get all vacancies
-  getVacancies = async (req: Request, res: Response) => {
+  getVacancies = async (
+    req: Request,
+    res: Response<vacancyViewModel<VacancyType[]>>
+  ) => {
     const vacancies = await Vacancy.find({}).sort('-createdAt');
 
     res
@@ -32,7 +39,10 @@ class VacancyController {
   };
 
   //Get a single vacancy
-  getSingleVacancy = async (req: Request, res: Response) => {
+  getSingleVacancy = async (
+    req: RequestWithParams<{ id: string }>,
+    res: Response<vacancyViewModel<VacancyType>>
+  ) => {
     const { id } = req.params;
     const vacancy = await Vacancy.findById({ _id: id });
 
@@ -44,7 +54,10 @@ class VacancyController {
   };
 
   // update vacancy
-  updateVacancy = async (req: Request, res: Response) => {
+  updateVacancy = async (
+    req: RequestWithParams<{ id: string }>,
+    res: Response<vacancyViewModel<VacancyType>>
+  ) => {
     const { id } = req.params;
     const updatedVacancy = await Vacancy.findByIdAndUpdate(
       { _id: id },
@@ -64,7 +77,10 @@ class VacancyController {
   };
 
   // delete vacancy
-  deleteVacancy = async (req: Request, res: Response) => {
+  deleteVacancy = async (
+    req: RequestWithParams<{ id: string }>,
+    res: Response<vacancyViewModel<VacancyType>>
+  ) => {
     const { id } = req.params;
     const deletedVacancy = await Vacancy.findByIdAndDelete({ _id: id });
 
