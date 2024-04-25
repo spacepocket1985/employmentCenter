@@ -8,7 +8,7 @@ import vacancyRouter from './routes/vacancy.routes';
 import authRouter from './routes/auth.routes';
 import { MyPassport } from './middleware/passport';
 
-const app = express();
+export const app = express();
 
 app.use(cors());
 app.use(express.json());

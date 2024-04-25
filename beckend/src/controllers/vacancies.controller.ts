@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { Vacancy, VacancyType } from '../models/vacancy.model';
 import { StatusCodes } from 'http-status-codes';
-import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody } from '../types/types';
+import {
+  RequestWithBody,
+  RequestWithParams,
+  RequestWithParamsAndBody,
+} from '../types/types';
 import { VacancyCreateModel } from '../models/vacancyCreateModel';
 import { VacancyViewModel } from '../models/vacancyViewModel';
 
@@ -47,10 +51,12 @@ class VacancyController {
     const vacancy = await Vacancy.findById({ _id: id });
 
     if (!vacancy) {
-      throw new Error('Requested vacancy not found!');
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested vacancy not found!' });
+    } else {
+      res.status(StatusCodes.OK).json({ data: vacancy, msg: 'Success' });
     }
-
-    res.status(StatusCodes.OK).json({ data: vacancy, msg: 'Success' });
   };
 
   // update vacancy
@@ -68,12 +74,13 @@ class VacancyController {
     );
 
     if (!updatedVacancy) {
-      throw new Error('Requested vacancy not found!');
-    }
-
-    res
-      .status(StatusCodes.OK)
-      .json({ data: updatedVacancy, msg: 'Вакансия успешно обновлена!' });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested vacancy not found!' });
+    } else
+      res
+        .status(StatusCodes.OK)
+        .json({ data: updatedVacancy, msg: 'Вакансия успешно обновлена!' });
   };
 
   // delete vacancy

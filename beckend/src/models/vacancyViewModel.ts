@@ -1,4 +1,4 @@
 export type VacancyViewModel<T> = {
-  data: T;
+  data?: T;
   msg: string;
 };
