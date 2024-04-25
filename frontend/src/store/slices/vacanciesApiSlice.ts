@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { InfoFromDBType, UserInfoFromDBType, UserType, VacancyType } from '../../types/types';
 
-export const serverEndPoint = 'http://10.182.1.143:5000/';
+export const serverEndPoint = 'http://localhost:5000/';
 export const vacancyUrl = '/vacancies';
 export const authUrl = '/auth/login';
 

@@ -26,6 +26,6 @@ export type InfoFromDBType<T> = {
 export type ErrorDataType = {
   status: number;
   data: {
-    message: string;
+    msg: string;
   };
 };

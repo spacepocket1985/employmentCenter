@@ -9,7 +9,7 @@ export const handleSucssestResult = <T>(result: InfoFromDBType<T>): void => {
 };
 
 export const handleError = (error: ErrorDataType): void => {
-  toast.error(`${error.data.message}. Код ошибки - ${error.status}`, {
+  toast.error(`${error.data.msg}. Код ошибки - ${error.status}`, {
     position: 'top-left',
     autoClose: 2000,
   });
