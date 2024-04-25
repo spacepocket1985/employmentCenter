@@ -73,7 +73,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ data: updatedVacancy, msg: 'Вакансия успешно создана!' });
+      .json({ data: updatedVacancy, msg: 'Вакансия успешно обновлена!' });
   };
 
   // delete vacancy

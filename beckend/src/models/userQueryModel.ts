@@ -1,4 +1,4 @@
-export type UserGetModel = {
+export type UserQueryModel = {
   name: string;
   password: string;
 };

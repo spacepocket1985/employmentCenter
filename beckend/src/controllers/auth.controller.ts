@@ -9,7 +9,7 @@ import keys from "../config/keys";
 import { RequestWithBody } from "../types/types";
 import { UserCreateModel } from "../models/userCreateModel";
 import { UserViewModel } from "../models/userViewModel";
-import { UserGetModel } from "../models/userGetModel";
+import { UserQueryModel } from "../models/userQueryModel";
 
 
 class AuthController {
@@ -38,7 +38,7 @@ class AuthController {
     }
   };
 
-  login = async (req: RequestWithBody<UserGetModel>, res: Response<UserViewModel<UserWithToken>>) => {
+  login = async (req: RequestWithBody<UserQueryModel>, res: Response<UserViewModel<UserWithToken>>) => {
     const { name, password } = req.body;
 
     const candidate = await User.findOne({ name });
