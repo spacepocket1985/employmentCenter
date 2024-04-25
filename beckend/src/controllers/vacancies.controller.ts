@@ -17,16 +17,16 @@ class VacancyController {
     const { title, salary, wageRate, education } = req.body;
 
     if (!title || !salary || !education || !wageRate) {
-      throw new Error(
-        'Title, salary, education and wage rate must be provided.'
-      );
+      res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ msg: 'Not enough information to create a vacancy!' });
     }
 
     const newVacancy = await Vacancy.create(req.body);
 
     res.status(StatusCodes.CREATED).json({
       data: newVacancy,
-      msg: `Вакансия  - ${title}, успешно создана!`,
+      msg: `Vacancy - ${title}, created successfully!`,
     });
   };
 
@@ -80,7 +80,7 @@ class VacancyController {
     } else
       res
         .status(StatusCodes.OK)
-        .json({ data: updatedVacancy, msg: 'Вакансия успешно обновлена!' });
+        .json({ data: updatedVacancy, msg: 'Vacancy successfully! updated ' });
   };
 
   // delete vacancy
@@ -97,7 +97,7 @@ class VacancyController {
 
     res
       .status(StatusCodes.OK)
-      .json({ data: deletedVacancy, msg: 'Вакансия успешно удалена!' });
+      .json({ data: deletedVacancy, msg: ' Vacancy successfully deleted!' });
   };
 }
 
