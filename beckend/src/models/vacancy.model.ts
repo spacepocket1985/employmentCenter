@@ -1,7 +1,7 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, ObjectId } from 'mongoose';
 
 export type VacancyType = {
-  id: string;
+  _id: ObjectId;
   title: string;
   wageRate: number;
   education: string;

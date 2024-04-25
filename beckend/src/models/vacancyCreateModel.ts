@@ -1,4 +1,4 @@
-export type vacancyCreateModel = {
+export type VacancyCreateModel = {
   title: string;
   wageRate: number;
   education: string;

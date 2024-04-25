@@ -1,14 +1,19 @@
 import { hash, compare } from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
 
-import { Request, Response } from "express";
+import { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { User } from "../models/user.model";
+import { User, UserType, UserWithToken } from "../models/user.model";
 import keys from "../config/keys";
+import { RequestWithBody } from "../types/types";
+import { UserCreateModel } from "../models/userCreateModel";
+import { UserViewModel } from "../models/userViewModel";
+import { UserGetModel } from "../models/userGetModel";
+
 
 class AuthController {
-  register = async (req: Request, res: Response) => {
+  register = async (req: RequestWithBody<UserCreateModel>, res: Response<UserViewModel<UserType>>) => {
     const { name, password } = req.body;
 
     if (!name || !password) {
@@ -29,11 +34,11 @@ class AuthController {
 
       res
         .status(StatusCodes.CREATED)
-        .json({ user: newUser, msg: "New user has been created!" });
+        .json({ data: newUser, msg: "New user has been created!" });
     }
   };
 
-  login = async (req: Request, res: Response) => {
+  login = async (req: RequestWithBody<UserGetModel>, res: Response<UserViewModel<UserWithToken>>) => {
     const { name, password } = req.body;
 
     const candidate = await User.findOne({ name });
@@ -59,12 +64,12 @@ class AuthController {
       } else {
         res
           .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "Пароль не верен. Попробуйте еще раз!" });
+          .json({ msg: "Пароль не верен. Попробуйте еще раз!" });
       }
     } else {
       res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: `Пользователь с именем (${name}) не найден!` });
+        .json({ msg: `Пользователь с именем (${name}) не найден!` });
     }
   };
 }
