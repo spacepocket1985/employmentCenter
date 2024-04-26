@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import request from 'supertest';
-import { app } from '../..';
+import { app } from '../../app';
+
 import { VacancyType } from '../../models/vacancy.model';
 import { VacancyCreateModel } from '../../models/vacancyCreateModel';
-import { VacancyViewModel } from '../../models/vacancyViewModel';
 
 describe('/vacancies', () => {
   it('should return 200 and check for data and msg keys', async () => {
