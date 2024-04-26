@@ -18,8 +18,8 @@ class VacancyController {
 
     if (!title || !salary || !education || !wageRate) {
       res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ msg: 'Not enough information to create a vacancy!' });
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ msg: 'Not enough information to create a vacancy!' });
     }
 
     const newVacancy = await Vacancy.create(req.body);
@@ -92,12 +92,14 @@ class VacancyController {
     const deletedVacancy = await Vacancy.findByIdAndDelete({ _id: id });
 
     if (!deletedVacancy) {
-      throw new Error('Requested vacancy not found!');
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested vacancy not found!' });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ data: deletedVacancy, msg: ' Vacancy successfully deleted!' });
     }
-
-    res
-      .status(StatusCodes.OK)
-      .json({ data: deletedVacancy, msg: ' Vacancy successfully deleted!' });
   };
 }
 
