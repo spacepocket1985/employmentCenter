@@ -1,5 +1,5 @@
 const keys = {
-  mongoURI: "mongodb://localhost:27017/tec2Center",
+  mongoURI: process.env.mongoURI || "mongodb://localhost:27017/tec2Center",
   jwt: "tec2-center-jwt",
 };
 

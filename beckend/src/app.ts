@@ -7,7 +7,6 @@ import passport from 'passport';
 import vacancyRouter from './routes/vacancy.routes';
 import authRouter from './routes/auth.routes';
 import { MyPassport } from './middleware/passport';
-import { startDB } from './utils/startDB';
 
 export const app = express();
 
@@ -22,8 +21,6 @@ export const port = process.env.PORT || 5000;
 app.get('/', (req, res) => {
   res.send('<h1>List of vacancies using typescript</h1>');
 });
-
-startDB();
 
 // routes
 app.use('/vacancies', vacancyRouter);

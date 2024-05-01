@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import keys from "./keys";
 
-const connectDB = (url: any):void => {
-  mongoose.connect(keys.mongoURI);
+const connectDB = (url: string): void => {
+  mongoose.connect(url);
 };
 
 export default connectDB;
