@@ -1,3 +1,6 @@
+// Data Model Layer:
+// Description: Defines the data structure for vacancies and exports the Vacancy model.
+
 import { Schema, model, ObjectId } from 'mongoose';
 
 export type VacancyType = {

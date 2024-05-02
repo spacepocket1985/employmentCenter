@@ -1,54 +1,42 @@
-import { Request, Response } from 'express';
-import { Vacancy, VacancyType } from '../models/vacancy.model';
+// Controller Layer (Presentation Layer):
+// Description: Processes requests and interacts with the service to manage vacancies
+
+import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { VacancyType } from '../models/vacancy.model';
+import { VacancyCreateModel } from '../models/vacancyCreateModel';
+import { VacancyViewModel } from '../models/vacancyViewModel';
+import { vacancyService } from '../services/vacancy.service';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
 } from '../types/types';
-import { VacancyCreateModel } from '../models/vacancyCreateModel';
-import { VacancyViewModel } from '../models/vacancyViewModel';
 
 class VacancyController {
-  createVacancy = async (
+  async createVacancy(
     req: RequestWithBody<VacancyCreateModel>,
     res: Response<VacancyViewModel<VacancyType>>
-  ) => {
-    const { title, salary, wageRate, education } = req.body;
+  ): Promise<void> {
+    const newVacancy = await vacancyService.createVacancy(req.body);
+    res
+      .status(StatusCodes.CREATED)
+      .json({ data: newVacancy, msg: 'Vacancy successfully created!' });
+  }
 
-    if (!title || !salary || !education || !wageRate) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: 'Not enough information to create a vacancy!' });
-    }
-
-    const newVacancy = await Vacancy.create(req.body);
-
-    res.status(StatusCodes.CREATED).json({
-      data: newVacancy,
-      msg: `Vacancy - ${title}, created successfully!`,
-    });
-  };
-
-  // get all vacancies
-  getVacancies = async (
-    req: Request,
-    res: Response<VacancyViewModel<VacancyType[]>>
-  ) => {
-    const vacancies = await Vacancy.find({}).sort('-createdAt');
-
+  async getAllVacancies(res: Response<VacancyViewModel<VacancyType[]>>): Promise<void> {
+    const vacancies = await vacancyService.getAllVacancies();
     res
       .status(StatusCodes.OK)
       .json({ data: vacancies, msg: 'All vacancies have been fetched!' });
-  };
+  }
 
-  //Get a single vacancy
-  getSingleVacancy = async (
+  async getSingleVacancy(
     req: RequestWithParams<{ id: string }>,
     res: Response<VacancyViewModel<VacancyType>>
-  ) => {
+  ): Promise<void> {
     const { id } = req.params;
-    const vacancy = await Vacancy.findById({ _id: id });
+    const vacancy = await vacancyService.getSingleVacancy(id);
 
     if (!vacancy) {
       res
@@ -57,39 +45,32 @@ class VacancyController {
     } else {
       res.status(StatusCodes.OK).json({ data: vacancy, msg: 'Success' });
     }
-  };
+  }
 
-  // update vacancy
-  updateVacancy = async (
+  async updateVacancy(
     req: RequestWithParamsAndBody<{ id: string }, VacancyType>,
     res: Response<VacancyViewModel<VacancyType>>
-  ) => {
+  ): Promise<void> {
     const { id } = req.params;
-    const updatedVacancy = await Vacancy.findByIdAndUpdate(
-      { _id: id },
-      req.body,
-      {
-        new: true,
-      }
-    );
+    const updatedVacancy = await vacancyService.updateVacancy(id, req.body);
 
     if (!updatedVacancy) {
       res
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'Requested vacancy not found!' });
-    } else
+    } else {
       res
         .status(StatusCodes.OK)
-        .json({ data: updatedVacancy, msg: 'Vacancy successfully! updated ' });
-  };
+        .json({ data: updatedVacancy, msg: 'Vacancy successfully updated!' });
+    }
+  }
 
-  // delete vacancy
-  deleteVacancy = async (
+  async deleteVacancy(
     req: RequestWithParams<{ id: string }>,
     res: Response<VacancyViewModel<VacancyType>>
-  ) => {
+  ): Promise<void> {
     const { id } = req.params;
-    const deletedVacancy = await Vacancy.findByIdAndDelete({ _id: id });
+    const deletedVacancy = await vacancyService.deleteVacancy(id);
 
     if (!deletedVacancy) {
       res
@@ -98,9 +79,9 @@ class VacancyController {
     } else {
       res
         .status(StatusCodes.OK)
-        .json({ data: deletedVacancy, msg: ' Vacancy successfully deleted!' });
+        .json({ data: deletedVacancy, msg: 'Vacancy successfully deleted!' });
     }
-  };
+  }
 }
 
 export const vacancyController = new VacancyController();

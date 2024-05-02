@@ -5,7 +5,7 @@ import { vacancyController } from "../controllers/vacancies.controller";
 
 const router = express.Router();
 
-router.route("/").post(vacancyController.createVacancy).get(vacancyController.getVacancies);
+router.route("/").post(vacancyController.createVacancy).get(vacancyController.getAllVacancies);
 
 // Example with Passport
 // .get(
