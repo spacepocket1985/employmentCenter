@@ -1,7 +1,7 @@
 // Controller Layer (Presentation Layer):
 // Description: Processes requests and interacts with the service to manage vacancies
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { VacancyType } from '../models/vacancy.model';
 import { VacancyCreateModel } from '../models/vacancyCreateModel';
@@ -24,7 +24,10 @@ class VacancyController {
       .json({ data: newVacancy, msg: 'Vacancy successfully created!' });
   }
 
-  async getAllVacancies(res: Response<VacancyViewModel<VacancyType[]>>): Promise<void> {
+  async getAllVacancies(
+    req: Request,
+    res: Response<VacancyViewModel<VacancyType[]>>
+  ): Promise<void> {
     const vacancies = await vacancyService.getAllVacancies();
     res
       .status(StatusCodes.OK)

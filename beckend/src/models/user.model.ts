@@ -1,14 +1,20 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export type UserType = {
   name: string;
   password: string;
-}
+};
+
+export type UserTypeForToken = {
+  name: string;
+  password: string;
+  id: Types.ObjectId;
+};
 
 export type UserWithToken = {
   name: string;
   token: string;
-}
+};
 
 const userSchema = new Schema<UserType>({
   name: {

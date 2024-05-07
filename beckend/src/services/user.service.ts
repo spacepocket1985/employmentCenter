@@ -4,7 +4,7 @@
 import { hash, compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 
-import { User } from '../models/user.model';
+import { User, UserTypeForToken } from '../models/user.model';
 import keys from '../config/keys';
 
 class UserService {
@@ -45,6 +45,23 @@ class UserService {
     );
 
     return { token: `Bearer ${token}`, name: candidate.name };
+  }
+  async checkCredentials(name: string, password: string) {
+    
+    const candidate = await User.findOne({ name });
+
+    if (!candidate) {
+      throw new Error(`User with name (${name}) not found.`);
+    }
+
+    const passwordResult = await compare(password, candidate.password);
+    if (!passwordResult) {
+      throw new Error('Incorrect password. Please try again.');
+    }
+
+    const verifiedUser: UserTypeForToken  = { name, password, id: candidate._id };
+
+    return verifiedUser;
   }
 }
 

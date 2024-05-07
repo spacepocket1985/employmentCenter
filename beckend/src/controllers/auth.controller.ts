@@ -9,6 +9,7 @@ import { UserQueryModel } from '../models/userQueryModel';
 import { UserViewModel } from '../models/userViewModel';
 import { UserType, UserWithToken } from '../models/user.model';
 import { userService } from '../services/user.service';
+import { jwtService } from '../services/jwt.service';
 
 class AuthController {
   register = async (
@@ -35,10 +36,10 @@ class AuthController {
     const { name, password } = req.body;
 
     try {
-      const userWithToken = await userService.loginUser(name, password);
-      res
-        .status(StatusCodes.OK)
-        .json({ data: userWithToken, msg: 'Success login' });
+      const user = await userService.checkCredentials(name, password);
+
+      const token = await jwtService.createJWT(user);
+      res.status(StatusCodes.OK).json({ data: token, msg: 'Success login' });
     } catch (error) {
       if (error instanceof Error)
         res.status(StatusCodes.UNAUTHORIZED).json({ msg: error.message });
