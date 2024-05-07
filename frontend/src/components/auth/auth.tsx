@@ -15,6 +15,7 @@ import {
   handleSucssestResult,
   handleError,
 } from '../../utils/handleRequestResult';
+import { userStorage } from '../../utils/userStorage';
 
 type UserAuthPropsType = {
   handleClose?: () => void;
@@ -39,6 +40,7 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
       .unwrap()
       .then((result) => {
         dispatch(userActions.logInUser(result.data));
+        userStorage.saveUserInLocalStorage(result.data)
         handleSucssestResult(result);
       })
       .catch(handleError);

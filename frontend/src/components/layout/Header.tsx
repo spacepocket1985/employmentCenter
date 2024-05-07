@@ -55,7 +55,14 @@ export const Header = (): JSX.Element => {
 
           {user ? (
             <IconButton aria-label="logOut" onClick={onLogOutClickHandler}>
-              <LogoutIcon style={{ color: '#fff' }} />
+              <Typography
+                variant="subtitle1"
+                component="span"
+                style={{ color: '#fff' }}
+              >
+                {`Hello, ${user}`}
+              </Typography>
+              <LogoutIcon style={{ color: '#fff',marginLeft:'5px' }} />
               <Typography
                 variant="subtitle1"
                 component="span"
