@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.route("/register").post(userAuthController.register)
 router.route("/login").post(userAuthController.login)
+router.route("/findUser").get(userAuthController.findUser)
 
 
 

@@ -1,9 +1,9 @@
 // Controller Layer (Presentation Layer):
 // Description: Processes requests and interacts with the service to manage user authentication.
 
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { RequestWithBody } from '../types/types';
+import { RequestWithBody} from '../types/types';
 import { UserCreateModel } from '../models/userCreateModel';
 import { UserQueryModel } from '../models/userQueryModel';
 import { UserViewModel } from '../models/userViewModel';
@@ -43,6 +43,26 @@ class AuthController {
     } catch (error) {
       if (error instanceof Error)
         res.status(StatusCodes.UNAUTHORIZED).json({ msg: error.message });
+    }
+  };
+  findUser = async (
+    req: Request,
+    res: Response<UserViewModel<UserType>>
+  ) => {
+    const token = req.headers.authorization?.split(' ')[1]; 
+    if (token) {
+      const userId = await jwtService.getUserIdByToken(token);
+      console.log('userId', userId)
+      if (userId) {
+        const userData = await userService.findUserById(userId);
+        res
+          .status(StatusCodes.OK)
+          .json({ data: userData, msg: 'We have a user' });
+      }
+    } else {
+      res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ msg: 'Unauthorized' });
     }
   };
 }

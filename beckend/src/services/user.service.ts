@@ -6,6 +6,8 @@ import { sign } from 'jsonwebtoken';
 
 import { User, UserTypeForToken } from '../models/user.model';
 import keys from '../config/keys';
+import { Types } from 'mongoose';
+
 
 class UserService {
   async registerUser(name: string, password: string) {
@@ -47,7 +49,6 @@ class UserService {
     return { token: `Bearer ${token}`, name: candidate.name };
   }
   async checkCredentials(name: string, password: string) {
-    
     const candidate = await User.findOne({ name });
 
     if (!candidate) {
@@ -59,9 +60,21 @@ class UserService {
       throw new Error('Incorrect password. Please try again.');
     }
 
-    const verifiedUser: UserTypeForToken  = { name, password, id: candidate._id };
+    const verifiedUser: UserTypeForToken = {
+      name,
+      password,
+      id: candidate._id,
+    };
 
     return verifiedUser;
+  }
+
+  async findUserById(_id: any) {
+    const candidate = await User.findOne({ _id });
+    if (!candidate) {
+      throw new Error(`User with id (${_id}) not found.`);
+    }
+    return { name: candidate.name, password: candidate.password };
   }
 }
 
