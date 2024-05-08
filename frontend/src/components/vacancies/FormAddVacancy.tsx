@@ -11,7 +11,7 @@ import { vacancyValidationSchema } from '../../utils/validationSchemes';
 import {
   useAddNewVacancyMutation,
   useUpdateVacancyMutation,
-} from '../../store/slices/vacanciesApiSlice';
+} from '../../store/slices/apiSlice';
 
 import {
   handleSucssestResult,

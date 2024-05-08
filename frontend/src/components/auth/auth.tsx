@@ -8,7 +8,7 @@ import { UIFormInput } from '../ui/UIFormInput';
 
 import { loginValidationSchema } from '../../utils/validationSchemes';
 import { UserType } from '../../types/types';
-import { useLoginUserMutation } from '../../store/slices/vacanciesApiSlice';
+import { useLoginUserMutation } from '../../store/slices/apiSlice';
 
 import { userActions } from '../../store/slices/userSlice';
 import {
@@ -40,7 +40,7 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
       .unwrap()
       .then((result) => {
         dispatch(userActions.logInUser(result.data));
-        userStorage.saveUserInLocalStorage(result.data)
+        userStorage.saveUserInLocalStorage(result.data);
         handleSucssestResult(result);
       })
       .catch(handleError);

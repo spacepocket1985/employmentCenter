@@ -4,7 +4,7 @@ import { combineReducers } from 'redux';
 import vacanciesReducer from './slices/vacanciesSlice';
 import dataReducer from './slices/dataSlice';
 import userReducer from './slices/userSlice';
-import { vacanciesApiSlice } from './slices/vacanciesApiSlice';
+import { vacanciesApiSlice } from './slices/apiSlice';
 
 const rootReducer = combineReducers({
   vacancies: vacanciesReducer,

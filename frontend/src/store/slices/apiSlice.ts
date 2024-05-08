@@ -1,19 +1,23 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import { InfoFromDBType, UserInfoFromDBType, UserType, VacancyType } from '../../types/types';
+import {
+  InfoFromDBType,
+  UserInfoFromDBType,
+  UserType,
+  VacancyType,
+} from '../../types/types';
 
 export const serverEndPoint = 'http://localhost:5000/';
 // 'http://10.182.1.143:5000';
 export const vacancyUrl = '/vacancies';
 export const authUrl = '/auth/login';
-
+export const findUserUrl = '/auth/findUser';
 
 export const vacanciesApiSlice = createApi({
   reducerPath: 'vacanciesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }), 
+  baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }),
   tagTypes: ['Vacancies'],
   endpoints: (builder) => ({
-
     getAllVacancies: builder.query<InfoFromDBType<VacancyType[]>, void>({
       query: () => vacancyUrl,
       providesTags: () => ['Vacancies'],
@@ -66,5 +70,5 @@ export const {
   useAddNewVacancyMutation,
   useUpdateVacancyMutation,
   useDeleteVacancyMutation,
-  useLoginUserMutation
+  useLoginUserMutation,
 } = vacanciesApiSlice;

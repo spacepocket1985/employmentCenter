@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Vacancy } from '../components/vacancies/Vacancy';
 import { RoutePaths } from '../routes/routePaths';
-import { useGetVacancyQuery } from '../store/slices/vacanciesApiSlice';
+import { useGetVacancyQuery } from '../store/slices/apiSlice';
 
 export const VacancyPage = (): JSX.Element => {
   const { vacancyId } = useParams();

@@ -14,3 +14,10 @@ export const handleError = (error: ErrorDataType): void => {
     autoClose: 2000,
   });
 };
+
+export const handleErrorMsg = (error: string): void => {
+  toast.error(` Ошибка! ${error}`, {
+    position: 'top-left',
+    autoClose: 2000,
+  });
+};

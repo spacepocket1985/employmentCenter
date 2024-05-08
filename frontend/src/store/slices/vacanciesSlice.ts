@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { InfoFromDBType, VacancyType } from '../../types/types';
 
-import { serverEndPoint } from './vacanciesApiSlice';
+import { serverEndPoint } from './apiSlice';
 
 export type VacanciesStateType = {
   vacancies: VacancyType[];

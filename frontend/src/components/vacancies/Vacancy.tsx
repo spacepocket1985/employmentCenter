@@ -15,7 +15,7 @@ import { useAppSelector } from '../../hooks/storeHooks';
 import { UIModal } from '../ui/UIModal';
 import { FormAddVacancy } from './FormAddVacancy';
 import { Link } from 'react-router-dom';
-import { useDeleteVacancyMutation } from '../../store/slices/vacanciesApiSlice';
+import { useDeleteVacancyMutation } from '../../store/slices/apiSlice';
 import {
   handleSucssestResult,
   handleError,

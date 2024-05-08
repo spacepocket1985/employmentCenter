@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { handleAsyncThunk } from './vacanciesSlice';
 import { UserInfoFromDBType, UserType } from '../../types/types';
-import { serverEndPoint } from './vacanciesApiSlice';
+import { serverEndPoint } from './apiSlice';
 
 const initialState: UserInfoFromDBType = {
   name: null,
@@ -19,6 +19,10 @@ const userSlice = createSlice({
     logInUser: (state, action: PayloadAction<UserInfoFromDBType>) => {
       state.name = action.payload.name;
       state.token = action.payload.token;
+    },
+    setName: (state, action: PayloadAction<string>) => {
+      state.name = action.payload;
+
     },
   },
   extraReducers: (builder) => {

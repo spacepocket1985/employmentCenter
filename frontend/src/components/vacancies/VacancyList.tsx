@@ -1,19 +1,15 @@
 import { Box, List } from '@mui/material';
 import { useCallback } from 'react';
 
-import { useGetAllVacanciesQuery } from '../../store/slices/vacanciesApiSlice';
+import { useGetAllVacanciesQuery } from '../../store/slices/apiSlice';
 import { Spinner } from '../spinner/Spinner';
 import { Vacancy } from './Vacancy';
 
 const VacancyList = (): JSX.Element => {
-  const {
-    data: results,
-    isFetching,
-    isError,
-  } = useGetAllVacanciesQuery();
+  const { data: results, isFetching, isError } = useGetAllVacanciesQuery();
 
   const vacancies = results?.data;
-  
+
   const spinner = isFetching ? <Spinner /> : null;
   const error = isError ? (
     <h2>{`Ошибка при загрузке вакансий. ${results?.msg}`}</h2>
