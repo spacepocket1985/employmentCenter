@@ -26,20 +26,19 @@ export const Header = (): JSX.Element => {
       const token = localStorage.getItem('token');
 
       if (token) {
-        await fetch(`${serverEndPoint}auth/findUser`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-          .then((response) => response.json())
-          .then((data: InfoFromDBType<string>) => {
-            dispatch(userActions.logInUser({ name: data.data, token }));
-          })
-          .catch((error) => {
-            if (error instanceof Error) {
-              handleErrorMsg(`Действия токена прошло. Необходимо зайти занорво! ${error.message}`);
-            }
-          });
+        const response = await fetch(`${serverEndPoint}auth/findUser`, {
+          headers: { Authorization: token },
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          dispatch(userActions.logInUser({ name: data.data, token }));
+        } else {
+          const error = new Error(
+            'Действия токена прошло. Необходимо зайти заново!'
+          );
+          handleErrorMsg(error.message);
+        }
       }
     };
 
