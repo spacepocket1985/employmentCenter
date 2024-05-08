@@ -10,7 +10,7 @@ export const jwtService = {
         userId: user.id,
       },
       keys.jwt,
-      { expiresIn: 60 * 60 }
+      { expiresIn: '1m' }
     );
 
     return { token: `Bearer ${token}`, name: user.name };

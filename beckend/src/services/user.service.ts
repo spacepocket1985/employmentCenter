@@ -1,12 +1,9 @@
 // Service level (Business Logic Layer):
 // Description: Implements the logic for working with auth user.
 
-import { hash, compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
-
+import { hash, compare } from 'bcryptjs'
 import { User, UserTypeForToken } from '../models/user.model';
-import keys from '../config/keys';
-import { Types } from 'mongoose';
+import { jwtService } from './jwt.service';
 
 
 class UserService {
@@ -37,16 +34,13 @@ class UserService {
       throw new Error('Incorrect password. Please try again.');
     }
 
-    const token = sign(
-      {
-        name: candidate.name,
-        userId: candidate._id,
-      },
-      keys.jwt,
-      { expiresIn: 60 * 60 }
-    );
+    const token = jwtService.createJWT({
+      name: candidate.name,
+      password: candidate.password,
+      id: candidate._id
+    })
 
-    return { token: `Bearer ${token}`, name: candidate.name };
+    return token;
   }
   async checkCredentials(name: string, password: string) {
     const candidate = await User.findOne({ name });
@@ -74,7 +68,7 @@ class UserService {
     if (!candidate) {
       throw new Error(`User with id (${_id}) not found.`);
     }
-    return { name: candidate.name, password: candidate.password };
+    return  candidate.name ;
   }
 }
 

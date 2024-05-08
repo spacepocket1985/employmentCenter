@@ -47,7 +47,7 @@ class AuthController {
   };
   findUser = async (
     req: Request,
-    res: Response<UserViewModel<UserType>>
+    res: Response<UserViewModel<string>>
   ) => {
     const token = req.headers.authorization?.split(' ')[1]; 
     if (token) {
