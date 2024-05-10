@@ -14,8 +14,9 @@ import { userStorage } from '../../utils/userStorage';
 import { FormAddVacancy } from '../vacancies/FormAddVacancy';
 import { serverEndPoint } from '../../store/slices/apiSlice';
 import { useEffect } from 'react';
-import { InfoFromDBType } from '../../types/types';
 import { handleErrorMsg } from '../../utils/handleRequestResult';
+
+export const tec2Url = 'http://tec23.grodno.energo.net/';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -51,7 +52,7 @@ export const Header = (): JSX.Element => {
   };
 
   const handleGoTEC2Click = () => {
-    window.location.href = 'http://tec23.grodno.energo.net/';
+    window.location.href = tec2Url;
   };
 
   return (
