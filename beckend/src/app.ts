@@ -6,6 +6,7 @@ import passport from 'passport';
 
 import vacancyRouter from './routes/vacancy.routes';
 import authRouter from './routes/auth.routes';
+import employeeRouter from './routes/employees.routes';
 import { MyPassport } from './middleware/passport';
 
 export const app = express();
@@ -25,3 +26,4 @@ app.get('/', (req, res) => {
 // routes
 app.use('/vacancies', vacancyRouter);
 app.use('/auth', authRouter);
+app.use('/employees', employeeRouter);
