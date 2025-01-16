@@ -8,6 +8,14 @@ export type VacancyType = {
   additionalInformation: string;
 };
 
+export type EmployeeType = {
+  _id?: string;
+  name: string;
+  job: string;
+  department: string;
+  birthday: Date;
+};
+
 export type UserType = {
   name: string;
   password: string;
