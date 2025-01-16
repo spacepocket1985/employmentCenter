@@ -55,7 +55,7 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     wageRate,
     education,
     experience,
-    _id,
+
     additionalInformation,
   }) => {
     const newVacancy: VacancyType = {

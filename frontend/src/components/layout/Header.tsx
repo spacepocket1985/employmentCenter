@@ -1,7 +1,6 @@
 import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 
 import LogoutIcon from '@mui/icons-material/Logout';
-import HomeIcon from '@mui/icons-material/Home';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
 
@@ -11,12 +10,11 @@ import { userActions } from '../../store/slices/userSlice';
 import { Link } from 'react-router-dom';
 import { RoutePaths } from '../../routes/routePaths';
 import { userStorage } from '../../utils/userStorage';
-import { FormAddVacancy } from '../vacancies/FormAddVacancy';
+
 import { serverEndPoint } from '../../store/slices/apiSlice';
 import { useEffect } from 'react';
 import { handleErrorMsg } from '../../utils/handleRequestResult';
-
-export const tec2Url = 'http://tec23.grodno.energo.net/';
+import { HeaderMenu } from './HeaderMenu';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -51,75 +49,54 @@ export const Header = (): JSX.Element => {
     await userStorage.removeUserInLocalStorage();
   };
 
-  const handleGoTEC2Click = () => {
-    window.location.href = tec2Url;
-  };
-
   return (
-    <>
-      <AppBar position={'static'}>
-        <Toolbar>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <IconButton
-              onClick={handleGoTEC2Click}
+    <AppBar position={'static'} style={{marginBottom:'5px'}}>
+      <Toolbar>
+        <Grid container justifyContent="space-between" alignItems="center">
+          <HeaderMenu user={user} />
+          <Typography variant="h6" component="div" style={{ flexGrow: '1' }}>
+            <Link
+              to={RoutePaths.HOME}
               style={{
-                borderRadius: '10px',
+                textAlign: 'center',
+                textDecoration: 'none',
                 color: '#fff',
-                backgroundColor: '#1976d2',
               }}
             >
-              <HomeIcon style={{ color: '#fff', marginRight: '5px' }} />
-              <Typography variant="subtitle2" component="span">
-                {'Сайт ТЭЦ-2'}
+              Вакансии Гродненской ТЭЦ-2
+            </Link>
+          </Typography>
+
+          {user ? (
+            <IconButton aria-label="logOut" onClick={onLogOutClickHandler}>
+              <Typography
+                variant="subtitle1"
+                component="span"
+                style={{ color: '#fff' }}
+              >
+                {`Hello, ${user}`}
+              </Typography>
+              <LogoutIcon style={{ color: '#fff', marginLeft: '5px' }} />
+              <Typography
+                variant="subtitle1"
+                component="span"
+                style={{ color: '#fff' }}
+              >
+                Выход
               </Typography>
             </IconButton>
-            <Typography variant="h6" component="div" style={{ flexGrow: '1' }}>
-              <Link
-                to={RoutePaths.HOME}
-                style={{
-                  textAlign: 'center',
-                  textDecoration: 'none',
-                  color: '#fff',
-                }}
-              >
-                Вакансии Гродненской ТЭЦ-2
-              </Link>
-            </Typography>
-
-            {user ? (
-              <IconButton aria-label="logOut" onClick={onLogOutClickHandler}>
-                <Typography
-                  variant="subtitle1"
-                  component="span"
-                  style={{ color: '#fff' }}
-                >
-                  {`Hello, ${user}`}
-                </Typography>
-                <LogoutIcon style={{ color: '#fff', marginLeft: '5px' }} />
-                <Typography
-                  variant="subtitle1"
-                  component="span"
-                  style={{ color: '#fff' }}
-                >
-                  Выход
-                </Typography>
-              </IconButton>
-            ) : (
-              <UIModal
-                iconType="account"
-                iconButtonStyle={{ color: '#fff' }}
-                top="15%"
-                iconLabel="Вход"
-              >
-                {(handleClose) => <UserAuth handleClose={handleClose} />}
-              </UIModal>
-            )}
-          </Grid>
-        </Toolbar>
-      </AppBar>
-      <Grid container style={{ padding: '10px' }}>
-        {user && <FormAddVacancy />}
-      </Grid>
-    </>
+          ) : (
+            <UIModal
+              iconType="account"
+              iconButtonStyle={{ color: '#fff' }}
+              top="15%"
+              iconLabel="Вход"
+            >
+              {(handleClose) => <UserAuth handleClose={handleClose} />}
+            </UIModal>
+          )}
+        </Grid>
+      </Toolbar>
+    </AppBar>
   );
 };

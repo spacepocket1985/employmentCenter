@@ -1,4 +1,5 @@
 import { AboutPage } from '../pages/AboutPage';
+import { EmployeesPage } from '../pages/EmployeesPage';
 import { HomePage } from '../pages/HomePage';
 import { Page404 } from '../pages/Page404';
 import { VacancyPage } from '../pages/VacancyPage';
@@ -13,6 +14,10 @@ export const publicRoutes = [
   {
     path: RoutePaths.HOME,
     Page: HomePage,
+  },
+  {
+    path: RoutePaths.EMPLOYEES,
+    Page: EmployeesPage,
   },
   {
     path: RoutePaths.VACANCY,
