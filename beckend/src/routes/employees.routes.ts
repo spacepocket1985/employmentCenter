@@ -1,15 +1,17 @@
-import express from "express";
-import { employeeController } from "../controllers/employee.controller";
+import express from 'express';
+import { employeeController } from '../controllers/employee.controller';
 
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .post(employeeController.createEmployee)
   .get(employeeController.getAllEmployees);
 
+router.route('/hb').get(employeeController.getEmployeesHB);
+
 router
-  .route("/:id")
+  .route('/:id')
   .get(employeeController.getEmployee)
   .patch(employeeController.updateEmployee)
   .delete(employeeController.deleteEmployee);

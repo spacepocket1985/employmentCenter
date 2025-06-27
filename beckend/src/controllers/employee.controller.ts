@@ -35,6 +35,22 @@ class EmployeeController {
       .json({ data: employees, msg: 'All employees have been fetched!' });
   }
 
+  async getEmployeesHB(
+    req: Request,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const employees = await employeeService.getHBEmployees();
+
+    if (!employees) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Error with fethcing!' });
+    } else
+      res
+        .status(StatusCodes.OK)
+        .json({ data: employees, msg: 'All employees with HB fetched!' });
+  }
+
   async getEmployee(
     req: RequestWithParams<{ id: string }>,
     res: Response<EmployeeViewModel<EmployeeType>>
@@ -58,14 +74,14 @@ class EmployeeController {
     const { id } = req.params;
     const updatedEmployee = await employeeService.updateEmployee(id, req.body);
 
-    if (!updatedEmployee ) {
+    if (!updatedEmployee) {
       res
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'Requested employee not found!' });
     } else {
       res
         .status(StatusCodes.OK)
-        .json({ data: updatedEmployee , msg: 'Employee successfully updated!' });
+        .json({ data: updatedEmployee, msg: 'Employee successfully updated!' });
     }
   }
 

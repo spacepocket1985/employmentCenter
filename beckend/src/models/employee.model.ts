@@ -5,11 +5,9 @@ import { Schema, model, ObjectId } from "mongoose";
 export type EmployeeType = {
   _id: ObjectId;
   name: string;
-  secondName: string;
-  surName: string;
   job: string;
   department: string;
-  birthday: Date;
+  birthday: string;
 };
 
 const employeeSchema = new Schema<EmployeeType>(
@@ -17,14 +15,6 @@ const employeeSchema = new Schema<EmployeeType>(
     name: {
       type: String,
       required: [true, "Name should not be empty!"],
-    },
-    secondName: {
-      type: String,
-      required: [true, "SecondName should not be empty!"],
-    },
-    surName: {
-      type: String,
-      required: [true, "Surname should not be empty!"],
     },
 
     job: {
@@ -36,7 +26,7 @@ const employeeSchema = new Schema<EmployeeType>(
       required: [true, "Department should not be empty!"],
     },
     birthday: {
-      type: Date,
+      type: String,
       required: [true, "Birthday should not be empty!"],
     },
   },
