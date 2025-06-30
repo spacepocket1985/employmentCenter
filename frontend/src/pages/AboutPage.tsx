@@ -10,14 +10,13 @@ import {
 import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
 import { Link } from 'react-router-dom';
 
-export const AboutPage = (): JSX.Element => {
+const AboutPage = (): JSX.Element => {
   return (
     <Box
       display="flex"
       justifyContent="center"
       alignItems="center"
       flexDirection="column"
-      
     >
       <Link to={`/vacancy`} style={{ textDecoration: 'none', color: '#000' }}>
         <Typography variant="subtitle1" component="p">
@@ -59,3 +58,5 @@ export const AboutPage = (): JSX.Element => {
     </Box>
   );
 };
+
+export default AboutPage;

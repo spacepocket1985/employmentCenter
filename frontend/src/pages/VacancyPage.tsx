@@ -17,13 +17,13 @@ import { useNavigate } from 'react-router-dom';
 
 import { Vacancy } from '../components/vacancies/Vacancy';
 import { RoutePaths } from '../routes/routePaths';
-import { useGetVacancyQuery } from '../store/slices/apiSlice';
+import { useGetVacancyQuery } from '../store/slices/vacanciesApiSlice';
 
-export const VacancyPage = (): JSX.Element => {
+const VacancyPage = (): JSX.Element => {
   const { vacancyId } = useParams();
   const navigate = useNavigate();
 
-  const { data: results} = useGetVacancyQuery(vacancyId!);
+  const { data: results } = useGetVacancyQuery(vacancyId!);
 
   if (!results) return <h4>Запрашиваемая вакансия не найдена</h4>;
 
@@ -87,3 +87,5 @@ export const VacancyPage = (): JSX.Element => {
     </Box>
   );
 };
+
+export default VacancyPage;

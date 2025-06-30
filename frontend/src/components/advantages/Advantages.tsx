@@ -15,8 +15,7 @@ import RestaurantMenuRoundedIcon from '@mui/icons-material/RestaurantMenuRounded
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import DirectionsBusFilledRoundedIcon from '@mui/icons-material/DirectionsBusFilledRounded';
 import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded';
-
-import { UIModal } from '../ui/UIModal';
+import { UIModal } from '@components/ui';
 
 const advantagesData = [
   {
@@ -60,7 +59,7 @@ const advantagesData = [
   },
 ];
 
-export const Advantages = ():JSX.Element => {
+export const Advantages = (): JSX.Element => {
   const renderItems = advantagesData.map((item, index) => {
     return (
       <ListItem key={index}>

@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { handleAsyncThunk } from './vacanciesSlice';
-import { UserInfoFromDBType, UserType } from '../../types/types';
-import { serverEndPoint } from './apiSlice';
+
+
+import { BaseUrl } from '@store/config';
+import { handleAsyncThunk } from '@utils/index';
+import { UserInfoFromDBType, UserType } from 'src/types/types';
 
 const initialState: UserInfoFromDBType = {
   name: null,
@@ -22,7 +24,6 @@ const userSlice = createSlice({
     },
     setName: (state, action: PayloadAction<string>) => {
       state.name = action.payload;
-
     },
   },
   extraReducers: (builder) => {
@@ -40,7 +41,7 @@ export const login = createAsyncThunk(
   async (user: UserType, thunkAPI) => {
     return handleAsyncThunk<UserInfoFromDBType>(
       {
-        url: `${serverEndPoint}/auth/login`,
+        url: `${BaseUrl}/auth/login`,
         method: 'POST',
         body: user,
         successMessage: 'Пользователь успешно залогинен',

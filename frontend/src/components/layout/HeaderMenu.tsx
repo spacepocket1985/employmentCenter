@@ -4,7 +4,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import CakeIcon from '@mui/icons-material/Cake';
 import WorkIcon from '@mui/icons-material/Work';
 import { Link } from 'react-router-dom';
-import { RoutePaths } from '../../routes/routePaths';
+import { RoutePaths } from '@routes/routePaths';
+
 
 export const tec2Url = 'http://tec23.grodno.energo.net/';
 

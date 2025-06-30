@@ -7,19 +7,15 @@ import {
   IconButton,
 } from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
-
-import { VacancyType } from '../../types/types';
-import { Delete } from '@mui/icons-material';
-import { useAppSelector } from '../../hooks/storeHooks';
-
-import { UIModal } from '../ui/UIModal';
-import { FormAddVacancy } from './FormAddVacancy';
 import { Link } from 'react-router-dom';
-import { useDeleteVacancyMutation } from '../../store/slices/apiSlice';
-import {
-  handleSucssestResult,
-  handleError,
-} from '../../utils/handleRequestResult';
+
+import { Delete } from '@mui/icons-material';
+import { useAppSelector } from '@hooks/storeHooks';
+import { UIModal } from '@components/ui';
+import { FormAddVacancy } from '@components/vacancies';
+import { useDeleteVacancyMutation } from '@store/slices/vacanciesApiSlice';
+import { handleSucssestResult, handleError } from '@utils/index';
+import { VacancyType } from 'src/types/types';
 
 type VacancyItemProps = {
   vacancy: VacancyType;

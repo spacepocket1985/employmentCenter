@@ -2,21 +2,18 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Grid, Paper } from '@mui/material';
 
-import { useAppSelector } from '../../hooks/storeHooks';
-import { UIFormInput } from '../ui/UIFormInput';
-
-import { VacancyType } from '../../types/types';
-import { UISimpleSelect } from '../ui/UISimpleSelect';
-import { vacancyValidationSchema } from '../../utils/validationSchemes';
-import {
-  useAddNewVacancyMutation,
-  useUpdateVacancyMutation,
-} from '../../store/slices/apiSlice';
-
+import { useAppSelector } from '@hooks/storeHooks';
+import { UIFormInput, UISimpleSelect } from '@components/ui';
 import {
   handleSucssestResult,
   handleError,
-} from '../../utils/handleRequestResult';
+  vacancyValidationSchema,
+} from '@utils/index';
+import {
+  useAddNewVacancyMutation,
+  useUpdateVacancyMutation,
+} from '@store/slices/vacanciesApiSlice';
+import { VacancyType } from 'src/types/types';
 
 type FormAddVacancyType = {
   title: string;

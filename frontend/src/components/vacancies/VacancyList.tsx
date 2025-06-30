@@ -1,8 +1,7 @@
 import { Box, Grid, List } from '@mui/material';
-import { Vacancy } from './Vacancy';
-import { FormAddVacancy } from './FormAddVacancy';
-import { useAppSelector } from '../../hooks/storeHooks';
-import { VacancyType } from '../../types/types';
+import { FormAddVacancy, Vacancy } from '@components/vacancies';
+import { useAppSelector } from '@hooks/storeHooks';
+import { VacancyType } from 'src/types/types';
 
 const VacancyList: React.FC<{ vacancies: VacancyType[] }> = ({ vacancies }) => {
   const user = useAppSelector((state) => state.user.name);

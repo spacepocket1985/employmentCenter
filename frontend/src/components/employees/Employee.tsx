@@ -23,7 +23,6 @@ export const Employee: React.FC<{ employee: EmployeeType }> = React.memo(
   ({ employee }) => {
     // const [deleteVacancy] = useDeleteVacancyMutation();
 
-    const user = useAppSelector((state) => state.user.name);
 
     // const onDeleteClickHandler = useCallback(async () => {
     //   if (vacancy._id) {

@@ -1,9 +1,9 @@
 import { Container } from '@mui/material';
 import { Spinner } from '../components/spinner/Spinner';
 import VacancyList from '../components/vacancies/VacancyList';
-import { useGetAllVacanciesQuery } from '../store/slices/apiSlice';
+import { useGetAllVacanciesQuery } from '../store/slices/vacanciesApiSlice';
 
-export const VacanciesPage = (): JSX.Element => {
+const VacanciesPage = (): JSX.Element => {
   const { data: results, isFetching, isError } = useGetAllVacanciesQuery();
 
   const error = isError ? (
@@ -31,3 +31,5 @@ export const VacanciesPage = (): JSX.Element => {
     </>
   );
 };
+
+export default VacanciesPage;

@@ -1,21 +1,17 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
-
 import LogoutIcon from '@mui/icons-material/Logout';
 
-import { useAppDispatch, useAppSelector } from '../../hooks/storeHooks';
-import { useLocation } from 'react-router-dom';
-
-import { UserAuth } from '../auth/auth';
-import { UIModal } from '../ui/UIModal';
-import { userActions } from '../../store/slices/userSlice';
-
-import { RoutePaths } from '../../routes/routePaths';
-import { userStorage } from '../../utils/userStorage';
-
-import { serverEndPoint } from '../../store/slices/apiSlice';
-import { useEffect } from 'react';
-import { handleErrorMsg } from '../../utils/handleRequestResult';
-import { HeaderMenu } from './HeaderMenu';
+import { useAppDispatch, useAppSelector } from '@hooks/storeHooks';
+import { UIModal } from '@components/ui';
+import { BaseUrl } from '@store/config';
+import { UserAuth } from '@components/auth';
+import { userStorage } from '@utils/userStorage';
+import { userActions } from '@store/slices';
+import { HeaderMenu } from '@components/layout';
+import { handleErrorMsg } from '@utils/handleRequestResult';
+import { RoutePaths } from '@routes/routePaths';
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -26,7 +22,7 @@ export const Header = (): JSX.Element => {
       const token = localStorage.getItem('token');
 
       if (token) {
-        const response = await fetch(`${serverEndPoint}auth/findUser`, {
+        const response = await fetch(`${BaseUrl}auth/findUser`, {
           headers: { Authorization: token },
         });
         const data = await response.json();

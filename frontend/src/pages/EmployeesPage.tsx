@@ -1,10 +1,10 @@
+import { EmployeesList } from '@components/employees';
+import { Spinner } from '@components/spinner';
 import { Container } from '@mui/material';
-import { Spinner } from '../components/spinner/Spinner';
 
-import { useGetAllEmployeesQuery } from '../store/slices/apiSlice';
-import { EmployeesList } from '../components/employees/EmployeesList';
+import { useGetAllEmployeesQuery } from '@store/slices';
 
-export const EmployeesPage = (): JSX.Element => {
+const EmployeesPage = (): JSX.Element => {
   const { data: results, isFetching, isError } = useGetAllEmployeesQuery();
 
   const error = isError ? (
@@ -32,3 +32,5 @@ export const EmployeesPage = (): JSX.Element => {
     </>
   );
 };
+
+export default EmployeesPage;

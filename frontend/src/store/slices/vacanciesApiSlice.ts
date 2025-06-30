@@ -1,24 +1,12 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
+import { vacancyUrl, authUrl, api } from '@store/config';
 import {
-  EmployeeType,
   InfoFromDBType,
+  VacancyType,
   UserInfoFromDBType,
   UserType,
-  VacancyType,
-} from '../../types/types';
+} from 'src/types/types';
 
-export const serverEndPoint = 'http://localhost:5000/';
-// 'http://10.182.1.143:5000';
-export const vacancyUrl = '/vacancies';
-export const employeesUrl = '/employees';
-export const authUrl = '/auth/login';
-export const findUserUrl = '/auth/findUser';
-
-export const vacanciesApiSlice = createApi({
-  reducerPath: 'vacanciesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: serverEndPoint }),
-  tagTypes: ['Vacancies','employees'],
+export const vacanciesApiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllVacancies: builder.query<InfoFromDBType<VacancyType[]>, void>({
       query: () => vacancyUrl,
@@ -63,10 +51,6 @@ export const vacanciesApiSlice = createApi({
         body: user,
       }),
     }),
-    getAllEmployees: builder.query<InfoFromDBType<EmployeeType[]>, void>({
-      query: () => employeesUrl,
-      providesTags: () => ['employees'],
-    }),
   }),
 });
 
@@ -77,5 +61,4 @@ export const {
   useUpdateVacancyMutation,
   useDeleteVacancyMutation,
   useLoginUserMutation,
-  useGetAllEmployeesQuery
 } = vacanciesApiSlice;

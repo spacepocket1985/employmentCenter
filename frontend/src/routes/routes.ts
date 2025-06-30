@@ -1,31 +1,32 @@
-import { AboutPage } from '../pages/AboutPage';
-import { EmployeesPage } from '../pages/EmployeesPage';
-import { VacanciesPage} from '../pages/VacanciesPage';
-import { Page404 } from '../pages/Page404';
-import { VacancyPage } from '../pages/VacancyPage';
-
+import {
+  PageAbout,
+  PageEmployees,
+  PageNotFound,
+  PageVacancies,
+  PageVacancy,
+} from '@pages/index';
 import { RoutePaths } from './routePaths';
 
 export const publicRoutes = [
   {
     path: RoutePaths.ABOUT,
-    Page: AboutPage,
+    Page: PageAbout,
   },
   {
     path: RoutePaths.HOME,
-    Page: VacanciesPage,
+    Page: PageVacancies,
   },
   {
     path: RoutePaths.EMPLOYEES,
-    Page: EmployeesPage,
+    Page: PageEmployees,
   },
   {
     path: RoutePaths.VACANCY,
-    Page: VacancyPage,
+    Page: PageVacancy,
   },
 
   {
     path: RoutePaths.PAGE404,
-    Page: Page404,
+    Page: PageNotFound,
   },
 ];
