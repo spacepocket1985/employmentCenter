@@ -12,31 +12,37 @@ class EmployeeService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = this.formatDate(today);
-    
+
     const twoDaysLater = new Date();
     twoDaysLater.setDate(today.getDate() + 2);
     twoDaysLater.setHours(23, 59, 59, 999);
     const twoDaysLaterStr = this.formatDate(twoDaysLater);
-  
+
     const currentYear = today.getFullYear();
-    
+
     // Получаем всех сотрудников
     const allEmployees = await Employee.find({});
-    
-    return allEmployees.filter(employee => {
-      // Создаем дату в текущем году
-      const birthdayThisYear = `${currentYear}-${employee.birthday.substring(5)}`;
-      
-      // Проверяем, попадает ли день рождения в диапазон
-      return birthdayThisYear >= todayStr && birthdayThisYear <= twoDaysLaterStr;
-    }).sort((a, b) => {
-      // Сортируем по дате (от ближайшего)
-      const aDate = a.birthday.substring(5);
-      const bDate = b.birthday.substring(5);
-      return aDate.localeCompare(bDate);
-    });
+
+    return allEmployees
+      .filter((employee) => {
+        // Создаем дату в текущем году
+        const birthdayThisYear = `${currentYear}-${employee.birthday.substring(
+          5
+        )}`;
+
+        // Проверяем, попадает ли день рождения в диапазон
+        return (
+          birthdayThisYear >= todayStr && birthdayThisYear <= twoDaysLaterStr
+        );
+      })
+      .sort((a, b) => {
+        // Сортируем по дате (от ближайшего)
+        const aDate = a.birthday.substring(5);
+        const bDate = b.birthday.substring(5);
+        return aDate.localeCompare(bDate);
+      });
   }
-  
+
   private formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -60,6 +66,12 @@ class EmployeeService {
 
   async deleteEmployee(id: string) {
     return await Employee.findByIdAndDelete(id);
+  }
+
+  async findEmployeesByNameStart(nameStart: string) {
+    const regex = new RegExp(`^${nameStart}`, 'i'); 
+    const employees = await Employee.find({ name: { $regex: regex } });
+    return employees;
   }
 }
 

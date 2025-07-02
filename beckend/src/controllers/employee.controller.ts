@@ -42,9 +42,7 @@ class EmployeeController {
     const employees = await employeeService.getHBEmployees();
 
     if (!employees) {
-      res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ msg: 'Error with fethcing!' });
+      res.status(StatusCodes.NOT_FOUND).json({ msg: 'Error with fethcing!' });
     } else
       res
         .status(StatusCodes.OK)
@@ -64,6 +62,22 @@ class EmployeeController {
         .json({ msg: 'Requested employee not found!' });
     } else {
       res.status(StatusCodes.OK).json({ data: employee, msg: 'Success' });
+    }
+  }
+
+  async getEmployeeByName(
+    req: RequestWithParams<{ name: string }>,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const { name } = req.params;
+    const employees = await employeeService.findEmployeesByNameStart(name);
+  
+    if (!employees) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested employee not found!' });
+    } else {
+      res.status(StatusCodes.OK).json({ data: employees, msg: 'Success' });
     }
   }
 

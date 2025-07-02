@@ -9,6 +9,7 @@ router
   .get(employeeController.getAllEmployees);
 
 router.route('/hb').get(employeeController.getEmployeesHB);
+router.route('/search/:name').get(employeeController.getEmployeeByName);
 
 router
   .route('/:id')

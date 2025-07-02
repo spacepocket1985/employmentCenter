@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 MyPassport(passport);
 
-export const port = process.env.PORT || 5000;
+export const port = process.env.PORT || 5001;
 
 app.get('/', (req, res) => {
   res.send('<h1>List of vacancies using typescript</h1>');
