@@ -1,10 +1,5 @@
-import { vacancyUrl, authUrl, api } from '@store/config';
-import {
-  InfoFromDBType,
-  VacancyType,
-  UserInfoFromDBType,
-  UserType,
-} from 'src/types/types';
+import { vacancyUrl, api } from '@store/config';
+import { InfoFromDBType, VacancyType } from 'src/types/types';
 
 export const vacanciesApiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -44,13 +39,6 @@ export const vacanciesApiSlice = api.injectEndpoints({
       }),
       invalidatesTags: ['Vacancies'],
     }),
-    loginUser: builder.mutation<InfoFromDBType<UserInfoFromDBType>, UserType>({
-      query: (user) => ({
-        url: authUrl,
-        method: 'POST',
-        body: user,
-      }),
-    }),
   }),
 });
 
@@ -60,5 +48,4 @@ export const {
   useAddNewVacancyMutation,
   useUpdateVacancyMutation,
   useDeleteVacancyMutation,
-  useLoginUserMutation,
 } = vacanciesApiSlice;

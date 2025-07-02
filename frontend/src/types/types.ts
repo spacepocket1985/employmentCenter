@@ -13,7 +13,7 @@ export type EmployeeType = {
   name: string;
   job: string;
   department: string;
-  birthday: Date;
+  birthday: string;
 };
 
 export type UserType = {

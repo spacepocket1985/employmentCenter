@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   education: [
@@ -20,12 +20,39 @@ const initialState = {
     '	от 3 до 6 лет',
     'более 6 лет',
   ],
+  department: [
+    '',
+    'АУП',
+    'КЦ',
+    'ТЦ',
+    'ЭЦ',
+    'ПГТЦ',
+    'ЭЦ',
+    'ХЦ',
+    'ЦТАИ',
+    'СППР',
+    'ПТО',
+    'ОНиОТ',
+    'ОКиПР',
+    'ПЭО',
+    'УБиНУ',
+    'ЦОП',
+    'ЛНКиТД',
+    'ЦТП',
+    'ОКС',
+  ],
+  query: '',
 };
 
 export const dataSlice = createSlice({
   name: 'data',
   initialState,
-  reducers: {},
+  reducers: {
+    setQuery: (state, action: PayloadAction<string>) => {
+      state.query = action.payload;
+    },
+  },
 });
 
 export default dataSlice.reducer;
+export const { setQuery } = dataSlice.actions;

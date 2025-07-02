@@ -2,16 +2,17 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Grid } from '@mui/material';
 
-import { UserType } from '../../types/types';
-import { useLoginUserMutation } from '../../store/slices/vacanciesApiSlice';
-
-import { userActions } from '../../store/slices/userSlice';
-
+import { userActions, useLoginUserMutation } from '@store/slices/';
 import { useAppDispatch } from '@hooks/storeHooks';
 import { UIFormInput } from '@components/ui';
-import { handleSucssestResult, handleError } from '@utils/handleRequestResult';
-import { userStorage } from '@utils/userStorage';
-import { loginValidationSchema } from '@utils/validationSchemes';
+
+import {
+  loginValidationSchema,
+  userStorage,
+  handleSucssestResult,
+  handleError,
+} from '@utils/index';
+import { UserType } from 'src/types/types';
 
 type UserAuthPropsType = {
   handleClose?: () => void;

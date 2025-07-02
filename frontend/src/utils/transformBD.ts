@@ -17,3 +17,5 @@ export const transformBD = (birthday: string): string => {
   const [, month, day] = birthday.split('-');
   return `${day} ${Months[Number(month)]}`;
 };
+
+export const cutBDdate = (birthday: string): string => birthday.split('T')[0];

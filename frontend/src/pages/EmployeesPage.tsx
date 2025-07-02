@@ -1,11 +1,19 @@
-import { EmployeesList } from '@components/employees';
+import {
+  EmployeeSearch,
+  EmployeesList,
+  FormEditEmployee,
+} from '@components/employees';
 import { Spinner } from '@components/spinner';
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 
-import { useGetAllEmployeesQuery } from '@store/slices';
+import { useGetEmployeeTodayBirthdaysQuery } from '@store/slices';
 
 const EmployeesPage = (): JSX.Element => {
-  const { data: results, isFetching, isError } = useGetAllEmployeesQuery();
+  const {
+    data: results,
+    isFetching,
+    isError,
+  } = useGetEmployeeTodayBirthdaysQuery();
 
   const error = isError ? (
     <h2>{`Ошибка при загрузке данных. ${results?.msg}`}</h2>
@@ -14,7 +22,16 @@ const EmployeesPage = (): JSX.Element => {
   const contentOrSpinner = isFetching ? (
     <Spinner />
   ) : (
-    <EmployeesList employees={results?.data || []} />
+    <Box display={'flex'} gap={2} flexDirection={'column'}>
+      <FormEditEmployee />
+      <Box display={'flex'} alignItems={'flex-start'} justifyContent={'space-between'}>
+        <EmployeeSearch />
+        <EmployeesList
+          employees={results?.data || []}
+          listTitle="Ближайшие дни рождения"
+        />
+      </Box>
+    </Box>
   );
 
   return (

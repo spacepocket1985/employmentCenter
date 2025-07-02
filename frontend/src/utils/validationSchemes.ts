@@ -17,6 +17,15 @@ export const vacancyValidationSchema = Yup.object({
   additionalInformation: Yup.string().required('Поле обязательное'),
 });
 
+export const employeeValidationSchema = Yup.object({
+  name: Yup.string()
+    .required('Поле обязательное')
+    .min(10, 'Минимум 10 символов'),
+  job: Yup.string().required('Поле обязательное'),
+  department: Yup.string().required('Поле обязательное'),
+  birthday: Yup.string().required('Поле обязательное'),
+});
+
 export const loginValidationSchema = Yup.object({
   name: Yup.string()
     .required('Поле обязательное')

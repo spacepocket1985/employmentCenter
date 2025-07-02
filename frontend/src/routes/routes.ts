@@ -16,10 +16,7 @@ export const publicRoutes = [
     path: RoutePaths.HOME,
     Page: PageVacancies,
   },
-  {
-    path: RoutePaths.EMPLOYEES,
-    Page: PageEmployees,
-  },
+
   {
     path: RoutePaths.VACANCY,
     Page: PageVacancy,
@@ -28,5 +25,12 @@ export const publicRoutes = [
   {
     path: RoutePaths.PAGE404,
     Page: PageNotFound,
+  },
+];
+
+export const privateRoutes = [
+  {
+    path: RoutePaths.EMPLOYEES,
+    Page: PageEmployees,
   },
 ];
