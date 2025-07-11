@@ -28,7 +28,7 @@ const VacancyPage = (): JSX.Element => {
   if (!results) return <h4>Запрашиваемая вакансия не найдена</h4>;
 
   const handleClick = () => {
-    navigate(RoutePaths.HOME);
+    navigate(RoutePaths.VACANCYLIST);
   };
 
   return (

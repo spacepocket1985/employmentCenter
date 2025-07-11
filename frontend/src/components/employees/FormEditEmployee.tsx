@@ -1,6 +1,6 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Grid, Paper } from '@mui/material';
+import {Button, Grid, Paper } from '@mui/material';
 
 import { UIFormInput, UISimpleSelect, UITitle } from '@components/ui';
 import {
@@ -85,7 +85,6 @@ export const FormEditEmployee: React.FC<FormEditEmployeePropsType> = (
       square
       style={{ margin: 'auto', padding: '10px' }}
     >
-      <Box></Box>
       <form onSubmit={handleSubmit(addNewEmployeeHandler)}>
         <UITitle>
           {!props.isEditMode

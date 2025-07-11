@@ -21,7 +21,7 @@ const controlsData = [
   {
     text: 'Список вакансий',
     icon: WorkIcon,
-    link: RoutePaths.VACANCY,
+    link: RoutePaths.VACANCYLIST,
   },
 ];
 

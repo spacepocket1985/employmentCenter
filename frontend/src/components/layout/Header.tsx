@@ -45,7 +45,9 @@ export const Header = (): JSX.Element => {
 
   const pageTitle = pathname.includes(RoutePaths.EMPLOYEES)
     ? 'Список сотрудников'
-    : 'Вакансии Гродненской ТЭЦ-2';
+    : pathname.includes(RoutePaths.VACANCY)
+    ? 'Вакансии Гродненской ТЭЦ-2'
+    : 'Панель управления';
 
   const onLogOutClickHandler = async () => {
     await dispatch(userActions.logOutUser());

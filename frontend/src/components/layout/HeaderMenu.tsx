@@ -37,7 +37,7 @@ export const HeaderMenu: React.FC<{ user: string | null }> = React.memo(
             </IconButton>
             <IconButton
               component={Link}
-              to={RoutePaths.HOME}
+              to={RoutePaths.VACANCYLIST}
               style={IconButtonStyle}
             >
               <WorkIcon color="primary" />

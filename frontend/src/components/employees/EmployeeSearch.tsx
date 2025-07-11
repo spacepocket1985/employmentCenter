@@ -25,9 +25,10 @@ export const EmployeeSearch: React.FC = () => {
         <TextField
           type="text"
           required
-          label="Поиск сотрудника по фамилии"
+          label="Поиск по фамилии"
+          sx={{width: '70%'}}
           variant="standard"
-          fullWidth
+          
           value={serchTerm}
           onChange={handleChangeTerm}
         ></TextField>

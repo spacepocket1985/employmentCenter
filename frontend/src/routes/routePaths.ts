@@ -1,6 +1,6 @@
 export enum RoutePaths {
   ABOUT = '/staff',
-  HOME = 'vacancy',
+  VACANCYLIST = 'vacancy',
   EMPLOYEES = 'employees',
   VACANCY = 'vacancy/:vacancyId',
   PAGE404 = '*',

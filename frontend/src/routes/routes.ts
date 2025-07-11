@@ -13,7 +13,7 @@ export const publicRoutes = [
     Page: PageAbout,
   },
   {
-    path: RoutePaths.HOME,
+    path: RoutePaths.VACANCYLIST,
     Page: PageVacancies,
   },
 
