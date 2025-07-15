@@ -52,7 +52,6 @@ class AuthController {
     const token = req.headers.authorization?.split(' ')[1]; 
     if (token) {
       const userId = await jwtService.getUserIdByToken(token);
-      console.log('userId', userId)
       if (userId) {
         const userData = await userService.findUserById(userId);
         res

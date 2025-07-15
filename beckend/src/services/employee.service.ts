@@ -13,10 +13,10 @@ class EmployeeService {
     today.setHours(0, 0, 0, 0);
     const todayStr = this.formatDate(today);
 
-    const twoDaysLater = new Date();
-    twoDaysLater.setDate(today.getDate() + 2);
-    twoDaysLater.setHours(23, 59, 59, 999);
-    const twoDaysLaterStr = this.formatDate(twoDaysLater);
+    const threeDaysLater = new Date();
+    threeDaysLater.setDate(today.getDate() + 3);
+    threeDaysLater.setHours(23, 59, 59, 999);
+    const threeDaysLaterStr = this.formatDate(threeDaysLater);
 
     const currentYear = today.getFullYear();
 
@@ -32,7 +32,7 @@ class EmployeeService {
 
         // Проверяем, попадает ли день рождения в диапазон
         return (
-          birthdayThisYear >= todayStr && birthdayThisYear <= twoDaysLaterStr
+          birthdayThisYear >= todayStr && birthdayThisYear <= threeDaysLaterStr
         );
       })
       .sort((a, b) => {
