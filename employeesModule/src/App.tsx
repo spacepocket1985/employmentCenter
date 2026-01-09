@@ -1,11 +1,19 @@
-import { EmployeesList } from './components/employees/EmployeesList';
-import { useGetEmployeeTodayBirthdaysQuery } from './store/slices/apiSlice';
+import { useEffect, useState } from 'react';
 
-import './App.css';
+import { getEmployeeTodayBirthdays } from './utils/employeeService';
+import { EmployeeType } from './types/types';
+import { EmployeesList } from './components/employees';
 
 const App: React.FC = () => {
-  const { data: employees } = useGetEmployeeTodayBirthdaysQuery();
-  return <EmployeesList employees={employees?.data || []} />;
+  const [employees, setEmployees] = useState<EmployeeType[]>([]);
+  useEffect(() => {
+    const getAsyncData = async () => {
+      const data = await getEmployeeTodayBirthdays();
+      if (data) setEmployees(data);
+    };
+    getAsyncData();
+  }, []);
+  return <EmployeesList employees={employees || []} />;
 };
 
 export default App;
