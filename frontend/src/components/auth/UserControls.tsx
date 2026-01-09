@@ -23,6 +23,11 @@ const controlsData = [
     icon: WorkIcon,
     link: RoutePaths.VACANCYLIST,
   },
+  {
+    text: 'Меню',
+    icon: WorkIcon,
+    link: RoutePaths.MENU,
+  },
 ];
 
 export const UserControls: React.FC = () => {

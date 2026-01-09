@@ -1,6 +1,7 @@
 import {
   PageAbout,
   PageEmployees,
+  PageMenu,
   PageNotFound,
   PageVacancies,
   PageVacancy,
@@ -32,5 +33,9 @@ export const privateRoutes = [
   {
     path: RoutePaths.EMPLOYEES,
     Page: PageEmployees,
+  },
+  {
+    path: RoutePaths.MENU,
+    Page: PageMenu,
   },
 ];

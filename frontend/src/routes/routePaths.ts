@@ -5,4 +5,5 @@ export enum RoutePaths {
   VACANCY = 'vacancy/:vacancyId',
   PAGE404 = '*',
   LOGIN = 'login',
+  MENU = 'menu',
 }

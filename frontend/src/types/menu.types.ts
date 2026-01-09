@@ -1,0 +1,56 @@
+// Типы для блюда
+export interface Dish {
+  number: number;
+  name: string;
+  weight: string;
+  price: number;
+}
+
+// Типы для дня меню
+export interface DayMenu {
+  _id?: string;
+  date: string;
+  dayOfWeek: string;
+  dishes: Dish[];
+}
+
+// Тип для всего меню
+export type Menu = DayMenu[];
+
+// Базовый тип ответа от API
+interface BaseApiResponse {
+  success: boolean;
+  message: string;
+  errors?: string[];
+}
+
+// Типизированный ответ от API
+export interface ApiResponse<T = unknown> extends BaseApiResponse {
+  data?: T;
+}
+
+// Тип для результата валидации CSV
+export interface CSVValidationResult {
+  isValid: boolean;
+  errors: string[];
+  parsedData: Menu | null;
+}
+
+// Тип для статуса меню
+export interface MenuStatus {
+  daysCount: number;
+  dishesCount: number;
+  dates: string[];
+  lastUpdated: string | null;
+}
+
+// Тип для результата загрузки
+export interface UploadResult {
+  daysCount: number;
+  dishesCount: number;
+}
+
+// Тип для результата очистки
+export interface ClearResult {
+  deletedCount: number;
+}
