@@ -1,14 +1,20 @@
 import { Typography } from '@mui/material';
 import { ReactNode } from 'react';
+import { TypographyProps } from '@mui/material/Typography';
 
 type UITitleProps = {
   children: ReactNode;
+  variant?: TypographyProps['variant'];
 };
 
-export const UITitle: React.FC<UITitleProps> = ({ children }) => {
+export const UITitle: React.FC<UITitleProps> = ({
+  children,
+  variant = 'caption',
+}) => {
   return (
     <Typography
-      variant="caption"
+      variant={variant}
+      gutterBottom
       sx={{
         p: 1,
         backgroundColor: '#1976d2',

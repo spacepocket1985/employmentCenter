@@ -9,14 +9,14 @@ import {
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { MenuStatus } from 'src/types/menu.types';
-
+import { UITitle } from '@components/ui';
 
 interface MenuStatusPanelProps {
   status: MenuStatus | null | undefined;
   isLoading: boolean;
 }
 
-const MenuStatusPanel: React.FC<MenuStatusPanelProps> = ({
+export const MenuStatusPanel: React.FC<MenuStatusPanelProps> = ({
   status,
   isLoading,
 }) => {
@@ -26,9 +26,7 @@ const MenuStatusPanel: React.FC<MenuStatusPanelProps> = ({
 
   return (
     <Paper sx={{ p: 2, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Текущее состояние
-      </Typography>
+      <UITitle variant="body1"> Текущее состояние</UITitle>
 
       {status ? (
         <Box>

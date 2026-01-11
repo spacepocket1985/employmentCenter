@@ -2,11 +2,12 @@ import React from 'react';
 import { Box, Typography, Snackbar, Alert } from '@mui/material';
 import { useMenuPanel } from '@hooks/useMenuPanel';
 import ClearMenuDialog from './clearMenuDialog';
-import MenuStatusPanel from './MenuStatusPanel';
+
 import MenuUploadPanel from './menuUploadPanel';
 import ValidationErrorsDialog from './validationErrorsDialog';
+import MenuStatusPanel from './MenuStatusPanel';
 
-const MenuPanel: React.FC = () => {
+export const MenuPanel: React.FC = () => {
   const {
     // Состояния
     selectedFile,
@@ -98,5 +99,3 @@ const MenuPanel: React.FC = () => {
     </Box>
   );
 };
-
-export default MenuPanel;

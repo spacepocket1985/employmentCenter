@@ -1,4 +1,4 @@
-import MenuPanel from '@components/menu/menuPanel-old';
+import { MenuPanel } from '@components/menu/menuPanel';
 
 const MenuPage: React.FC = () => {
   return <MenuPanel />;

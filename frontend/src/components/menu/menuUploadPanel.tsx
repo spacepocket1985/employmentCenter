@@ -6,13 +6,14 @@ import {
   Typography,
   Alert,
   LinearProgress,
-  Chip
+  Chip,
 } from '@mui/material';
 import {
   Upload as UploadIcon,
   Delete as DeleteIcon,
-  Error as ErrorIcon
+  Error as ErrorIcon,
 } from '@mui/icons-material';
+import { UITitle } from '@components/ui';
 
 interface MenuUploadPanelProps {
   selectedFile: File | null;
@@ -35,13 +36,11 @@ const MenuUploadPanel: React.FC<MenuUploadPanelProps> = ({
   onFileSelect,
   onUpload,
   onClear,
-  onValidationErrorsClick
+  onValidationErrorsClick,
 }) => {
   return (
     <Paper sx={{ p: 2, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Загрузка нового меню
-      </Typography>
+      <UITitle variant="body1"> Загрузка нового меню</UITitle>
 
       <Alert severity="info" sx={{ mb: 2 }}>
         Загрузите CSV файл, сохранённый из Excel
@@ -75,7 +74,7 @@ const MenuUploadPanel: React.FC<MenuUploadPanelProps> = ({
               // Удаление файла обрабатывается в родителе
               // Это нужно будет передать через пропсы
             }}
-            color={validationResult?.isValid ? "success" : "error"}
+            color={validationResult?.isValid ? 'success' : 'error'}
             size="small"
           />
         )}
