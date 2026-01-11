@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, IconButton, Grid } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 
@@ -8,14 +7,16 @@ import { UIModal } from '@components/ui';
 import { BaseUrl } from '@store/config';
 import { UserAuth } from '@components/auth';
 import { userStorage } from '@utils/userStorage';
+import { usePageTitle } from '@hooks/usePageTitle';
 import { userActions } from '@store/slices';
 import { HeaderMenu } from '@components/layout';
 import { handleErrorMsg } from '@utils/handleRequestResult';
-import { RoutePaths } from '@routes/routePaths';
+
 
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.name);
+  const pageTitle = usePageTitle();
 
   useEffect(() => {
     const getUserIdByToken = async () => {
@@ -41,13 +42,13 @@ export const Header = (): JSX.Element => {
     getUserIdByToken();
   }, [dispatch]);
 
-  const { pathname } = useLocation();
+  // const { pathname } = useLocation();
 
-  const pageTitle = pathname.includes(RoutePaths.EMPLOYEES)
-    ? 'Список сотрудников'
-    : pathname.includes(RoutePaths.VACANCY)
-    ? 'Вакансии Гродненской ТЭЦ-2'
-    : 'Панель управления';
+  // const pageTitle = pathname.includes(RoutePaths.EMPLOYEES)
+  //   ? 'Список сотрудников'
+  //   : pathname.includes('vacancy')
+  //   ? 'Вакансии Гродненской ТЭЦ-2'
+  //   : 'Панель управления';
 
   const onLogOutClickHandler = async () => {
     await dispatch(userActions.logOutUser());
