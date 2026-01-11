@@ -1,13 +1,11 @@
+export const tec2Url = 'http://tec23.grodno.energo.net/';
+
 import React from 'react';
+import { RoleBasedControls } from '@components/auth';
 import { IconButton } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
-import CakeIcon from '@mui/icons-material/Cake';
-import WorkIcon from '@mui/icons-material/Work';
-import { Link } from 'react-router-dom';
-import { RoutePaths } from '@routes/routePaths';
 
 
-export const tec2Url = 'http://tec23.grodno.energo.net/';
 
 export const HeaderMenu: React.FC<{ user: string | null }> = React.memo(
   ({ user }) => {
@@ -26,24 +24,8 @@ export const HeaderMenu: React.FC<{ user: string | null }> = React.memo(
         <IconButton onClick={handleHomeClick} style={IconButtonStyle}>
           <HomeIcon color="primary" />
         </IconButton>
-        {user && (
-          <>
-            <IconButton
-              component={Link}
-              to={RoutePaths.EMPLOYEES}
-              style={IconButtonStyle}
-            >
-              <CakeIcon color="primary" />
-            </IconButton>
-            <IconButton
-              component={Link}
-              to={RoutePaths.VACANCYLIST}
-              style={IconButtonStyle}
-            >
-              <WorkIcon color="primary" />
-            </IconButton>
-          </>
-        )}
+
+        {user && <RoleBasedControls userName={user} renderAs="icons" />}
       </>
     );
   }

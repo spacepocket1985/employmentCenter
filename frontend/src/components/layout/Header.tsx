@@ -12,7 +12,6 @@ import { userActions } from '@store/slices';
 import { HeaderMenu } from '@components/layout';
 import { handleErrorMsg } from '@utils/handleRequestResult';
 
-
 export const Header = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.name);
@@ -41,14 +40,6 @@ export const Header = (): JSX.Element => {
 
     getUserIdByToken();
   }, [dispatch]);
-
-  // const { pathname } = useLocation();
-
-  // const pageTitle = pathname.includes(RoutePaths.EMPLOYEES)
-  //   ? 'Список сотрудников'
-  //   : pathname.includes('vacancy')
-  //   ? 'Вакансии Гродненской ТЭЦ-2'
-  //   : 'Панель управления';
 
   const onLogOutClickHandler = async () => {
     await dispatch(userActions.logOutUser());
