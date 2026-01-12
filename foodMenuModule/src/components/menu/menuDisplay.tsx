@@ -113,10 +113,11 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
       fontSize: '1.2rem',
       textAlign: 'center' as const,
       backgroundColor: '#f8f9fa',
+      color: '#103896',
     },
     body: {
-      fontSize: '1.1rem',
-      textAlign: 'center' as const,
+      fontSize: '1rem',
+      textAlign: 'left' as const,
     },
     number: {
       color: '#6c757d',
@@ -205,9 +206,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         >
           Меню столовой
         </Typography>
-        <Typography variant="h6" align="center" sx={{ opacity: 0.9 }}>
-          Гродненская ТЭЦ-2
-        </Typography>
+
         <Typography variant="body2" align="center" sx={{ mt: 1, opacity: 0.8 }}>
           Обновлено: {new Date().toLocaleDateString('ru-RU')}
         </Typography>
@@ -313,7 +312,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
           {/* Таблица блюд */}
           <TableContainer>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow sx={{ bgcolor: '#f8f9fa' }}>
                   <TableCell
