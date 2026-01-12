@@ -52,6 +52,13 @@ export const menuApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Menu'],
     }),
+    getMenuDisplay: builder.query<ApiResponse<Menu>, void>({
+      query: () => ({
+        url: foodMenuUrl,
+        method: 'GET',
+      }),
+      providesTags: ['Menu'],
+    }),
   }),
 });
 
@@ -60,4 +67,5 @@ export const {
   useGetMenuStatusQuery,
   useUploadMenuMutation,
   useClearMenuMutation,
+  useGetMenuDisplayQuery,
 } = menuApi;

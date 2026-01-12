@@ -3,9 +3,11 @@ import { Box, Typography, Snackbar, Alert } from '@mui/material';
 import { useMenuPanel } from '@hooks/useMenuPanel';
 import ClearMenuDialog from './clearMenuDialog';
 
-import MenuUploadPanel from './menuUploadPanel';
 import ValidationErrorsDialog from './validationErrorsDialog';
-import MenuStatusPanel from './MenuStatusPanel';
+import MenuStatusPanel from './menuStatusPanel';
+import MenuUploadPanel from './menuUploadPanel';
+import { useMenuDisplay } from '@hooks/useMenuDisplay';
+import MenuDisplay from './menuDisplay';
 
 export const MenuPanel: React.FC = () => {
   const {
@@ -34,6 +36,17 @@ export const MenuPanel: React.FC = () => {
     closeClearDialog,
     clearMessages,
   } = useMenuPanel();
+
+  const {
+    menu,
+    isLoading: isDisplayLoading,
+    error,
+    formatPrice,
+    isToday,
+    handlePrint,
+    refetchMenu,
+    clearError,
+  } = useMenuDisplay();
 
   const isLoading = isStatusLoading || isUploading || isClearing;
   const hasMenuData = !!status;
@@ -74,6 +87,17 @@ export const MenuPanel: React.FC = () => {
         isClearing={isClearing}
         onClose={closeClearDialog}
         onConfirm={handleClearMenu}
+      />
+
+      <MenuDisplay
+        menu={menu}
+        isLoading={isDisplayLoading}
+        error={error}
+        formatPrice={formatPrice}
+        isToday={isToday}
+        handlePrint={handlePrint}
+        clearError={clearError}
+        refetchMenu={refetchMenu}
       />
 
       {/* Уведомления */}
