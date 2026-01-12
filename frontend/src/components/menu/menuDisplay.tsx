@@ -98,7 +98,8 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         sx={{
           p: 3,
           mb: 3,
-          background: 'linear-gradient(135deg, #103896, #1a4ec2)',
+          background: 'linear-gradient(135deg, #1976d2, #1a4ec2)',
+          // background: 'linear-gradient(135deg, #103896, #1a4ec2)',
           color: 'white',
         }}
       >
