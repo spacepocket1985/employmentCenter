@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   ToggleButton,
@@ -13,6 +13,8 @@ import {
 import { CalendarToday, ViewWeek } from '@mui/icons-material';
 import { DayMenu } from 'src/types/menu.types';
 
+// === ИНТЕРФЕЙС ПРОПСОВ ===
+// Компонент получает все данные и обработчики от родителя
 interface CompactMenuFilterProps {
   menu: DayMenu[];
   filterType: 'all' | 'day';
@@ -22,6 +24,18 @@ interface CompactMenuFilterProps {
   isToday: (dateString: string) => boolean;
 }
 
+/**
+ * CompactMenuFilter - компонент фильтрации меню
+ * 
+ * Этот компонент НЕ управляет состоянием самостоятельно.
+ * Он только отображает текущее состояние и вызывает колбэки,
+ * переданные из родительского компонента.
+ * 
+ * Принцип работы:
+ * 1. Получает текущие значения filterType и selectedDate
+ * 2. При взаимодействии пользователя вызывает onFilterTypeChange или onDateChange
+ * 3. Родительский компонент обновляет состояние и передает новые значения обратно
+ */
 const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
   menu,
   filterType,
@@ -30,52 +44,46 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
   onDateChange,
   isToday,
 }) => {
-  // Автоматически выбираем сегодняшний день при загрузке, если он есть в меню
-  useEffect(() => {
-    if (menu.length > 0 && !selectedDate) {
-      const todayMenu = menu.find(day => isToday(day.date));
-      
-      if (todayMenu) {
-        // Если нашли сегодняшний день в меню, выбираем его
-        onFilterTypeChange('day');
-        onDateChange(todayMenu.date);
-      } else {
-        // Если сегодняшнего дня нет в меню, показываем все дни
-        onFilterTypeChange('all');
-      }
-    }
-  }, [menu, isToday, selectedDate, onFilterTypeChange, onDateChange]);
-
-  // Проверяем, есть ли сегодняшний день в меню
+  // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+  
+  /**
+   * Проверяет, есть ли сегодняшний день в меню
+   * Используется для отображения индикатора "!"
+   */
   const hasTodayInMenu = menu.some(day => isToday(day.date));
+  
+  /**
+   * Проверяет, выбран ли сегодняшний день
+   * Используется для стилизации чипа
+   */
+  const isSelectedToday = selectedDate ? isToday(selectedDate) : false;
 
-  // Обработчик изменения типа фильтра
+  // === ОБРАБОТЧИКИ СОБЫТИЙ ===
+  
+  /**
+   * Обработчик изменения типа фильтра (переключение между "все дни" и "выбрать день")
+   */
   const handleFilterChange = (
     event: React.MouseEvent<HTMLElement>,
     value: 'all' | 'day' | null
   ) => {
+    // value может быть null, если нажата уже выбранная кнопка
     if (value !== null) {
+      // Вызываем колбэк, переданный из родительского компонента
       onFilterTypeChange(value);
-      
-      // Если переключаемся на "все дни", сбрасываем выбранную дату
-      if (value === 'all') {
-        onDateChange(null);
-      } else if (value === 'day' && !selectedDate) {
-        // Если переключаемся на "выбрать день" и дата не выбрана,
-        // пытаемся выбрать сегодняшний день
-        const todayMenu = menu.find(day => isToday(day.date));
-        if (todayMenu) {
-          onDateChange(todayMenu.date);
-        }
-      }
     }
   };
 
-  // Обработчик выбора даты
+  /**
+   * Обработчик выбора даты из выпадающего списка
+   */
   const handleDateChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value as string;
+    // Передаем выбранную дату (или null если строка пустая) в родительский компонент
     onDateChange(value || null);
   };
+
+  // === РЕНДЕРИНГ КОМПОНЕНТА ===
 
   return (
     <Box sx={{ 
@@ -85,23 +93,29 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
       alignItems: { xs: 'stretch', sm: 'center' },
       mb: 3 
     }}>
+      {/* Заголовок фильтра */}
       <Typography variant="subtitle1" sx={{ mr: 2, fontWeight: 600 }}>
         Показать:
       </Typography>
       
+      {/* Переключатель между "все дни" и "выбрать день" */}
       <ToggleButtonGroup
-        value={filterType}
-        exclusive
-        onChange={handleFilterChange}
+        value={filterType} // Текущее значение из пропсов
+        exclusive // Только одна кнопка может быть выбрана
+        onChange={handleFilterChange} // Обработчик изменений
         size="small"
       >
+        {/* Кнопка "Все дни" */}
         <ToggleButton value="all">
           <ViewWeek fontSize="small" sx={{ mr: 1 }} />
           Все дни ({menu.length})
         </ToggleButton>
+        
+        {/* Кнопка "Выбрать день" */}
         <ToggleButton value="day">
           <CalendarToday fontSize="small" sx={{ mr: 1 }} />
           Выбрать день
+          {/* Индикатор "!", если сегодняшний день есть в меню */}
           {hasTodayInMenu && (
             <Chip 
               label="!" 
@@ -112,10 +126,11 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
                 height: 18, 
                 minWidth: 18,
                 fontSize: '0.7rem',
-                backgroundColor: filterType === 'day' && selectedDate && isToday(selectedDate) 
+                // Стилизуем чип, если выбран сегодняшний день
+                backgroundColor: filterType === 'day' && isSelectedToday
                   ? '#1976d2' 
                   : 'transparent',
-                color: filterType === 'day' && selectedDate && isToday(selectedDate) 
+                color: filterType === 'day' && isSelectedToday
                   ? 'white' 
                   : '#1976d2',
                 borderColor: '#1976d2'
@@ -125,18 +140,22 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
         </ToggleButton>
       </ToggleButtonGroup>
 
+      {/* Выпадающий список для выбора даты */}
       <FormControl size="small" sx={{ minWidth: 200 }}>
         <Select
-          value={selectedDate || ''}
-          onChange={handleDateChange}
-          disabled={filterType === 'all'}
-          displayEmpty
+          value={selectedDate || ''} // Текущее значение из пропсов
+          onChange={handleDateChange} // Обработчик изменений
+          disabled={filterType === 'all'} // Отключаем, если выбран режим "все дни"
+          displayEmpty // Показываем плейсхолдер, когда значение пустое
+          // Кастомизация отображаемого значения
           renderValue={(selected) => {
             if (!selected) {
+              // Если дата не выбрана, показываем плейсхолдер
               return (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <span>Выберите дату</span>
-                  {hasTodayInMenu && filterType === 'day' && (
+                  {/* Индикатор "Сегодня доступно", если сегодняшний день есть в меню */}
+                  {hasTodayInMenu && filterType === 'day' && !selectedDate && (
                     <Chip 
                       label="Сегодня доступно" 
                       color="success" 
@@ -147,14 +166,18 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
                 </Box>
               );
             }
+            
+            // Если дата выбрана, находим соответствующий день в меню
             const day = menu.find(d => d.date === selected);
-            if (!day) return selected;
+            if (!day) return selected; // На всякий случай
+            
             return (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <span>{day.date.split(' ')[0]}</span>
+                <span>{day.date.split(' ')[0]}</span> {/* Только дата без дня недели */}
+                {/* Индикатор "Сегодня", если выбрана сегодняшняя дата */}
                 {isToday(selected) && (
                   <Chip 
-                    label={filterType === 'day' && selectedDate === selected ? "Сегодня (авто)" : "Сегодня"} 
+                    label="Сегодня" 
                     color="primary" 
                     size="small" 
                   />
@@ -163,6 +186,7 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
             );
           }}
         >
+          {/* Пункты меню для каждой даты */}
           {menu.map((day) => {
             const isTodayDate = isToday(day.date);
             return (
@@ -173,18 +197,22 @@ const CompactMenuFilter: React.FC<CompactMenuFilterProps> = ({
                   justifyContent: 'space-between', 
                   width: '100%' 
                 }}>
+                  {/* Дата и день недели */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <span>{day.date.split(' ')[0]}</span>
                     <Typography variant="body2" color="text.secondary">
                       ({day.dayOfWeek})
                     </Typography>
                   </Box>
+                  
+                  {/* Индикатор "Сегодня" для соответствующей даты */}
                   {isTodayDate && (
                     <Chip 
                       label="Сегодня" 
                       color="primary" 
                       size="small" 
                       sx={{ 
+                        // Выделяем, если эта дата выбрана
                         backgroundColor: selectedDate === day.date ? '#1976d2' : undefined,
                         color: selectedDate === day.date ? 'white' : undefined
                       }}

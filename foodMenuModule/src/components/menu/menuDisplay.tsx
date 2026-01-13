@@ -21,6 +21,8 @@ import {
 } from '@mui/icons-material';
 import { Menu, DayMenu } from 'src/types/menu.types';
 import CompactMenuFilter from './compactMenuFilter';
+
+import { tableStyles } from '@const/menu.conts';
 import { usePrintStyles } from '@hooks/usePrintStyles';
 
 interface MenuDisplayProps {
@@ -44,93 +46,96 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   refetchMenu,
   clearError,
 }) => {
+  // Стили для печати
   const printStyles = usePrintStyles({
     dense: true,
     fontSize: 10,
     margin: '0.4cm',
   });
 
-  // Состояния фильтрации
+  // === СОСТОЯНИЯ ФИЛЬТРАЦИИ ===
+  // Вся логика управления состоянием фильтрации находится здесь
   const [filterType, setFilterType] = useState<'all' | 'day'>('all');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // Автоматически выбираем сегодняшнюю дату при загрузке
+  // === ЭФФЕКТ ДЛЯ АВТОМАТИЧЕСКОГО ВЫБОРА СЕГОДНЯШНЕГО ДНЯ ===
+  // Выполняется только при загрузке меню (когда меняется menu)
   useEffect(() => {
     if (menu.length > 0) {
-      const today = new Date();
-      const todayFormatted = today
-        .toLocaleDateString('ru-RU', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-        })
-        .replace(/\./g, '.');
-
       // Ищем сегодняшний день в меню
-      const todayInMenu = menu.find((day) => {
-        const menuDate = day.date.split(' ')[0];
-        return menuDate === todayFormatted;
-      });
+      const todayMenu = menu.find(day => isToday(day.date));
+      
+      if (todayMenu) {
+        // Если сегодняшний день найден, автоматически выбираем его
+        setSelectedDate(todayMenu.date);
+        setFilterType('day');
 
-      if (todayInMenu) {
-        setSelectedDate(todayInMenu.date);
-        setFilterType('day'); // Автоматически показываем сегодняшний день
+      } else {
+        // Если сегодняшнего дня нет, показываем все дни
+        setFilterType('all');
+        setSelectedDate(null);
       }
     }
-  }, [menu]);
+  }, [menu, isToday]); // Зависимости: menu и isToday
 
-  // Обработчики фильтров
+  // === ОБРАБОТЧИКИ ИЗМЕНЕНИЯ ФИЛЬТРОВ ===
+  // Эти функции передаются в дочерний компонент CompactMenuFilter
+
+  /**
+   * Обработчик изменения типа фильтра (все дни/выбрать день)
+   */
   const handleFilterTypeChange = (type: 'all' | 'day') => {
+    
     setFilterType(type);
+    
     if (type === 'all') {
+      // При переключении на "все дни" сбрасываем выбранную дату
       setSelectedDate(null);
+    } else if (type === 'day' && !selectedDate) {
+      // При переключении на "выбрать день" и если дата не выбрана,
+      // пробуем выбрать сегодняшний день
+      const todayMenu = menu.find(day => isToday(day.date));
+      if (todayMenu) {
+        setSelectedDate(todayMenu.date);
+      }
     }
   };
 
+  /**
+   * Обработчик изменения выбранной даты
+   */
   const handleDateChange = (date: string | null) => {
+    
     setSelectedDate(date);
+    
+    // При выборе даты автоматически переключаемся на режим "выбрать день"
     if (date) {
       setFilterType('day');
     }
   };
 
-  // Отфильтрованное меню
+  // === ФИЛЬТРАЦИЯ МЕНЮ ===
+  // Используем useMemo для оптимизации, чтобы не фильтровать на каждом рендере
   const filteredMenu = useMemo(() => {
+    
     if (filterType === 'all') {
+      // Режим "все дни" - возвращаем всё меню
       return menu;
     }
 
     if (filterType === 'day' && selectedDate) {
+      // Режим "выбрать день" - фильтруем по выбранной дате
       return menu.filter((day) => day.date === selectedDate);
     }
 
+    // Если ничего не подошло, возвращаем пустой массив
     return [];
   }, [menu, filterType, selectedDate]);
 
-  const tableStyles = {
-    header: {
-      fontWeight: 600,
-      fontSize: '1.1rem',
-      textAlign: 'center' as const,
-      backgroundColor: '#f8f9fa',
-      color: '#103896',
-    },
-    body: {
-      fontSize: '1rem',
-      textAlign: 'left' as const,
-      color: '#212529',
-    },
-    number: {
-      color: '#6c757d',
-      fontWeight: 500,
-      fontSize: '1rem',
-    },
-    price: {
-      color: '#198754',
-      fontWeight: 600,
-      fontSize: '1.1rem',
-    },
-  };
+  // Используем отфильтрованное меню или полное, если отфильтрованное пустое
+  const displayMenu = filteredMenu.length > 0 ? filteredMenu : menu;
+  
+  // === СОСТОЯНИЯ ЗАГРУЗКИ И ОШИБОК ===
 
   if (isLoading) {
     return (
@@ -182,7 +187,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
     );
   }
 
-  const displayMenu = filteredMenu.length > 0 ? filteredMenu : menu;
+  // === РЕНДЕРИНГ КОМПОНЕНТА ===
 
   return (
     <Box
@@ -190,7 +195,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
       className="print-area"
     >
       {/* Заголовок */}
-
       <Paper
         sx={{
           p: 3,
@@ -213,7 +217,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </Typography>
       </Paper>
 
-      {/* Информация о фильтрах */}
+      {/* Панель управления с фильтрами и кнопками */}
       <Box
         sx={{
           mb: 3,
@@ -222,8 +226,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
           justifyContent: 'space-between',
         }}
       >
-        {' '}
-        {/* Фильтр меню */}
+        {/* Компонент фильтрации - передаем состояние и обработчики */}
         <CompactMenuFilter
           menu={menu}
           filterType={filterType}
@@ -232,6 +235,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
           onDateChange={handleDateChange}
           isToday={isToday}
         />
+        
         {/* Кнопки управления */}
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Button
@@ -262,7 +266,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </Alert>
       )}
 
-      {/* Меню по дням */}
+      {/* Отображение меню по дням */}
       {displayMenu.map((day: DayMenu) => (
         <Paper
           key={day.date}
@@ -378,7 +382,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </Paper>
       ))}
 
-      {/* Информация о количестве */}
+      {/* Футер с информацией */}
       <Box
         sx={{
           mt: 4,
@@ -407,6 +411,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </div>
       </Box>
 
+      {/* Стили для печати */}
       <style>{printStyles}</style>
     </Box>
   );
