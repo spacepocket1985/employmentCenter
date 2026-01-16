@@ -6,8 +6,16 @@ import { RoutePaths } from '@routes/routePaths';
 import CakeIcon from '@mui/icons-material/Cake';
 import WorkIcon from '@mui/icons-material/Work';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-import { IconButton, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import {
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+} from '@mui/material';
 import { ControlItem, UserRole, getUserRole } from 'src/types/user.types';
 
 export const controlsConfig: ControlItem[] = [
@@ -28,6 +36,12 @@ export const controlsConfig: ControlItem[] = [
     icon: RestaurantIcon,
     link: RoutePaths.MENU,
     roles: [UserRole.ADMIN, UserRole.COP],
+  },
+  {
+    text: 'План работ',
+    icon: CalendarMonthIcon,
+    link: RoutePaths.PLAN,
+    roles: [UserRole.ADMIN],
   },
 ];
 

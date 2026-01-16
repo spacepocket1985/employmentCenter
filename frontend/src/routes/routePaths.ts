@@ -6,4 +6,5 @@ export enum RoutePaths {
   PAGE404 = '*',
   LOGIN = 'login',
   MENU = 'menu',
+  PLAN = 'plan',
 }

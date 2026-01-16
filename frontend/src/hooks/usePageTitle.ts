@@ -24,6 +24,10 @@ const titleRules: RouteTitleRule[] = [
     test: (p) => p.endsWith('/staff') || p === '/',
     title: 'Панель управления',
   },
+  {
+    test: (p) => p.endsWith('/plan') || p === '/',
+    title: 'Панель работ',
+  },
 ];
 
 // Универсальная функция-хук

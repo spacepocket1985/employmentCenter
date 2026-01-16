@@ -3,6 +3,7 @@ import {
   PageEmployees,
   PageMenu,
   PageNotFound,
+  PagePlan,
   PageVacancies,
   PageVacancy,
 } from '@pages/index';
@@ -37,5 +38,9 @@ export const privateRoutes = [
   {
     path: RoutePaths.MENU,
     Page: PageMenu,
+  },
+  {
+    path: RoutePaths.PLAN,
+    Page: PagePlan,
   },
 ];

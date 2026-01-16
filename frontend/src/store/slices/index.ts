@@ -4,4 +4,5 @@ export * from './userSlice';
 export * from './vacanciesApiSlice';
 export * from './userApiSlice';
 export * from './menuApiSlice';
+export * from './workPlanApiSlice';
 

@@ -23,13 +23,13 @@ export const Footer = (): JSX.Element => {
           <IconButton color="inherit" aria-label="open drawer">
             <LocalPhoneIcon style={{ marginRight: '5px' }} />
             <Typography variant="subtitle2" component="span">
-              {'+375 (15) 245-33-57 '}
+              {'32-47 '}
             </Typography>
           </IconButton>
           <IconButton color="inherit" aria-label="open drawer">
             <EmailIcon style={{ marginRight: '5px' }} />
             <Typography variant="subtitle2" component="span">
-              {'moroztatiana@energo.grodno.by'}
+              {'klintsevich@energo.grodno.by'}
             </Typography>
           </IconButton>
         </Grid>
