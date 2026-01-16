@@ -63,13 +63,12 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   useEffect(() => {
     if (menu.length > 0) {
       // Ищем сегодняшний день в меню
-      const todayMenu = menu.find(day => isToday(day.date));
-      
+      const todayMenu = menu.find((day) => isToday(day.date));
+
       if (todayMenu) {
         // Если сегодняшний день найден, автоматически выбираем его
         setSelectedDate(todayMenu.date);
         setFilterType('day');
-
       } else {
         // Если сегодняшнего дня нет, показываем все дни
         setFilterType('all');
@@ -85,16 +84,15 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
    * Обработчик изменения типа фильтра (все дни/выбрать день)
    */
   const handleFilterTypeChange = (type: 'all' | 'day') => {
-    
     setFilterType(type);
-    
+
     if (type === 'all') {
       // При переключении на "все дни" сбрасываем выбранную дату
       setSelectedDate(null);
     } else if (type === 'day' && !selectedDate) {
       // При переключении на "выбрать день" и если дата не выбрана,
       // пробуем выбрать сегодняшний день
-      const todayMenu = menu.find(day => isToday(day.date));
+      const todayMenu = menu.find((day) => isToday(day.date));
       if (todayMenu) {
         setSelectedDate(todayMenu.date);
       }
@@ -105,9 +103,8 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
    * Обработчик изменения выбранной даты
    */
   const handleDateChange = (date: string | null) => {
-    
     setSelectedDate(date);
-    
+
     // При выборе даты автоматически переключаемся на режим "выбрать день"
     if (date) {
       setFilterType('day');
@@ -117,7 +114,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   // === ФИЛЬТРАЦИЯ МЕНЮ ===
   // Используем useMemo для оптимизации, чтобы не фильтровать на каждом рендере
   const filteredMenu = useMemo(() => {
-    
     if (filterType === 'all') {
       // Режим "все дни" - возвращаем всё меню
       return menu;
@@ -134,7 +130,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
   // Используем отфильтрованное меню или полное, если отфильтрованное пустое
   const displayMenu = filteredMenu.length > 0 ? filteredMenu : menu;
-  
+
   // === СОСТОЯНИЯ ЗАГРУЗКИ И ОШИБОК ===
 
   if (isLoading) {
@@ -213,7 +209,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </Typography>
 
         <Typography variant="body2" align="center" sx={{ mt: 1, opacity: 0.8 }}>
-          Обновлено: {new Date().toLocaleDateString('ru-RU')}
+          {menu.length > 1 && `${menu[0].date} - ${menu.at(-1)?.date}`}
         </Typography>
       </Paper>
 
@@ -235,7 +231,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
           onDateChange={handleDateChange}
           isToday={isToday}
         />
-        
+
         {/* Кнопки управления */}
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Button
