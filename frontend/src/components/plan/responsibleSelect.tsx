@@ -27,7 +27,6 @@ const ResponsibleSelect: React.FC<ResponsibleSelectProps> = ({
   value,
   onChange,
   label = 'Ответственные',
-  placeholder = 'Выберите или введите ответственных',
   disabled = false,
   TextFieldProps = {},
 }) => {
@@ -48,7 +47,7 @@ const ResponsibleSelect: React.FC<ResponsibleSelectProps> = ({
         <TextField
           {...params}
           label={label}
-          placeholder={placeholder}
+
           fullWidth
           multiline
           minRows={2}

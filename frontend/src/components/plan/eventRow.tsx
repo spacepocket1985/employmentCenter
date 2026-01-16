@@ -57,7 +57,7 @@ const EventRow: React.FC<EventRowProps> = ({
             fullWidth: true,
             sx: {
               '& .MuiInputBase-root': {
-                fontSize: '0.875rem',
+                fontSize: '1rem',
               },
             },
           }}
@@ -70,8 +70,6 @@ const EventRow: React.FC<EventRowProps> = ({
           TextFieldProps={{
             size: 'small',
             fullWidth: true,
-            helperText:
-              'Несколько ответственных через запятую или выбор из списка',
             sx: {
               '& .MuiInputBase-root': {
                 fontSize: '0.875rem',
