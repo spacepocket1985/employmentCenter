@@ -4,6 +4,8 @@ import {
   PageMenu,
   PageNotFound,
   PagePlan,
+  PagePlanCreate,
+  PagePlans,
   PageVacancies,
   PageVacancy,
 } from '@pages/index';
@@ -40,7 +42,15 @@ export const privateRoutes = [
     Page: PageMenu,
   },
   {
+    path: RoutePaths.CREATE_PLANS,
+    Page: PagePlanCreate,
+  },
+  {
     path: RoutePaths.PLAN,
     Page: PagePlan,
+  },
+  {
+    path: RoutePaths.PLANS,
+    Page: PagePlans,
   },
 ];

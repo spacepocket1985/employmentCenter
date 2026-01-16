@@ -6,5 +6,8 @@ export enum RoutePaths {
   PAGE404 = '*',
   LOGIN = 'login',
   MENU = 'menu',
-  PLAN = 'plan',
+  PLANS = 'plans',
+  PLAN = 'plans/:id',
+  CREATE_PLANS = 'plans/create',
+  EDIT_PLAN = '/plans/:id/edit',
 }

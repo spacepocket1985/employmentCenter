@@ -43,6 +43,18 @@ export const controlsConfig: ControlItem[] = [
     link: RoutePaths.PLAN,
     roles: [UserRole.ADMIN],
   },
+  {
+    text: 'Планs работ',
+    icon: CalendarMonthIcon,
+    link: RoutePaths.PLANS,
+    roles: [UserRole.ADMIN],
+  },
+  {
+    text: 'Создать план работ',
+    icon: CalendarMonthIcon,
+    link: RoutePaths.CREATE_PLANS,
+    roles: [UserRole.ADMIN],
+  },
 ];
 
 interface RoleBasedControlsProps {
