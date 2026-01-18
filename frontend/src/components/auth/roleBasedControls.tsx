@@ -7,6 +7,7 @@ import CakeIcon from '@mui/icons-material/Cake';
 import WorkIcon from '@mui/icons-material/Work';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 
 import {
   IconButton,
@@ -44,14 +45,14 @@ export const controlsConfig: ControlItem[] = [
     roles: [UserRole.ADMIN],
   },
   {
-    text: 'Планs работ',
+    text: 'Планы работ',
     icon: CalendarMonthIcon,
     link: RoutePaths.PLANS,
     roles: [UserRole.ADMIN],
   },
   {
     text: 'Создать план работ',
-    icon: CalendarMonthIcon,
+    icon: EditCalendarIcon,
     link: RoutePaths.CREATE_PLANS,
     roles: [UserRole.ADMIN],
   },

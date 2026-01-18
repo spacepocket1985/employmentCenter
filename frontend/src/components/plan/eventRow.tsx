@@ -1,10 +1,10 @@
-// components/DayRow/EventRow.tsx
 import React from 'react';
-import { TableCell, TextField, Box, IconButton } from '@mui/material';
+import { TableCell, Box, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LocalEvent } from 'src/types/workPlan.types';
 import ActivitySelect from './activitySelect';
 import ResponsibleSelect from './responsibleSelect';
+import TimeSelect from './timeSelect';
 
 interface EventRowProps {
   event: LocalEvent;
@@ -34,17 +34,9 @@ const EventRow: React.FC<EventRowProps> = ({
   return (
     <>
       <TableCell sx={{ width: '10%' }}>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="08-15"
+        <TimeSelect
           value={event.time}
-          onChange={(e) => onUpdateTime(dayId, event.id, e.target.value)}
-          sx={{
-            '& .MuiInputBase-input': {
-              fontSize: '0.875rem',
-            },
-          }}
+          onChange={(t) => onUpdateTime(dayId, event.id, t)}
         />
       </TableCell>
       <TableCell sx={{ width: '55%' }}>
@@ -89,14 +81,15 @@ const EventRow: React.FC<EventRowProps> = ({
             mt: 1,
           }}
         >
-          <IconButton
-            size="small"
+          <Button
+            startIcon={<DeleteIcon />}
             onClick={() => onRemoveEvent(dayId, event.id)}
             color="error"
-            sx={{ mt: 0.5 }}
+            sx={{ fontSize: '0.75rem' }}
+            variant="contained"
           >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+            Удалить мероприятие
+          </Button>
         </Box>
       </TableCell>
     </>

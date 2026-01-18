@@ -2,6 +2,7 @@ import React from 'react';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
 import { SaturdayData } from '../../types/workPlan.types';
 import { MONTHS } from '@utils/dateUtils';
+import { UITitle } from '@components/ui';
 
 interface SaturdaySelectorProps {
   saturdays: SaturdayData[];
@@ -26,11 +27,9 @@ const SaturdaySelector: React.FC<SaturdaySelectorProps> = ({
 
   return (
     <Paper sx={{ p: 3, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        2. Укажите рабочие субботы
-      </Typography>
+      <UITitle variant="h6">2. Укажите рабочие субботы</UITitle>
 
-      <Typography variant="body2" color="text.secondary" paragraph>
+      <Typography variant="body2" color="text.secondary" paragraph fontWeight={600}>
         По умолчанию все субботы нерабочие. Отметьте субботы, которые являются
         рабочими:
       </Typography>

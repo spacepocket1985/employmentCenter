@@ -16,7 +16,7 @@ export type DayPlan = {
 };
 
 export type WorkPlan = {
-  id?: string;
+  _id?: string;
   month: string;
   monthNumber: number;
   year: number;

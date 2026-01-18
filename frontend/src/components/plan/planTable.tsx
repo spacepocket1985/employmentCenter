@@ -68,8 +68,9 @@ const PlanTable: React.FC<PlanTableProps> = ({
                   color: 'white', 
                   fontWeight: 'bold', 
                   width: '10%',
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                 }}
+                align='center'
               >
                 Дата
               </TableCell>
@@ -78,8 +79,9 @@ const PlanTable: React.FC<PlanTableProps> = ({
                   color: 'white', 
                   fontWeight: 'bold', 
                   width: '10%',
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                 }}
+                align='center'
               >
                 Время
               </TableCell>
@@ -88,8 +90,9 @@ const PlanTable: React.FC<PlanTableProps> = ({
                   color: 'white', 
                   fontWeight: 'bold', 
                   width: '55%',
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                 }}
+                align='center'
               >
                 Мероприятия
               </TableCell>
@@ -98,8 +101,9 @@ const PlanTable: React.FC<PlanTableProps> = ({
                   color: 'white', 
                   fontWeight: 'bold', 
                   width: '25%',
-                  fontSize: '0.875rem',
+                  fontSize: '1rem',
                 }}
+                align='center'
               >
                 Ответственный за выполнение
               </TableCell>

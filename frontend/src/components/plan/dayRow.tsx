@@ -1,23 +1,24 @@
 // components/DayRow/DayRow.tsx
 import React from 'react';
-import {
-  TableRow,
-  TableCell,
-  Typography,
-  Button,
-} from '@mui/material';
+import { TableRow, TableCell, Typography, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { LocalDayPlan } from 'src/types/workPlan.types';
 import EventRow from './eventRow';
-
-
 
 interface DayRowProps {
   day: LocalDayPlan;
   onAddEvent: (dayId: string) => void;
   onUpdateEventTime: (dayId: string, eventId: string, time: string) => void;
-  onUpdateEventDescription: (dayId: string, eventId: string, description: string) => void;
-  onUpdateEventResponsible: (dayId: string, eventId: string, responsiblePersons: string[]) => void;
+  onUpdateEventDescription: (
+    dayId: string,
+    eventId: string,
+    description: string
+  ) => void;
+  onUpdateEventResponsible: (
+    dayId: string,
+    eventId: string,
+    responsiblePersons: string[]
+  ) => void;
   onRemoveEvent: (dayId: string, eventId: string) => void;
 }
 
@@ -35,12 +36,14 @@ const DayRow: React.FC<DayRowProps> = ({
       <TableRow sx={{ bgcolor: 'grey.50' }}>
         <TableCell
           rowSpan={day.events.length > 0 ? day.events.length + 1 : 1}
-          sx={{ width: '10%' }}
+          sx={{ width: '10%', backgroundColor: 'primary.main' }}
+          align="center"
+          color="white"
         >
-          <Typography variant="body1" fontWeight="bold">
+          <Typography variant="h4" fontWeight="bold" color="white">
             {day.dayNumber}
           </Typography>
-          <Typography variant="body2" color="text.secondary" fontSize="0.75rem">
+          <Typography variant="body2" color="white" fontSize="0.9rem">
             {day.dayOfWeek}
           </Typography>
         </TableCell>
@@ -51,9 +54,9 @@ const DayRow: React.FC<DayRowProps> = ({
               <Button
                 startIcon={<AddIcon />}
                 onClick={() => onAddEvent(day.id)}
-                size="small"
-                color="primary"
+                color='inherit'
                 sx={{ fontSize: '0.75rem' }}
+                variant="contained"
               >
                 Добавить мероприятие
               </Button>
@@ -81,8 +84,8 @@ const DayRow: React.FC<DayRowProps> = ({
         <TableRow>
           <TableCell
             colSpan={4}
-            sx={{ 
-              borderTop: 1, 
+            sx={{
+              borderTop: 1,
               borderColor: 'divider',
               width: '100%',
             }}
@@ -90,9 +93,9 @@ const DayRow: React.FC<DayRowProps> = ({
             <Button
               startIcon={<AddIcon />}
               onClick={() => onAddEvent(day.id)}
-              size="small"
               color="primary"
               sx={{ fontSize: '0.75rem' }}
+              variant="contained"
             >
               Добавить еще одно мероприятие
             </Button>

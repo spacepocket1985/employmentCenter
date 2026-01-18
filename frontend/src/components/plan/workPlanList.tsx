@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import {
   Box,
   Typography,
@@ -118,7 +119,6 @@ const WorkPlanList: React.FC = () => {
                 <TableCell sx={{ fontWeight: 'bold' }}>Месяц и год</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Дней</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Мероприятий</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Дата создания</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                   Действия
                 </TableCell>
@@ -134,7 +134,7 @@ const WorkPlanList: React.FC = () => {
 
                 return (
                   <TableRow
-                    key={plan.id}
+                    key={plan._id}
                     hover
                     sx={{ '&:hover': { bgcolor: 'action.hover' } }}
                   >
@@ -177,7 +177,10 @@ const WorkPlanList: React.FC = () => {
                           <IconButton
                             size="small"
                             color="primary"
-                            onClick={() => setViewPlanId(plan.id!)}
+                            onClick={() => {
+                              console.log(plan);
+                              setViewPlanId(plan._id!);
+                            }}
                           >
                             <ViewIcon fontSize="small" />
                           </IconButton>
@@ -189,7 +192,7 @@ const WorkPlanList: React.FC = () => {
                             color="info"
                             onClick={() => {
                               // TODO: Переход к редактированию
-                              console.log('Edit plan:', plan.id);
+                              console.log('Edit plan:', plan._id);
                             }}
                           >
                             <EditIcon fontSize="small" />
@@ -200,7 +203,7 @@ const WorkPlanList: React.FC = () => {
                           <IconButton
                             size="small"
                             color="success"
-                            onClick={() => handleExportPlan(plan.id!)}
+                            onClick={() => handleExportPlan(plan._id!)}
                           >
                             <DownloadIcon fontSize="small" />
                           </IconButton>
@@ -210,7 +213,7 @@ const WorkPlanList: React.FC = () => {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => setDeleteConfirmPlanId(plan.id!)}
+                            onClick={() => setDeleteConfirmPlanId(plan._id!)}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>

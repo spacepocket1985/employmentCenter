@@ -6,6 +6,7 @@ interface DataState {
   department: string[];
   activities: string[]; // Мероприятия
   responsiblePersons: string[]; // Ответственные лица
+  timeActivities: string[];
   query: string;
 }
 
@@ -86,6 +87,17 @@ const initialState: DataState = {
     'Нач. СОУ',
     'Витецкий Ю.И.',
   ],
+  timeActivities: [
+    '08:15',
+    '09:15',
+    '10:15',
+    '11:15',
+    '12:00',
+    '13:15',
+    '14:15',
+    '15:15',
+    '16:00',
+  ],
 
   query: '',
 };
@@ -102,6 +114,11 @@ export const dataSlice = createSlice({
         state.activities.push(action.payload);
       }
     },
+    addTimeActivity: (state, action: PayloadAction<string>) => {
+      if (!state.timeActivities.includes(action.payload)) {
+        state.timeActivities.push(action.payload);
+      }
+    },
     addResponsiblePerson: (state, action: PayloadAction<string>) => {
       if (!state.responsiblePersons.includes(action.payload)) {
         state.responsiblePersons.push(action.payload);
@@ -111,5 +128,5 @@ export const dataSlice = createSlice({
 });
 
 export default dataSlice.reducer;
-export const { setQuery, addActivity, addResponsiblePerson } =
+export const { setQuery, addActivity, addResponsiblePerson, addTimeActivity } =
   dataSlice.actions;
