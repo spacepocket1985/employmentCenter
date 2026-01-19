@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Box,
-  CircularProgress,
-  Grid,
-  Paper,
-  Typography,
-  Button,
-} from '@mui/material';
+import { Box, Paper, Typography, Button, Collapse } from '@mui/material';
+
 import {
   useCreateWorkPlanMutation,
   useGetAllWorkPlansQuery,
@@ -19,13 +13,22 @@ import {
   getDaysInMonth,
   DAYS_OF_WEEK,
 } from '@utils/dateUtils';
+import { validateWorkPlan, ValidationError } from '@utils/validationPlan';
 
-import { DayPlan, LocalDayPlan, LocalEvent } from 'src/types/workPlan.types';
+import {
+  DayPlan,
+  LocalDayPlan,
+  LocalAnnouncement,
+  Announcement,
+  LocalEvent,
+} from 'src/types/workPlan.types';
 import MonthSelector from './monthSelector';
 import PlanActions from './planActions';
 import PlanTable from './planTable';
 import SaturdaySelector from './saturdaySelector';
 import SpecialDaysSelector from './specialDaysSelector';
+import AnnouncementsSelector from './announcementsSelector'; // Новый импорт
+import ValidationErrors from './validationErrors';
 import { planStylesForCreate } from 'src/const';
 
 interface SpecialDay {
@@ -44,19 +47,40 @@ const WorkPlanPanel: React.FC = () => {
   const [selectedMonthNumber, setSelectedMonthNumber] = useState<number>(0);
   const [workingSaturdays, setWorkingSaturdays] = useState<number[]>([]);
   const [specialDays, setSpecialDays] = useState<SpecialDay[]>([]);
+  const [announcements, setAnnouncements] = useState<LocalAnnouncement[]>([]); // Новое состояние
   const [days, setDays] = useState<LocalDayPlan[]>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    []
+  );
+  const [showErrors, setShowErrors] = useState(false);
 
   // API
   const { data: plansData, isLoading: isLoadingPlans } =
     useGetAllWorkPlansQuery();
-  const [createWorkPlan, { isLoading: isCreating, error, isSuccess }] =
-    useCreateWorkPlanMutation();
+  const [
+    createWorkPlan,
+    { isLoading: isCreating, error: apiError, isSuccess },
+  ] = useCreateWorkPlanMutation();
 
   // Мемоизированные значения
   const availableMonths = useMemo(() => {
     const existingPlans = plansData?.data || [];
     return getAvailableMonths(existingPlans);
   }, [plansData]);
+
+  // Проверяем, есть ли дни без мероприятий (пункт 4)
+  const hasEmptyDays = useMemo(() => {
+    return days.some((day) => !day.isSpecialDay && day.events.length === 0);
+  }, [days]);
+
+  // Проверяем, все ли обязательные поля заполнены
+  const isPlanComplete = useMemo(() => {
+    if (days.length === 0) return false;
+    if (hasEmptyDays) return false;
+
+    const errors = validateWorkPlan(days);
+    return errors.length === 0;
+  }, [days, hasEmptyDays]);
 
   const saturdaysOfMonth = useMemo(() => {
     if (!selectedMonthNumber || !selectedYear) return [];
@@ -77,7 +101,29 @@ const WorkPlanPanel: React.FC = () => {
     return days;
   }, [selectedYear, selectedMonthNumber]);
 
-  // Обработчики
+  // Обработчики для анонсов
+  const handleAnnouncementAdd = (
+    dayNumber: number,
+    title: string,
+    style?: LocalAnnouncement['style']
+  ) => {
+    const newAnnouncement: LocalAnnouncement = {
+      id: `announcement-${Math.random().toString(36).substring(2, 9)}`,
+      dayNumber,
+      title,
+      style,
+      order: announcements.length, // Порядок по умолчанию
+    };
+
+    setAnnouncements((prev) => [...prev, newAnnouncement]);
+  };
+
+  const handleAnnouncementRemove = (id: string) => {
+    setAnnouncements((prev) =>
+      prev.filter((announcement) => announcement.id !== id)
+    );
+  };
+
   const handleMonthSelect = (value: string) => {
     const [year, month] = value.split('-').map(Number);
     setSelectedMonth(value);
@@ -85,33 +131,10 @@ const WorkPlanPanel: React.FC = () => {
     setSelectedMonthNumber(month);
     setWorkingSaturdays([]);
     setSpecialDays([]);
+    setAnnouncements([]); // Сбрасываем анонсы
     setDays([]);
-  };
-
-  const handleSaturdayToggle = (dayNumber: number) => {
-    setWorkingSaturdays((prev) =>
-      prev.includes(dayNumber)
-        ? prev.filter((d) => d !== dayNumber)
-        : [...prev, dayNumber]
-    );
-  };
-
-  const handleSpecialDayAdd = (dayNumber: number, title: string) => {
-    const dayInfo = allDaysInMonth.find((d) => d.dayNumber === dayNumber);
-    if (!dayInfo) return;
-
-    const newSpecialDay: SpecialDay = {
-      id: `special-${Math.random().toString(36).substring(2, 9)}`,
-      dayNumber,
-      title,
-      dayOfWeek: dayInfo.dayOfWeek,
-    };
-
-    setSpecialDays((prev) => [...prev, newSpecialDay]);
-  };
-
-  const handleSpecialDayRemove = (id: string) => {
-    setSpecialDays((prev) => prev.filter((day) => day.id !== id));
+    setValidationErrors([]);
+    setShowErrors(false);
   };
 
   const handleCreateTemplate = () => {
@@ -136,7 +159,7 @@ const WorkPlanPanel: React.FC = () => {
       );
 
       if (specialDay) {
-        // Специальный день - создаем его с мероприятием
+        // Специальный день
         return {
           id: specialDay.id,
           dayNumber: day.dayNumber,
@@ -145,7 +168,7 @@ const WorkPlanPanel: React.FC = () => {
           specialDayTitle: specialDay.title,
           events: [
             {
-              id: `event-${Math.random().toString(36).substring(2, 9)}`,
+              id: `event-special-${Math.random().toString(36).substring(2, 9)}`,
               time: '',
               description: specialDay.title,
               responsiblePersons: [],
@@ -186,6 +209,8 @@ const WorkPlanPanel: React.FC = () => {
     daysToShow.sort((a, b) => a.dayNumber - b.dayNumber);
 
     setDays(daysToShow as LocalDayPlan[]);
+    setValidationErrors([]);
+    setShowErrors(false);
   };
 
   const handleResetAll = () => {
@@ -194,14 +219,97 @@ const WorkPlanPanel: React.FC = () => {
     setSelectedMonthNumber(0);
     setWorkingSaturdays([]);
     setSpecialDays([]);
+    setAnnouncements([]); // Сбрасываем анонсы
     setDays([]);
+    setValidationErrors([]);
+    setShowErrors(false);
   };
 
-  // Обработчики событий
+  const convertToServerDayPlan = (localDay: LocalDayPlan): DayPlan => ({
+    id: localDay.id,
+    dayNumber: localDay.dayNumber,
+    dayOfWeek: localDay.dayOfWeek,
+    isSpecialDay: localDay.isSpecialDay,
+    specialDayTitle: localDay.specialDayTitle,
+    events: localDay.events.map((event) => ({
+      id: event.id,
+      time: event.time,
+      description: event.description,
+      responsiblePersons: event.responsiblePersons,
+      notes: event.notes,
+    })),
+  });
+
+  const convertToServerAnnouncement = (
+    localAnnouncement: LocalAnnouncement
+  ): Announcement => ({
+    id: localAnnouncement.id,
+    dayNumber: localAnnouncement.dayNumber,
+    title: localAnnouncement.title,
+    style: localAnnouncement.style,
+    order: localAnnouncement.order,
+  });
+
+  const handleSubmit = async () => {
+    if (!selectedMonthNumber || !selectedYear || days.length === 0) return;
+
+    // Проверяем валидацию
+    const errors = validateWorkPlan(days);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowErrors(true);
+      return;
+    }
+
+    const planData = {
+      month: MONTHS[selectedMonthNumber - 1],
+      monthNumber: selectedMonthNumber,
+      year: selectedYear,
+      days: days.map(convertToServerDayPlan),
+      announcements: announcements.map(convertToServerAnnouncement), // Добавляем анонсы
+    };
+
+    try {
+      await createWorkPlan(planData).unwrap();
+      setValidationErrors([]);
+      setShowErrors(false);
+      setAnnouncements([]); // Очищаем анонсы после успешного сохранения
+    } catch (err) {
+      console.error('Ошибка при создании плана:', err);
+    }
+  };
+
+  const handleSaturdayToggle = (dayNumber: number) => {
+    setWorkingSaturdays((prev) =>
+      prev.includes(dayNumber)
+        ? prev.filter((d) => d !== dayNumber)
+        : [...prev, dayNumber]
+    );
+  };
+
+  const handleSpecialDayAdd = (dayNumber: number, title: string) => {
+    const dayInfo = allDaysInMonth.find((d) => d.dayNumber === dayNumber);
+    if (!dayInfo) return;
+
+    const newSpecialDay: SpecialDay = {
+      id: `special-${Math.random().toString(36).substring(2, 9)}`,
+      dayNumber,
+      title,
+      dayOfWeek: dayInfo.dayOfWeek,
+    };
+
+    setSpecialDays((prev) => [...prev, newSpecialDay]);
+  };
+
+  const handleSpecialDayRemove = (id: string) => {
+    setSpecialDays((prev) => prev.filter((day) => day.id !== id));
+  };
+
   const handleAddEvent = (dayId: string) => {
     setDays((prev) =>
       prev.map((day) => {
-        if (day.id === dayId && !day.isSpecialDay) {
+        if (day.id === dayId) {
+          // Для специальных дней добавляем новое мероприятие, не трогая первое (название)
           const newEvent: LocalEvent = {
             id: `event-${Math.random().toString(36).substring(2, 9)}`,
             time: '',
@@ -223,11 +331,23 @@ const WorkPlanPanel: React.FC = () => {
     setDays((prev) =>
       prev.map((day) => {
         if (day.id === dayId) {
+          const updatedEvents = day.events.map((event) =>
+            event.id === eventId ? { ...event, time } : event
+          );
+
+          // Проверяем валидацию после обновления
+          setTimeout(() => {
+            const errors = validateWorkPlan(
+              prev.map((d) =>
+                d.id === dayId ? { ...day, events: updatedEvents } : d
+              )
+            );
+            setValidationErrors(errors);
+          }, 0);
+
           return {
             ...day,
-            events: day.events.map((event) =>
-              event.id === eventId ? { ...event, time } : event
-            ),
+            events: updatedEvents,
           };
         }
         return day;
@@ -243,11 +363,23 @@ const WorkPlanPanel: React.FC = () => {
     setDays((prev) =>
       prev.map((day) => {
         if (day.id === dayId) {
+          const updatedEvents = day.events.map((event) =>
+            event.id === eventId ? { ...event, description } : event
+          );
+
+          // Проверяем валидацию после обновления
+          setTimeout(() => {
+            const errors = validateWorkPlan(
+              prev.map((d) =>
+                d.id === dayId ? { ...day, events: updatedEvents } : d
+              )
+            );
+            setValidationErrors(errors);
+          }, 0);
+
           return {
             ...day,
-            events: day.events.map((event) =>
-              event.id === eventId ? { ...event, description } : event
-            ),
+            events: updatedEvents,
           };
         }
         return day;
@@ -263,11 +395,23 @@ const WorkPlanPanel: React.FC = () => {
     setDays((prev) =>
       prev.map((day) => {
         if (day.id === dayId) {
+          const updatedEvents = day.events.map((event) =>
+            event.id === eventId ? { ...event, responsiblePersons } : event
+          );
+
+          // Проверяем валидацию после обновления
+          setTimeout(() => {
+            const errors = validateWorkPlan(
+              prev.map((d) =>
+                d.id === dayId ? { ...day, events: updatedEvents } : d
+              )
+            );
+            setValidationErrors(errors);
+          }, 0);
+
           return {
             ...day,
-            events: day.events.map((event) =>
-              event.id === eventId ? { ...event, responsiblePersons } : event
-            ),
+            events: updatedEvents,
           };
         }
         return day;
@@ -280,6 +424,17 @@ const WorkPlanPanel: React.FC = () => {
       prev.map((day) => {
         if (day.id === dayId && !day.isSpecialDay) {
           const newEvents = day.events.filter((event) => event.id !== eventId);
+
+          // Проверяем валидацию после удаления
+          setTimeout(() => {
+            const errors = validateWorkPlan(
+              prev.map((d) =>
+                d.id === dayId ? { ...day, events: newEvents } : d
+              )
+            );
+            setValidationErrors(errors);
+          }, 0);
+
           return { ...day, events: newEvents };
         }
         return day;
@@ -291,225 +446,263 @@ const WorkPlanPanel: React.FC = () => {
     setDays([]);
     setWorkingSaturdays([]);
     setSpecialDays([]);
+    setValidationErrors([]);
+    setShowErrors(false);
   };
-
-  const convertToServerDayPlan = (localDay: LocalDayPlan): DayPlan => ({
-    id: localDay.id,
-    dayNumber: localDay.dayNumber,
-    dayOfWeek: localDay.dayOfWeek,
-    isSpecialDay: localDay.isSpecialDay,
-    specialDayTitle: localDay.specialDayTitle,
-    events: localDay.events.map((event) => ({
-      id: event.id,
-      time: event.time,
-      description: event.description,
-      responsiblePersons: event.responsiblePersons,
-      notes: event.notes,
-    })),
-  });
-
-  const handleSubmit = async () => {
-    if (!selectedMonthNumber || !selectedYear || days.length === 0) return;
-
-    const planData = {
-      month: MONTHS[selectedMonthNumber - 1],
-      monthNumber: selectedMonthNumber,
-      year: selectedYear,
-      days: days.map(convertToServerDayPlan),
-    };
-
-    try {
-      await createWorkPlan(planData).unwrap();
-    } catch (err) {
-      console.error('Ошибка при создании плана:', err);
-    }
-  };
-
-  if (isLoadingPlans) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ maxWidth: 1600, margin: '0 auto', p: 3 }}>
-      {/* Первая строка: Выбор месяца и рабочие субботы */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              fontWeight={600}
-              sx={planStylesForCreate}
-            >
-              1. Выберите месяц
+      {/* Первая строка: Шаги 1 и 2 */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+          gap: 3,
+          mb: 3,
+          alignItems: 'stretch',
+        }}
+      >
+        {/* Шаг 1: Выбор месяца */}
+        <Paper
+          sx={{
+            p: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+          }}
+          elevation={3}
+        >
+          <Typography variant="h6" gutterBottom sx={planStylesForCreate}>
+            1. Выберите месяц
+          </Typography>
+          <Box sx={{ mt: 2, flexGrow: 1 }}>
+            <MonthSelector
+              selectedMonth={selectedMonth}
+              availableMonths={availableMonths}
+              onMonthSelect={handleMonthSelect}
+              isLoading={isLoadingPlans}
+            />
+          </Box>
+        </Paper>
+
+        {/* Шаг 2: Рабочие субботы */}
+        {selectedMonth && saturdaysOfMonth.length > 0 ? (
+          <Paper
+            sx={{
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+            elevation={3}
+          >
+            <Typography variant="h6" gutterBottom sx={planStylesForCreate}>
+              2. Укажите рабочие субботы
             </Typography>
-            <Box sx={{ mt: 2 }}>
-              <MonthSelector
-                selectedMonth={selectedMonth}
-                availableMonths={availableMonths}
-                onMonthSelect={handleMonthSelect}
-                isLoading={isLoadingPlans}
+            <Box sx={{ mt: 2, flexGrow: 1 }}>
+              <SaturdaySelector
+                saturdays={saturdaysOfMonth}
+                workingSaturdays={workingSaturdays}
+                selectedMonthNumber={selectedMonthNumber}
+                onSaturdayToggle={handleSaturdayToggle}
+                onCreateTemplate={() => {}}
+                disabled={isLoadingPlans}
               />
             </Box>
           </Paper>
-        </Grid>
+        ) : (
+          <Paper
+            elevation={3}
+            sx={{
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              minHeight: '150px',
+            }}
+          >
+            <Typography color="text.secondary" textAlign="center">
+              Сначала выберите месяц для отображения суббот
+            </Typography>
+          </Paper>
+        )}
+      </Box>
 
-        <Grid item xs={12} md={6}>
-          {selectedMonth && saturdaysOfMonth.length > 0 ? (
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" gutterBottom fontWeight={600} sx={planStylesForCreate}>
-                2. Укажите рабочие субботы
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <SaturdaySelector
-                  saturdays={saturdaysOfMonth}
-                  workingSaturdays={workingSaturdays}
-                  selectedMonthNumber={selectedMonthNumber}
-                  onSaturdayToggle={handleSaturdayToggle}
-                  onCreateTemplate={() => {}}
-                  disabled={isLoadingPlans}
-                />
-              </Box>
-            </Paper>
-          ) : (
-            <Paper
+      {/* Вторая строка: Шаги 3, 4 и 5 - только если выбран месяц */}
+      {selectedMonth && (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+            },
+            gap: 3,
+            alignItems: 'stretch',
+          }}
+        >
+          {/* Шаг 3: Специальные дни */}
+          <Paper
+            sx={{
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+            elevation={3}
+          >
+            <Typography variant="h6" gutterBottom sx={planStylesForCreate}>
+              3. Укажите специальные дни
+            </Typography>
+            <Box sx={{ mt: 2, flexGrow: 1 }}>
+              <SpecialDaysSelector
+                allDays={allDaysInMonth}
+                specialDays={specialDays}
+                selectedMonthNumber={selectedMonthNumber}
+                onAddSpecialDay={handleSpecialDayAdd}
+                onRemoveSpecialDay={handleSpecialDayRemove}
+                disabled={isLoadingPlans}
+              />
+            </Box>
+          </Paper>
+
+          {/* Шаг 4: Анонсы мероприятий */}
+          <Paper
+            sx={{
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+            elevation={3}
+          >
+            <Typography variant="h6" gutterBottom sx={planStylesForCreate}>
+              4. Добавьте анонсы мероприятий
+            </Typography>
+            <Box sx={{ mt: 2, flexGrow: 1 }}>
+              <AnnouncementsSelector
+                allDays={allDaysInMonth}
+                announcements={announcements}
+                onAddAnnouncement={handleAnnouncementAdd}
+                onRemoveAnnouncement={handleAnnouncementRemove}
+                disabled={isLoadingPlans}
+              />
+            </Box>
+          </Paper>
+
+          {/* Шаг 5: Создать план мероприятий */}
+          <Paper
+            sx={{
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+            elevation={3}
+          >
+            <Typography variant="h6" gutterBottom sx={planStylesForCreate}>
+              5. Создать план мероприятий
+            </Typography>
+            <Box
               sx={{
-                p: 3,
-                height: '100%',
+                mt: 2,
+                flexGrow: 1,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: 'column',
               }}
             >
               <Typography
+                variant="body2"
                 color="text.secondary"
-                textAlign="center"
+                paragraph
+                sx={{ mb: 2 }}
               >
-                Сначала выберите месяц для отображения суббот
+                После выбора рабочих суббот, специальных дней и анонсов нажмите
+                кнопку для создания шаблона плана.
               </Typography>
-            </Paper>
-          )}
-        </Grid>
-      </Grid>
 
-      {/* Вторая строка: Специальные дни и создание шаблона */}
-      {selectedMonth && (
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography
-                variant="h6"
-                gutterBottom
-                fontWeight={600}
-                sx={planStylesForCreate}
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
               >
-                3. Укажите специальные дни
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <SpecialDaysSelector
-                  allDays={allDaysInMonth}
-                  specialDays={specialDays}
-                  selectedMonthNumber={selectedMonthNumber}
-                  onAddSpecialDay={handleSpecialDayAdd}
-                  onRemoveSpecialDay={handleSpecialDayRemove}
-                  disabled={isLoadingPlans}
-                />
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" gutterBottom fontWeight={600} sx={planStylesForCreate}>
-                4. Создать план мероприятий
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    После выбора рабочих суббот и специальных дней нажмите
-                    кнопку для создания шаблона плана.
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2">Выбрано:</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    • Рабочих суббот: {workingSaturdays.length}
                   </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    • Специальных дней: {specialDays.length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    • Анонсов: {announcements.length}
+                  </Typography>
+                </Box>
 
-                  <Box
-                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleCreateTemplate}
+                    disabled={isLoadingPlans}
                   >
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
-                        Выбрано:
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        • Рабочих суббот: {workingSaturdays.length}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        • Специальных дней: {specialDays.length}
-                      </Typography>
-                    </Box>
+                    Создать шаблон плана
+                  </Button>
 
-                    <Box sx={{ flexGrow: 1 }} />
-
-                    <Box
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
-                    >
-                      <Button
-                        variant="contained"
-                        onClick={handleCreateTemplate}
-                        disabled={
-                          isLoadingPlans ||
-                          (workingSaturdays.length === 0 &&
-                            specialDays.length === 0)
-                        }
-                        fullWidth
-                      >
-                        Создать шаблон плана
-                      </Button>
-
-                      <Button
-                        variant="outlined"
-                        onClick={handleResetAll}
-                        color="error"
-                        disabled={isLoadingPlans}
-                        fullWidth
-                      >
-                        Сбросить все
-                      </Button>
-                    </Box>
-                  </Box>
+                  <Button
+                    variant="outlined"
+                    onClick={handleResetAll}
+                    color="error"
+                    disabled={isLoadingPlans}
+                  >
+                    Сбросить все
+                  </Button>
                 </Box>
               </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+            </Box>
+          </Paper>
+        </Box>
       )}
+
+      {/* Отображение ошибок валидации */}
+      <Collapse in={showErrors && validationErrors.length > 0}>
+        <Box sx={{ mb: 3 }}>
+          <ValidationErrors
+            errors={validationErrors}
+            onClose={() => setShowErrors(false)}
+          />
+        </Box>
+      </Collapse>
 
       {days.length > 0 && (
         <>
           <PlanTable
             days={days}
+            announcements={announcements} // Передаем анонсы
             monthNumber={selectedMonthNumber}
             year={selectedYear}
-            error={error}
+            error={apiError}
             isSuccess={isSuccess}
             onAddEvent={handleAddEvent}
             onUpdateEventTime={handleUpdateEventTime}
             onUpdateEventDescription={handleUpdateEventDescription}
             onUpdateEventResponsible={handleUpdateEventResponsible}
             onRemoveEvent={handleRemoveEvent}
+            validationErrors={validationErrors}
+            hasEmptyDays={hasEmptyDays}
           />
 
           <PlanActions
             onCancel={handleCancel}
             onSubmit={handleSubmit}
             isSubmitting={isCreating}
-            isDisabled={days.length === 0}
+            isDisabled={days.length === 0 || hasEmptyDays || !isPlanComplete}
+            hasValidationErrors={validationErrors.length > 0}
           />
         </>
       )}

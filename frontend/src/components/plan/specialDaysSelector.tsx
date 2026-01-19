@@ -53,9 +53,11 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
-    // Установить первый день месяца по умолчанию
-    if (allDays.length > 0) {
-      setSelectedDay(allDays[0].dayNumber);
+    // Установить первый доступный день месяца по умолчанию
+    if (availableDays.length > 0) {
+      setSelectedDay(availableDays[0].dayNumber);
+    } else {
+      setSelectedDay(1);
     }
     setSpecialTitle('');
   };
@@ -85,6 +87,9 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
   const availableDays = allDays.filter(
     (day) => !specialDays.some((special) => special.dayNumber === day.dayNumber)
   );
+
+  // Проверяем, можно ли добавлять новые специальные дни
+  const canAddSpecialDays = availableDays.length > 0 && !disabled;
 
   return (
     <Box>
@@ -129,9 +134,7 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
         variant='contained'
         startIcon={<AddIcon />}
         onClick={handleOpenDialog}
-        disabled={disabled || availableDays.length === 0}
-        fullWidth
-        
+        disabled={!canAddSpecialDays}
       >
         Добавить специальный день
       </Button>
@@ -153,14 +156,25 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
                   value={selectedDay}
                   label="День месяца"
                   onChange={handleDayChange}
+                  disabled={availableDays.length === 0}
                 >
                   {availableDays.map((day) => (
                     <MenuItem key={day.dayNumber} value={day.dayNumber}>
                       {day.dayNumber} ({day.dayOfWeek})
                     </MenuItem>
                   ))}
+                  {availableDays.length === 0 && (
+                    <MenuItem disabled>
+                      Нет доступных дней
+                    </MenuItem>
+                  )}
                 </Select>
               </FormControl>
+              {availableDays.length === 0 && (
+                <Typography variant="caption" color="error" sx={{ mt: 1 }}>
+                  Все дни уже имеют специальные мероприятия
+                </Typography>
+              )}
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -171,6 +185,7 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
                 multiline
                 rows={3}
                 placeholder="Например: ОБЛАСТНАЯ НЕДЕЛЯ НУЛЕВОГО ТРАВМАТИЗМА"
+                disabled={availableDays.length === 0}
               />
             </Grid>
           </Grid>
@@ -180,7 +195,7 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
           <Button
             onClick={handleAddSpecialDay}
             variant="contained"
-            disabled={!specialTitle.trim()}
+            disabled={!specialTitle.trim() || availableDays.length === 0}
           >
             Добавить
           </Button>

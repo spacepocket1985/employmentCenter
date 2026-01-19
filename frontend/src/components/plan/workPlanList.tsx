@@ -119,6 +119,8 @@ const WorkPlanList: React.FC = () => {
                 <TableCell sx={{ fontWeight: 'bold' }}>Месяц и год</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Дней</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Мероприятий</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Анонсов</TableCell>{' '}
+                {/* Новая колонка */}
                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                   Действия
                 </TableCell>
@@ -130,6 +132,7 @@ const WorkPlanList: React.FC = () => {
                   (total, day) => total + day.events.length,
                   0
                 );
+                const totalAnnouncements = plan.announcements?.length || 0; // Новый подсчет
                 const monthName = MONTHS[plan.monthNumber - 1];
 
                 return (
@@ -161,6 +164,17 @@ const WorkPlanList: React.FC = () => {
                         label={totalEvents}
                         size="small"
                         color="secondary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      {' '}
+                      {/* Новая ячейка */}
+                      <Chip
+                        label={totalAnnouncements}
+                        size="small"
+                        color="info"
                         variant="outlined"
                       />
                     </TableCell>

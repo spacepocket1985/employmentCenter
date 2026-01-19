@@ -3,4 +3,5 @@ export const planStylesForCreate = {
   borderRadius: 2,
   p: 1,
   color: 'white',
+  fontWeight: 600,
 };

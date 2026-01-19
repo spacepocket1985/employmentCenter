@@ -17,6 +17,8 @@ interface ActivitySelectProps {
   label?: string;
   placeholder?: string;
   disabled?: boolean;
+  error?: boolean;
+  helperText?: string;
   TextFieldProps?: Partial<TextFieldProps>;
 }
 
@@ -33,6 +35,8 @@ const ActivitySelect: React.FC<ActivitySelectProps> = ({
   placeholder = 'Выберите или введите мероприятие',
   disabled = false,
   TextFieldProps = {},
+  error,
+  helperText,
 }) => {
   const { activities } = useAppSelector((state) => state.data);
 
@@ -97,6 +101,8 @@ const ActivitySelect: React.FC<ActivitySelectProps> = ({
           multiline
           minRows={2}
           maxRows={6}
+          error={error}
+          helperText={helperText}
           sx={{
             '& .MuiInputBase-root': {
               alignItems: 'flex-start',

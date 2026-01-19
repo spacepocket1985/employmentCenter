@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Box,
-  Autocomplete,
-  TextField,
-} from '@mui/material';
+import { Box, Autocomplete, TextField } from '@mui/material';
 import { useAppSelector } from '@hooks/storeHooks';
 
 // Тип времени, как в слайсе: строки вида "08:15"
@@ -14,12 +10,14 @@ export interface TimeOption {
 
 // Пропсы TimeSelect
 export interface TimeSelectProps {
-  value: string; // текущее выбранное значение, например "08:15"
-  onChange: (value: string) => void; // вернуть выбранное значение
+  value: string;
+  onChange: (value: string) => void;
   label?: string;
   placeholder?: string;
-  allowCustom?: boolean; // разрешить ввод собственного времени
+  allowCustom?: boolean;
   maxLength?: number;
+  error?: boolean;
+  helperText?: string;
 }
 
 // Валидация формата HH:mm (24ч)
@@ -37,15 +35,24 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
   placeholder = 'Введите или выберите время',
   allowCustom = true,
   maxLength = 5,
+  error,
+  helperText,
 }) => {
   // локальное состояние для ручного ввода
   const [inputValue, setInputValue] = useState<string>(value);
   const [open, setOpen] = useState<boolean>(false);
-  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [, setIsTyping] = useState<boolean>(false);
+  const [hasFormatError, setHasFormatError] = useState<boolean>(false);
 
   // синхронизация снаружи
   useEffect(() => {
     setInputValue(value);
+    // Проверяем формат при получении нового значения
+    if (value && !isValidTimeFormat(value)) {
+      setHasFormatError(true);
+    } else {
+      setHasFormatError(false);
+    }
   }, [value]);
 
   const timeOptions: TimeOption[] = useAppSelector(
@@ -57,7 +64,10 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
   );
 
   // Получаем массив значений для Autocomplete
-  const options = useMemo(() => timeOptions.map(option => option.value), [timeOptions]);
+  const options = useMemo(
+    () => timeOptions.map((option) => option.value),
+    [timeOptions]
+  );
 
   // Обработчик изменения значения (выбор из списка или ввод)
   const handleChange = (_: React.SyntheticEvent, newValue: string | null) => {
@@ -66,16 +76,31 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
       onChange(trimmedValue);
       setInputValue(trimmedValue);
       setIsTyping(false);
+      setHasFormatError(false);
     }
   };
 
   // Обработчик ввода (при каждом изменении текста)
-  const handleInputChange = (_: React.SyntheticEvent, newInputValue: string) => {
+  const handleInputChange = (
+    _: React.SyntheticEvent,
+    newInputValue: string
+  ) => {
     setInputValue(newInputValue);
     setIsTyping(true);
     
+    // Проверяем формат в реальном времени
+    if (newInputValue.trim() && !isValidTimeFormat(newInputValue.trim())) {
+      setHasFormatError(true);
+    } else {
+      setHasFormatError(false);
+    }
+
     // Если пользователь вводит время, проверяем формат и обновляем значение
-    if (allowCustom && newInputValue.trim() && isValidTimeFormat(newInputValue.trim())) {
+    if (
+      allowCustom &&
+      newInputValue.trim() &&
+      isValidTimeFormat(newInputValue.trim())
+    ) {
       onChange(newInputValue.trim());
     }
   };
@@ -86,9 +111,27 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
       // Если значение изменилось и формат валидный, обновляем
       if (isValidTimeFormat(inputValue.trim())) {
         onChange(inputValue.trim());
+        setHasFormatError(false);
+      } else {
+        setHasFormatError(true);
       }
     }
     setIsTyping(false);
+  };
+
+  // Определяем, есть ли ошибка
+  const hasError = error || hasFormatError;
+  
+  // Определяем текст помощи
+  const getHelperText = () => {
+    if (helperText) return helperText;
+    if (hasFormatError && inputValue.trim() !== '') {
+      return 'Неверный формат. Ожидается HH:mm (24ч)';
+    }
+    if (error) {
+      return 'Не указано время мероприятия';
+    }
+    return '';
   };
 
   // Если custom ввод отключен - вернем только Select
@@ -108,6 +151,8 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
             placeholder={placeholder}
             size="small"
             fullWidth
+            error={hasError}
+            helperText={getHelperText()}
           />
         )}
       />
@@ -125,6 +170,7 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
+        onBlur={handleBlur}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -132,13 +178,8 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
             placeholder={placeholder}
             size="small"
             fullWidth
-            onBlur={handleBlur}
-            error={isTyping && inputValue.trim() !== '' && !isValidTimeFormat(inputValue.trim())}
-            helperText={
-              isTyping && inputValue.trim() !== '' && !isValidTimeFormat(inputValue.trim())
-                ? 'Неверный формат. Ожидается HH:mm (24ч)'
-                : ''
-            }
+            error={hasError}
+            helperText={getHelperText()}
             inputProps={{
               ...params.inputProps,
               maxLength,

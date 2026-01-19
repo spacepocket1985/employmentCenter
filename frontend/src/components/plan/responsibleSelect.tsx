@@ -16,6 +16,8 @@ interface ResponsibleSelectProps {
   label?: string;
   placeholder?: string;
   disabled?: boolean;
+  error?: boolean;
+  helperText?: string;
   TextFieldProps?: Partial<TextFieldProps>;
 }
 
@@ -29,6 +31,8 @@ const ResponsibleSelect: React.FC<ResponsibleSelectProps> = ({
   label = 'Ответственные',
   disabled = false,
   TextFieldProps = {},
+  error,
+  helperText,
 }) => {
   const { responsiblePersons } = useAppSelector((state) => state.data);
   const handleChange = (event: React.SyntheticEvent, newValue: string[]) => {
@@ -47,7 +51,8 @@ const ResponsibleSelect: React.FC<ResponsibleSelectProps> = ({
         <TextField
           {...params}
           label={label}
-
+          error={error}
+          helperText={helperText}
           fullWidth
           multiline
           minRows={2}

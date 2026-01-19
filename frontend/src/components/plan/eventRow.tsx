@@ -2,6 +2,7 @@ import React from 'react';
 import { TableCell, Box, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LocalEvent } from 'src/types/workPlan.types';
+import { ValidationError } from '@utils/validationPlan';
 import ActivitySelect from './activitySelect';
 import ResponsibleSelect from './responsibleSelect';
 import TimeSelect from './timeSelect';
@@ -21,6 +22,7 @@ interface EventRowProps {
     responsiblePersons: string[]
   ) => void;
   onRemoveEvent: (dayId: string, eventId: string) => void;
+  errors?: ValidationError[];
 }
 
 const EventRow: React.FC<EventRowProps> = ({
@@ -30,13 +32,25 @@ const EventRow: React.FC<EventRowProps> = ({
   onUpdateDescription,
   onUpdateResponsible,
   onRemoveEvent,
+  errors = [],
 }) => {
+  const hasTimeError = errors.some(e => e.field === 'time');
+  const hasDescriptionError = errors.some(e => e.field === 'description');
+  const hasResponsibleError = errors.some(e => e.field === 'responsiblePersons');
+
+  const getErrorMessage = (field: 'time' | 'description' | 'responsiblePersons') => {
+    const error = errors.find(e => e.field === field);
+    return error ? error.message : '';
+  };
+
   return (
     <>
       <TableCell sx={{ width: '10%' }}>
         <TimeSelect
           value={event.time}
           onChange={(t) => onUpdateTime(dayId, event.id, t)}
+          error={hasTimeError}
+          helperText={getErrorMessage('time')}
         />
       </TableCell>
       <TableCell sx={{ width: '55%' }}>
@@ -44,6 +58,8 @@ const EventRow: React.FC<EventRowProps> = ({
           value={event.description}
           onChange={(value) => onUpdateDescription(dayId, event.id, value)}
           placeholder="Выберите или введите мероприятие"
+          error={hasDescriptionError}
+          helperText={getErrorMessage('description')}
           TextFieldProps={{
             size: 'small',
             fullWidth: true,
@@ -59,6 +75,8 @@ const EventRow: React.FC<EventRowProps> = ({
         <ResponsibleSelect
           value={event.responsiblePersons}
           onChange={(value) => onUpdateResponsible(dayId, event.id, value)}
+          error={hasResponsibleError}
+          helperText={getErrorMessage('responsiblePersons')}
           TextFieldProps={{
             size: 'small',
             fullWidth: true,
@@ -86,9 +104,10 @@ const EventRow: React.FC<EventRowProps> = ({
             onClick={() => onRemoveEvent(dayId, event.id)}
             color="error"
             sx={{ fontSize: '0.75rem' }}
-            variant="contained"
+            variant="outlined"
+            size="small"
           >
-            Удалить мероприятие
+            Удалить
           </Button>
         </Box>
       </TableCell>
