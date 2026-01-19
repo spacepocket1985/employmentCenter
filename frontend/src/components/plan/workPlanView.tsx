@@ -22,31 +22,20 @@ import AnnouncementIcon from '@mui/icons-material/Announcement';
 import { MONTHS } from '@utils/dateUtils';
 import { getErrorMessage } from '@utils/errorUtils';
 import { useGetWorkPlanByIdQuery } from '@store/slices/workPlanApiSlice';
-import { WorkPlan, Announcement } from 'src/types/workPlan.types';
+import { Announcement } from 'src/types/workPlan.types';
 
 interface AnnouncementDisplayProps {
   announcement: Announcement;
   dayOfWeek: string;
-  mode?: 'view' | 'edit';
-  onEditAnnouncement?: (announcement: Announcement) => void;
-  onDeleteAnnouncement?: (id: string) => void;
 }
 
 interface WorkPlanViewProps {
   planId: string;
-  mode?: 'view' | 'edit';
-  planData?: WorkPlan; // Позволяет передать данные напрямую (для режима редактирования)
-  onEditDay?: (dayId: string) => void;
-  onEditEvent?: (dayId: string, eventId: string) => void;
-  onEditAnnouncement?: (announcement: Announcement) => void;
 }
 
 const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
   announcement,
   dayOfWeek,
-  mode = 'view',
-  onEditAnnouncement,
-  onDeleteAnnouncement,
 }) => {
   const getStyleConfig = () => {
     switch (announcement.style) {
@@ -80,31 +69,10 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
 
   const styleConfig = getStyleConfig();
 
-  const handleClick = () => {
-    if (mode === 'edit' && onEditAnnouncement) {
-      onEditAnnouncement(announcement);
-    }
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (mode === 'edit' && onDeleteAnnouncement) {
-      onDeleteAnnouncement(announcement.id);
-    }
-  };
-
   return (
-    <TableRow 
-      sx={{ 
-        bgcolor: styleConfig.bgcolor,
-        cursor: mode === 'edit' ? 'pointer' : 'default',
-        '&:hover': mode === 'edit' ? { 
-          bgcolor: 'action.hover',
-          boxShadow: 1 
-        } : {},
-      }}
-      onClick={handleClick}
-    >
+    <TableRow sx={{ 
+      bgcolor: styleConfig.bgcolor,
+    }}>
       <TableCell colSpan={4}>
         <Box sx={{ 
           display: 'flex', 
@@ -112,12 +80,11 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
           gap: 2,
           py: 1,
           px: 2,
-          position: 'relative',
         }}>
           <Icon sx={{ color: styleConfig.color }}>
             {styleConfig.icon}
           </Icon>
-          <Box sx={{ flex: 1 }}>
+          <Box>
             <Typography 
               variant="body1" 
               sx={{ 
@@ -140,43 +107,18 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
               Анонс для {announcement.dayNumber} {dayOfWeek}
             </Typography>
           </Box>
-          
-          {mode === 'edit' && (
-            <Chip
-              label="Удалить"
-              size="small"
-              color="error"
-              onClick={handleDelete}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-              }}
-            />
-          )}
         </Box>
       </TableCell>
     </TableRow>
   );
 };
 
-const WorkPlanView: React.FC<WorkPlanViewProps> = ({ 
-  planId, 
-  mode = 'view',
-  planData,
-  onEditDay,
-  onEditEvent,
-  onEditAnnouncement,
-}) => {
-  // Используем запрос только если не переданы данные напрямую
-  const { data, isLoading, error } = useGetWorkPlanByIdQuery(planId, {
-    skip: !!planData, // Пропускаем запрос если есть planData
-  });
+const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
+  const { data, isLoading, error } = useGetWorkPlanByIdQuery(planId);
 
   // Группируем анонсы по дням - ВЫЗЫВАЕМ ДО ЛЮБЫХ УСЛОВНЫХ ВОЗВРАТОВ
   const announcementsByDay = React.useMemo(() => {
-    const plan = planData || data?.data;
+    const plan = data?.data;
     if (!plan || !plan.announcements) return {};
     
     const groups: Record<number, Announcement[]> = {};
@@ -193,13 +135,10 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     });
     
     return groups;
-  }, [planData, data?.data]);
-
-  // Определяем активный план
-  const activePlan = planData || data?.data;
+  }, [data?.data]);
 
   // Условный рендеринг ПОСЛЕ всех хуков
-  if (isLoading && !planData) {
+  if (isLoading) {
     return (
       <Box
         display="flex"
@@ -212,7 +151,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     );
   }
 
-  if (error && !planData) {
+  if (error) {
     return (
       <Alert severity="error" sx={{ mt: 2 }}>
         {getErrorMessage(error)}
@@ -220,7 +159,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     );
   }
 
-  if (!activePlan) {
+  if (!data?.data) {
     return (
       <Alert severity="info" sx={{ mt: 2 }}>
         План не найден
@@ -228,25 +167,8 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     );
   }
 
-  const plan = activePlan;
+  const plan = data.data;
   const monthName = MONTHS[plan.monthNumber - 1];
-
-  const handleDayClick = (dayId: string) => {
-    if (mode === 'edit' && onEditDay) {
-      onEditDay(dayId);
-    }
-  };
-
-  const handleEventClick = (dayId: string, eventId: string) => {
-    if (mode === 'edit' && onEditEvent) {
-      onEditEvent(dayId, eventId);
-    }
-  };
-
-  const handleAnnouncementDelete = (id: string) => {
-    // В реальном приложении здесь будет логика удаления
-    console.log('Delete announcement:', id);
-  };
 
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
@@ -260,7 +182,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
             mb: 1,
           }}
         >
-          {mode === 'edit' ? 'РЕДАКТИРОВАНИЕ ПЛАНА' : 'П Л А Н'}
+          П Л А Н
         </Typography>
         <Typography variant="h6" sx={{ mb: 1 }}>
           мероприятий по Гродненской ТЭЦ-2
@@ -287,18 +209,11 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
               variant="outlined"
             />
           )}
-          {mode === 'edit' && (
-            <Chip
-              label="Режим редактирования"
-              color="warning"
-              variant="filled"
-            />
-          )}
         </Box>
       </Box>
 
       {/* Таблица с планом */}
-      <Paper elevation={mode === 'edit' ? 3 : 2}>
+      <Paper elevation={2}>
         <TableContainer>
           <Table sx={{ minWidth: 650 }}>
             <TableHead sx={{ bgcolor: 'primary.main' }}>
@@ -338,64 +253,61 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                         key={announcement.id}
                         announcement={announcement}
                         dayOfWeek={day.dayOfWeek}
-                        mode={mode}
-                        onEditAnnouncement={onEditAnnouncement}
-                        onDeleteAnnouncement={handleAnnouncementDelete}
                       />
                     ))}
                     
                     {/* Отображаем день */}
-                    {day.isSpecialDay && day.events.length === 0 ? (
-                      // Специальный день без мероприятий
-                      <TableRow 
-                        sx={{ 
-                          bgcolor: 'grey.50',
-                          cursor: mode === 'edit' ? 'pointer' : 'default',
-                          '&:hover': mode === 'edit' ? { 
-                            bgcolor: 'action.hover',
-                            boxShadow: 1 
-                          } : {},
-                        }}
-                        onClick={() => handleDayClick(day.id)}
-                      >
-                        <TableCell colSpan={4}>
-                          <Box sx={{ textAlign: 'center', py: 2 }}>
-                            <Typography variant="h6" color="primary">
-                              {day.dayNumber} -{' '}
-                              {day.specialDayTitle || 'Особый день'}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {day.dayOfWeek}
-                            </Typography>
-                            {mode === 'edit' && (
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                sx={{ 
-                                  display: 'block', 
-                                  mt: 1,
-                                  fontStyle: 'italic',
-                                }}
-                              >
-                                Нажмите для редактирования
-                              </Typography>
-                            )}
-                          </Box>
+                    {day.isSpecialDay ? (
+                      // СПЕЦИАЛЬНЫЙ ДЕНЬ - объединяем все колонки кроме даты
+                      <TableRow sx={{ bgcolor: 'warning.light' }}>
+                        {/* Ячейка даты */}
+                        <TableCell
+                          sx={{
+                            verticalAlign: 'top',
+                            borderRight: 1,
+                            borderColor: 'divider',
+                            bgcolor: 'warning.main',
+                          }}
+                        >
+                          <Typography variant="body1" fontWeight="bold" color="white">
+                            {day.dayNumber}
+                          </Typography>
+                          <Typography variant="body2" color="white" fontSize="0.9rem">
+                            {day.dayOfWeek}
+                          </Typography>
+                        </TableCell>
+                        
+                        {/* Объединенные колонки для названия специального дня */}
+                        <TableCell 
+                          colSpan={3}
+                          sx={{
+                            verticalAlign: 'middle',
+                            textAlign: 'center',
+                            py: 2,
+                          }}
+                        >
+                          <Typography 
+                            variant="body1" 
+                            color="primary" 
+                            fontWeight="bold"
+                            sx={{ 
+                              textTransform: 'uppercase',
+                              fontSize: '1.1rem',
+                            }}
+                          >
+                            {day.specialDayTitle || 'Специальный день'}
+                          </Typography>
                         </TableCell>
                       </TableRow>
                     ) : (
-                      // День с мероприятиями
+                      // ОБЫЧНЫЙ ДЕНЬ с мероприятиями
                       day.events.map((event, index) => (
                         <TableRow
                           key={`${day.id}-${event.id}`}
                           sx={{
                             bgcolor: index === 0 ? 'grey.50' : 'transparent',
-                            '&:hover': { 
-                              bgcolor: 'action.hover',
-                              cursor: mode === 'edit' ? 'pointer' : 'default',
-                            },
+                            '&:hover': { bgcolor: 'action.hover' },
                           }}
-                          onClick={() => handleEventClick(day.id, event.id)}
                         >
                           {/* Дата - показываем только для первого мероприятия дня */}
                           {index === 0 ? (
@@ -405,7 +317,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                                 verticalAlign: 'top',
                                 borderRight: 1,
                                 borderColor: 'divider',
-                                position: 'relative',
                               }}
                             >
                               <Typography variant="body1" fontWeight="bold">
@@ -414,30 +325,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                               <Typography variant="body2" color="text.secondary">
                                 {day.dayOfWeek}
                               </Typography>
-                              {day.isSpecialDay && day.specialDayTitle && (
-                                <Typography
-                                  variant="caption"
-                                  color="primary"
-                                  display="block"
-                                  mt={0.5}
-                                >
-                                  {day.specialDayTitle}
-                                </Typography>
-                              )}
-                              {mode === 'edit' && (
-                                <Chip
-                                  label="Редактировать"
-                                  size="small"
-                                  color="primary"
-                                  variant="outlined"
-                                  sx={{
-                                    position: 'absolute',
-                                    bottom: 8,
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                  }}
-                                />
-                              )}
                             </TableCell>
                           ) : null}
 
@@ -484,19 +371,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                                 />
                               ))}
                             </Box>
-                            {mode === 'edit' && (
-                              <Typography 
-                                variant="caption" 
-                                color="text.secondary"
-                                sx={{ 
-                                  display: 'block', 
-                                  mt: 1,
-                                  fontStyle: 'italic',
-                                }}
-                              >
-                                Нажмите для редактирования
-                              </Typography>
-                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -512,15 +386,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                     <Typography variant="body1" color="text.secondary">
                       Нет мероприятий на этот месяц
                     </Typography>
-                    {mode === 'edit' && (
-                      <Typography 
-                        variant="body2" 
-                        color="primary"
-                        sx={{ mt: 2 }}
-                      >
-                        Добавьте дни и мероприятия
-                      </Typography>
-                    )}
                   </TableCell>
                 </TableRow>
               )}

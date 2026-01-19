@@ -35,10 +35,13 @@ import {
   useGetAllWorkPlansQuery,
 } from '@store/slices/workPlanApiSlice';
 import WorkPlanView from './workPlanView';
+import { useNavigate } from 'react-router-dom';
 
 const WorkPlanList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllWorkPlansQuery();
   const [deleteWorkPlan] = useDeleteWorkPlanMutation();
+
+  const navigate = useNavigate();
 
   const [viewPlanId, setViewPlanId] = useState<string | null>(null);
   const [deleteConfirmPlanId, setDeleteConfirmPlanId] = useState<string | null>(
@@ -207,6 +210,7 @@ const WorkPlanList: React.FC = () => {
                             onClick={() => {
                               // TODO: Переход к редактированию
                               console.log('Edit plan:', plan._id);
+                              navigate(`./${plan._id}`)
                             }}
                           >
                             <EditIcon fontSize="small" />

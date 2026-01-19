@@ -1,9 +1,13 @@
 import WorkPlanView from '@components/plan/workPlanView';
+import { useParams } from 'react-router-dom';
 
 const PlanPage: React.FC = () => {
+  const { id } = useParams();
+
+  if (!id) return;
   return (
     <>
-      <WorkPlanView planId="696a2ee26182849cb8ce45ae" />
+      <WorkPlanView planId={id} />
     </>
   );
 };
