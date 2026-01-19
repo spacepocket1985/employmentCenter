@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
@@ -6,7 +5,9 @@ import {
   WorkPlan,
   CreateWorkPlanRequest,
   UpdateWorkPlanRequest,
-  ApiResponse 
+  ApiResponse,
+  ProcessedDayPlan,
+  ProcessedEvent
 } from '../types/workPlan.types';
 import { WorkPlanModel } from '../models/workPlan.model';
 
@@ -32,16 +33,87 @@ class WorkPlanController {
         return;
       }
       
-      // Создаем новый план
-      const newPlan = new WorkPlanModel({
-        ...data,
-        days: data.days.map(day => ({
+      // Обрабатываем специальные дни перед созданием
+      const processedDays: ProcessedDayPlan[] = data.days.map(day => {
+        if (day.isSpecialDay && day.specialDayTitle) {
+          // Для специальных дней создаем корректную структуру
+          if (day.events.length === 0) {
+            // Если фронтенд не прислал событий, создаем одно
+            const specialEvent: ProcessedEvent = {
+              id: new mongoose.Types.ObjectId().toString(),
+              time: 'Весь день',
+              description: day.specialDayTitle,
+              responsiblePersons: [],
+              notes: ''
+            };
+            
+            const processedDay: ProcessedDayPlan = {
+              ...day,
+              id: day.id || new mongoose.Types.ObjectId().toString(),
+              events: [specialEvent]
+            };
+            
+            return processedDay;
+          } else {
+            // Если фронтенд прислал события, обрабатываем их
+            const processedEvents: ProcessedEvent[] = day.events.map(event => {
+              const processedEvent: ProcessedEvent = {
+                ...event,
+                id: event.id || new mongoose.Types.ObjectId().toString(),
+                // Убеждаемся что есть время для специального дня
+                time: (event.time && event.time.trim() !== '') ? event.time : 'Весь день',
+                // Убеждаемся что есть описание для специального дня
+                description: (event.description && event.description.trim() !== '') 
+                  ? event.description 
+                  : day.specialDayTitle || '',
+                responsiblePersons: event.responsiblePersons || [],
+                notes: event.notes || ''
+              };
+              return processedEvent;
+            });
+            
+            const processedDay: ProcessedDayPlan = {
+              ...day,
+              id: day.id || new mongoose.Types.ObjectId().toString(),
+              events: processedEvents
+            };
+            
+            return processedDay;
+          }
+        }
+        
+        // Обрабатываем обычные дни
+        const processedEvents: ProcessedEvent[] = day.events.map(event => {
+          const processedEvent: ProcessedEvent = {
+            ...event,
+            id: event.id || new mongoose.Types.ObjectId().toString(),
+            // Для обычных дней время и описание обязательны
+            time: event.time || '',
+            description: event.description || '',
+            responsiblePersons: event.responsiblePersons || [],
+            notes: event.notes || ''
+          };
+          return processedEvent;
+        });
+        
+        const processedDay: ProcessedDayPlan = {
           ...day,
           id: day.id || new mongoose.Types.ObjectId().toString(),
-          events: day.events.map(event => ({
-            ...event,
-            id: event.id || new mongoose.Types.ObjectId().toString()
-          }))
+          events: processedEvents
+        };
+        
+        return processedDay;
+      });
+      
+      // Создаем новый план с анонсами
+      const newPlan = new WorkPlanModel({
+        month: data.month,
+        monthNumber: data.monthNumber,
+        year: data.year,
+        days: processedDays,
+        announcements: (data.announcements || []).map(announcement => ({
+          ...announcement,
+          id: announcement.id || new mongoose.Types.ObjectId().toString()
         }))
       });
       
@@ -57,6 +129,7 @@ class WorkPlanController {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка создания плана работ:', error);
       const response: ApiResponse = {
         success: false,
         message: 'Ошибка создания',
@@ -92,6 +165,7 @@ class WorkPlanController {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка получения плана:', error);
       const response: ApiResponse = {
         success: false,
         message: 'Ошибка получения',
@@ -116,6 +190,7 @@ class WorkPlanController {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка получения всех планов:', error);
       const response: ApiResponse = {
         success: false,
         message: 'Ошибка получения планов',
@@ -142,15 +217,87 @@ class WorkPlanController {
         return;
       }
       
-      // Обновляем только переданные поля
+      // Обрабатываем специальные дни перед обновлением
       if (data.days !== undefined) {
-        plan.days = data.days.map(day => ({
-          ...day,
-          id: day.id || new mongoose.Types.ObjectId().toString(),
-          events: day.events.map(event => ({
-            ...event,
-            id: event.id || new mongoose.Types.ObjectId().toString()
-          }))
+        const processedDays: ProcessedDayPlan[] = data.days.map(day => {
+          if (day.isSpecialDay && day.specialDayTitle) {
+            // Для специальных дней создаем корректную структуру
+            if (day.events.length === 0) {
+              // Если фронтенд не прислал событий, создаем одно
+              const specialEvent: ProcessedEvent = {
+                id: new mongoose.Types.ObjectId().toString(),
+                time: 'Весь день',
+                description: day.specialDayTitle,
+                responsiblePersons: [],
+                notes: ''
+              };
+              
+              const processedDay: ProcessedDayPlan = {
+                ...day,
+                id: day.id || new mongoose.Types.ObjectId().toString(),
+                events: [specialEvent]
+              };
+              
+              return processedDay;
+            } else {
+              // Если фронтенд прислал события, обрабатываем их
+              const processedEvents: ProcessedEvent[] = day.events.map(event => {
+                const processedEvent: ProcessedEvent = {
+                  ...event,
+                  id: event.id || new mongoose.Types.ObjectId().toString(),
+                  // Убеждаемся что есть время для специального дня
+                  time: (event.time && event.time.trim() !== '') ? event.time : 'Весь день',
+                  // Убеждаемся что есть описание для специального дня
+                  description: (event.description && event.description.trim() !== '') 
+                    ? event.description 
+                    : day.specialDayTitle || '',
+                  responsiblePersons: event.responsiblePersons || [],
+                  notes: event.notes || ''
+                };
+                return processedEvent;
+              });
+              
+              const processedDay: ProcessedDayPlan = {
+                ...day,
+                id: day.id || new mongoose.Types.ObjectId().toString(),
+                events: processedEvents
+              };
+              
+              return processedDay;
+            }
+          }
+          
+          // Обрабатываем обычные дни
+          const processedEvents: ProcessedEvent[] = day.events.map(event => {
+            const processedEvent: ProcessedEvent = {
+              ...event,
+              id: event.id || new mongoose.Types.ObjectId().toString(),
+              // Для обычных дней время и описание обязательны
+              time: event.time || '',
+              description: event.description || '',
+              responsiblePersons: event.responsiblePersons || [],
+              notes: event.notes || ''
+            };
+            return processedEvent;
+          });
+          
+          const processedDay: ProcessedDayPlan = {
+            ...day,
+            id: day.id || new mongoose.Types.ObjectId().toString(),
+            events: processedEvents
+          };
+          
+          return processedDay;
+        });
+        
+        plan.days = processedDays;
+      }
+      
+      // Обновляем анонсы если переданы
+      if (data.announcements !== undefined) {
+        plan.announcements = data.announcements.map(announcement => ({
+          ...announcement,
+          id: announcement.id || new mongoose.Types.ObjectId().toString()
         }));
       }
       
@@ -166,6 +313,7 @@ class WorkPlanController {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка обновления плана:', error);
       const response: ApiResponse = {
         success: false,
         message: 'Ошибка обновления',
@@ -202,6 +350,7 @@ class WorkPlanController {
       
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка удаления плана:', error);
       const response: ApiResponse = {
         success: false,
         message: 'Ошибка удаления',

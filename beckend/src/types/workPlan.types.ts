@@ -1,10 +1,18 @@
-// Мероприятие (строка в таблице)
 export type Event = {
   id: string;
-  time: string; // "08-15", "13-25", "" (если весь день)
+  time: string;
   description: string;
   responsiblePersons: string[];
   notes?: string;
+};
+
+// Анонс мероприятия (отдельная строка перед днем)
+export type Announcement = {
+  id: string;
+  dayNumber: number;        // К какому дню привязан анонс
+  title: string;           // "Неделя охраны труда"
+  style?: 'warning' | 'info' | 'success' | 'primary'; // Стиль отображения
+  order?: number;          // Порядок отображения (по умолчанию 0)
 };
 
 // День плана
@@ -24,6 +32,7 @@ export type WorkPlan = {
   monthNumber: number; // 1-12
   year: number; // 2026
   days: DayPlan[]; // Только дни с мероприятиями
+  announcements: Announcement[]; // Анонсы мероприятий
 };
 
 // Для запросов API
@@ -32,10 +41,12 @@ export type CreateWorkPlanRequest = {
   monthNumber: number;
   year: number;
   days: DayPlan[];
+  announcements?: Announcement[];
 };
 
 export type UpdateWorkPlanRequest = {
   days?: DayPlan[];
+  announcements?: Announcement[];
 };
 
 // Ответ API
@@ -44,4 +55,71 @@ export type ApiResponse<T = unknown> = {
   message: string;
   data?: T;
   error?: string;
+};
+
+// Тип для UI
+export type MonthOption = {
+  value: string;
+  label: string;
+  monthNumber: number;
+  year: number;
+  isAvailable: boolean;
+};
+
+export type WorkingDay = {
+  date: Date;
+  dayNumber: number;
+  dayOfWeek: string;
+  isSaturday: boolean;
+  isSelected: boolean;
+};
+
+export type SaturdayData = {
+  dayNumber: number;
+  dayOfWeek: string;
+  isSaturday: true;
+};
+
+export type LocalEvent = {
+  id: string;
+  time: string;
+  description: string;
+  responsiblePersons: string[];
+  notes?: string;
+};
+
+export type LocalDayPlan = {
+  id: string;
+  dayNumber: number;
+  dayOfWeek: string;
+  isSpecialDay?: boolean;
+  specialDayTitle?: string;
+  events: LocalEvent[];
+};
+
+// Новый тип для UI
+export type LocalAnnouncement = {
+  id: string;
+  dayNumber: number;
+  title: string;
+  style?: 'warning' | 'info' | 'success' | 'primary';
+  order?: number;
+};
+
+// Вспомогательные типы для бэкенда
+export type ProcessedEvent = {
+  id: string;
+  time: string;
+  description: string;
+  responsiblePersons: string[];
+  notes?: string;
+};
+
+export type ProcessedDayPlan = {
+  id: string;
+  dayNumber: number;
+  dayOfWeek: string;
+  isSpecialDay?: boolean;
+  specialDayTitle?: string;
+  events: ProcessedEvent[];
 };
