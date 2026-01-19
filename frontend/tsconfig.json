@@ -25,7 +25,7 @@
       "@shared/*": ["src/shared/*"],
       "@store/*": ["src/store/*"],
       "@utils/*": ["src/utils/*"],
-      "@routes/*": ["src/routes/*"]
+      "@routes/*": ["src/routes/*"],
     }
   },
   "include": ["src"],

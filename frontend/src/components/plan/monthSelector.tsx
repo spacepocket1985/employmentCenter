@@ -5,13 +5,11 @@ import {
   Select,
   MenuItem,
   Typography,
-  Paper,
   Box,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { MonthOption } from '../../types/workPlan.types';
 import { MONTHS } from '@utils/dateUtils';
-import { UITitle } from '@components/ui';
 
 interface MonthSelectorProps {
   selectedMonth: string;
@@ -35,10 +33,8 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
   );
 
   return (
-    <Paper sx={{ p: 3, mb: 3 }}>
-      <UITitle variant="h6"> 1. Выберите месяц</UITitle>
-
-      <FormControl fullWidth sx={{ mb: 2, mt: 1 }} disabled={isLoading}>
+    <Box>
+      <FormControl fullWidth disabled={isLoading}>
         <InputLabel>Месяц и год</InputLabel>
         <Select
           value={selectedMonth}
@@ -61,14 +57,13 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
       </FormControl>
 
       {selectedMonth && selectedMonthData && (
-        <Box mt={1}>
-          <Typography variant='body2' color="text.secondary" fontWeight={600}>
-            Выбран: {MONTHS[selectedMonthData.monthNumber - 1]}{' '}
-            {selectedMonthData.year} года
+        <Box mt={2}>
+          <Typography variant='body2' color="text.secondary">
+            Выбран: <strong>{MONTHS[selectedMonthData.monthNumber - 1]} {selectedMonthData.year}</strong>
           </Typography>
         </Box>
       )}
-    </Paper>
+    </Box>
   );
 };
 

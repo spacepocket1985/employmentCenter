@@ -1,4 +1,5 @@
-import WorkPlanPanel from '@components/plan/workPlanPanel';
+import WorkPlanPanel from "@components/plan/workPlanPanel";
+
 
 const PlanCreatePage: React.FC = () => {
   return (

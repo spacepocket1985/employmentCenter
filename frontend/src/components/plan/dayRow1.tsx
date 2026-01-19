@@ -1,5 +1,6 @@
+// components/DayRow/DayRow.tsx
 import React from 'react';
-import { TableRow, TableCell, Typography, Button, Box } from '@mui/material';
+import { TableRow, TableCell, Typography, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { LocalDayPlan } from 'src/types/workPlan.types';
 import EventRow from './eventRow';
@@ -29,23 +30,15 @@ const DayRow: React.FC<DayRowProps> = ({
   onUpdateEventResponsible,
   onRemoveEvent,
 }) => {
-  // Если день специальный, но у него только одно мероприятие (сам специальный день)
-  // то не показываем кнопки добавления
-  const isSpecialOnly = day.isSpecialDay && day.events.length === 1;
-
   return (
     <React.Fragment key={day.id}>
       {/* Основная строка с датой */}
       <TableRow sx={{ bgcolor: 'grey.50' }}>
         <TableCell
-          rowSpan={day.events.length > 0 ? day.events.length + (isSpecialOnly ? 0 : 1) : 1}
-          sx={{ 
-            width: '10%', 
-            backgroundColor: day.isSpecialDay ? 'warning.main' : 'primary.main',
-            borderRight: 2,
-            borderColor: 'divider',
-          }}
+          rowSpan={day.events.length > 0 ? day.events.length + 1 : 1}
+          sx={{ width: '10%', backgroundColor: 'primary.main' }}
           align="center"
+          color="white"
         >
           <Typography variant="h4" fontWeight="bold" color="white">
             {day.dayNumber}
@@ -53,24 +46,9 @@ const DayRow: React.FC<DayRowProps> = ({
           <Typography variant="body2" color="white" fontSize="0.9rem">
             {day.dayOfWeek}
           </Typography>
-          {day.isSpecialDay && day.specialDayTitle && (
-            <Box sx={{ mt: 1 }}>
-              <Typography 
-                variant="caption" 
-                color="white" 
-                sx={{ 
-                  display: 'block',
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Особый день
-              </Typography>
-            </Box>
-          )}
         </TableCell>
 
-        {day.events.length === 0 && !day.isSpecialDay && (
+        {day.events.length === 0 && (
           <>
             <TableCell colSpan={3} sx={{ width: '90%' }}>
               <Button
@@ -85,28 +63,10 @@ const DayRow: React.FC<DayRowProps> = ({
             </TableCell>
           </>
         )}
-        
-        {/* Для специальных дней сразу показываем первое мероприятие (специальное название) */}
-        {day.isSpecialDay && day.events.length > 0 && day.specialDayTitle && (
-          <>
-            <TableCell colSpan={3} sx={{ width: '90%' }}>
-              <Box sx={{ p: 2, bgcolor: 'warning.light', borderRadius: 1 }}>
-                <Typography 
-                  variant="h6" 
-                  color="primary" 
-                  fontWeight="bold"
-                  sx={{ textTransform: 'uppercase' }}
-                >
-                  {day.specialDayTitle}
-                </Typography>
-              </Box>
-            </TableCell>
-          </>
-        )}
       </TableRow>
 
-      {/* Строки с обычными мероприятиями (кроме первого, если день специальный) */}
-      {day.events.slice(day.isSpecialDay ? 1 : 0).map((event) => (
+      {/* Строки с мероприятиями */}
+      {day.events.map((event) => (
         <TableRow key={event.id} sx={{ '& td': { verticalAlign: 'top' } }}>
           <EventRow
             event={event}
@@ -119,8 +79,8 @@ const DayRow: React.FC<DayRowProps> = ({
         </TableRow>
       ))}
 
-      {/* Кнопка добавления мероприятия если уже есть события и не специальный день */}
-      {day.events.length > 0 && !day.isSpecialDay && (
+      {/* Кнопка добавления мероприятия если уже есть события */}
+      {day.events.length > 0 && (
         <TableRow>
           <TableCell
             colSpan={4}

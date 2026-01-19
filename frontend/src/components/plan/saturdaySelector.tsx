@@ -1,8 +1,6 @@
 import React from 'react';
-import { Typography, Paper, Box, Button, Chip } from '@mui/material';
+import { Typography, Box, Chip } from '@mui/material';
 import { SaturdayData } from '../../types/workPlan.types';
-import { MONTHS } from '@utils/dateUtils';
-import { UITitle } from '@components/ui';
 
 interface SaturdaySelectorProps {
   saturdays: SaturdayData[];
@@ -16,9 +14,7 @@ interface SaturdaySelectorProps {
 const SaturdaySelector: React.FC<SaturdaySelectorProps> = ({
   saturdays,
   workingSaturdays,
-  selectedMonthNumber,
   onSaturdayToggle,
-  onCreateTemplate,
   disabled = false,
 }) => {
   if (saturdays.length === 0) {
@@ -26,10 +22,8 @@ const SaturdaySelector: React.FC<SaturdaySelectorProps> = ({
   }
 
   return (
-    <Paper sx={{ p: 3, mb: 3 }}>
-      <UITitle variant="h6">2. Укажите рабочие субботы</UITitle>
-
-      <Typography variant="body2" color="text.secondary" paragraph fontWeight={600}>
+    <Box>
+      <Typography variant="body2" color="text.secondary" paragraph>
         По умолчанию все субботы нерабочие. Отметьте субботы, которые являются
         рабочими:
       </Typography>
@@ -38,9 +32,7 @@ const SaturdaySelector: React.FC<SaturdaySelectorProps> = ({
         {saturdays.map((saturday) => (
           <Chip
             key={saturday.dayNumber}
-            label={`${saturday.dayNumber} ${
-              MONTHS[selectedMonthNumber - 1]
-            } (суббота)`}
+            label={`${saturday.dayNumber} (суббота)`}
             color={
               workingSaturdays.includes(saturday.dayNumber)
                 ? 'primary'
@@ -54,18 +46,15 @@ const SaturdaySelector: React.FC<SaturdaySelectorProps> = ({
             onClick={() => onSaturdayToggle(saturday.dayNumber)}
             clickable
             disabled={disabled}
+            size="small"
           />
         ))}
       </Box>
 
-      <Button
-        variant="contained"
-        onClick={onCreateTemplate}
-        disabled={disabled || saturdays.length === 0}
-      >
-        Создать шаблон плана
-      </Button>
-    </Paper>
+      <Typography variant="caption" color="text.secondary">
+        Всего суббот в месяце: {saturdays.length}
+      </Typography>
+    </Box>
   );
 };
 
