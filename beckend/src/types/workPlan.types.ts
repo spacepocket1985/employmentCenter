@@ -6,13 +6,12 @@ export type Event = {
   notes?: string;
 };
 
-// Анонс мероприятия (отдельная строка перед днем)
 export type Announcement = {
   id: string;
-  dayNumber: number;        // К какому дню привязан анонс
-  title: string;           // "Неделя охраны труда"
-  style?: 'warning' | 'info' | 'success' | 'primary'; // Стиль отображения
-  order?: number;          // Порядок отображения (по умолчанию 0)
+  dayNumber: number;
+  title: string;
+  style?: 'warning' | 'info' | 'success' | 'primary';
+  order?: number; // Порядок отображения (по умолчанию 0)
 };
 
 // День плана
@@ -33,6 +32,7 @@ export type WorkPlan = {
   year: number; // 2026
   days: DayPlan[]; // Только дни с мероприятиями
   announcements: Announcement[]; // Анонсы мероприятий
+  workingSaturdays?: number[];
 };
 
 // Для запросов API
@@ -42,11 +42,13 @@ export type CreateWorkPlanRequest = {
   year: number;
   days: DayPlan[];
   announcements?: Announcement[];
+  workingSaturdays?: number[];
 };
 
 export type UpdateWorkPlanRequest = {
   days?: DayPlan[];
   announcements?: Announcement[];
+  workingSaturdays?: number[];
 };
 
 // Ответ API

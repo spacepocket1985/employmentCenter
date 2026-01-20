@@ -114,7 +114,8 @@ class WorkPlanController {
         announcements: (data.announcements || []).map(announcement => ({
           ...announcement,
           id: announcement.id || new mongoose.Types.ObjectId().toString()
-        }))
+        })),
+        workingSaturdays: data.workingSaturdays || []
       });
       
       await newPlan.save();
@@ -301,6 +302,9 @@ class WorkPlanController {
         }));
       }
       
+      if (data.workingSaturdays !== undefined) {
+        plan.workingSaturdays = data.workingSaturdays;
+      }
       await plan.save();
       
       const response: ApiResponse<WorkPlan> = {
