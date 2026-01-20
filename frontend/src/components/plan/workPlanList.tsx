@@ -40,7 +40,7 @@ import { useNavigate } from 'react-router-dom';
 const WorkPlanList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllWorkPlansQuery();
   const [deleteWorkPlan] = useDeleteWorkPlanMutation();
-
+  console.log(data?.data);
   const navigate = useNavigate();
 
   const [viewPlanId, setViewPlanId] = useState<string | null>(null);
@@ -120,9 +120,21 @@ const WorkPlanList: React.FC = () => {
             <TableHead>
               <TableRow sx={{ bgcolor: 'grey.100' }}>
                 <TableCell sx={{ fontWeight: 'bold' }}>Месяц и год</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Дней</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Мероприятий</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Анонсов</TableCell>{' '}
+                <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                  Дней
+                </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                  Мероприятий
+                </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                  Анонсов
+                </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                  Специальных дней
+                </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                  Субботы
+                </TableCell>
                 {/* Новая колонка */}
                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                   Действия
@@ -153,7 +165,7 @@ const WorkPlanList: React.FC = () => {
                       </Typography>
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell align="center">
                       <Chip
                         label={plan.days.length}
                         size="small"
@@ -162,7 +174,7 @@ const WorkPlanList: React.FC = () => {
                       />
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell align="center">
                       <Chip
                         label={totalEvents}
                         size="small"
@@ -171,11 +183,33 @@ const WorkPlanList: React.FC = () => {
                       />
                     </TableCell>
 
-                    <TableCell>
-                      {' '}
-                      {/* Новая ячейка */}
+                    <TableCell align="center">
                       <Chip
                         label={totalAnnouncements}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                      />
+                    </TableCell>
+
+                    <TableCell align="center">
+                      <Chip
+                        label={plan.days.reduce(
+                          (acc, day) => (day.isSpecialDay ? acc + 1 : acc),
+                          0
+                        )}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={
+                          plan.workingSaturdays
+                            ? plan.workingSaturdays.length
+                            : 0
+                        }
                         size="small"
                         color="info"
                         variant="outlined"
@@ -208,16 +242,14 @@ const WorkPlanList: React.FC = () => {
                             size="small"
                             color="info"
                             onClick={() => {
-                              // TODO: Переход к редактированию
-                              console.log('Edit plan:', plan._id);
-                              navigate(`./${plan._id}`)
+                              navigate(`./${plan._id}`);
                             }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
 
-                        <Tooltip title="Экспортировать">
+                        {/* <Tooltip title="Экспортировать">
                           <IconButton
                             size="small"
                             color="success"
@@ -225,7 +257,7 @@ const WorkPlanList: React.FC = () => {
                           >
                             <DownloadIcon fontSize="small" />
                           </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
 
                         <Tooltip title="Удалить">
                           <IconButton

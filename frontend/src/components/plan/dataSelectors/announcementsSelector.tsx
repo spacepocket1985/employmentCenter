@@ -25,18 +25,11 @@ import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AnnouncementIcon from '@mui/icons-material/Announcement';
+import { Announcement } from 'src/types/workPlan.types';
 
 interface DayInfo {
   dayNumber: number;
   dayOfWeek: string;
-}
-
-interface Announcement {
-  id: string;
-  dayNumber: number;
-  title: string;
-  style?: 'warning' | 'info' | 'success' | 'primary';
-  order?: number;
 }
 
 interface AnnouncementsSelectorProps {

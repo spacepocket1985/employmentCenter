@@ -40,7 +40,7 @@ interface SpecialDaysSelectorProps {
   disabled?: boolean;
 }
 
-const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
+export const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
   allDays,
   specialDays,
   onAddSpecialDay,
@@ -131,7 +131,7 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
       )}
 
       <Button
-        variant='contained'
+        variant="contained"
         startIcon={<AddIcon />}
         onClick={handleOpenDialog}
         disabled={!canAddSpecialDays}
@@ -164,9 +164,7 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
                     </MenuItem>
                   ))}
                   {availableDays.length === 0 && (
-                    <MenuItem disabled>
-                      Нет доступных дней
-                    </MenuItem>
+                    <MenuItem disabled>Нет доступных дней</MenuItem>
                   )}
                 </Select>
               </FormControl>
@@ -204,5 +202,3 @@ const SpecialDaysSelector: React.FC<SpecialDaysSelectorProps> = ({
     </Box>
   );
 };
-
-export default SpecialDaysSelector;

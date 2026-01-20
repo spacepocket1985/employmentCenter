@@ -3,9 +3,9 @@ import { TableCell, Box, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LocalEvent } from 'src/types/workPlan.types';
 import { ValidationError } from '@utils/validationPlan';
-import ActivitySelect from './activitySelect';
-import ResponsibleSelect from './responsibleSelect';
-import TimeSelect from './timeSelect';
+import ActivitySelect from '../dataSelectors/activitySelect';
+import ResponsibleSelect from '../dataSelectors/responsibleSelect';
+import TimeSelect from '../dataSelectors/timeSelect';
 
 interface EventRowProps {
   event: LocalEvent;
@@ -34,12 +34,16 @@ const EventRow: React.FC<EventRowProps> = ({
   onRemoveEvent,
   errors = [],
 }) => {
-  const hasTimeError = errors.some(e => e.field === 'time');
-  const hasDescriptionError = errors.some(e => e.field === 'description');
-  const hasResponsibleError = errors.some(e => e.field === 'responsiblePersons');
+  const hasTimeError = errors.some((e) => e.field === 'time');
+  const hasDescriptionError = errors.some((e) => e.field === 'description');
+  const hasResponsibleError = errors.some(
+    (e) => e.field === 'responsiblePersons'
+  );
 
-  const getErrorMessage = (field: 'time' | 'description' | 'responsiblePersons') => {
-    const error = errors.find(e => e.field === field);
+  const getErrorMessage = (
+    field: 'time' | 'description' | 'responsiblePersons'
+  ) => {
+    const error = errors.find((e) => e.field === field);
     return error ? error.message : '';
   };
 
@@ -60,15 +64,6 @@ const EventRow: React.FC<EventRowProps> = ({
           placeholder="Выберите или введите мероприятие"
           error={hasDescriptionError}
           helperText={getErrorMessage('description')}
-          TextFieldProps={{
-            size: 'small',
-            fullWidth: true,
-            sx: {
-              '& .MuiInputBase-root': {
-                fontSize: '1rem',
-              },
-            },
-          }}
         />
       </TableCell>
       <TableCell sx={{ width: '30%' }}>
@@ -77,19 +72,6 @@ const EventRow: React.FC<EventRowProps> = ({
           onChange={(value) => onUpdateResponsible(dayId, event.id, value)}
           error={hasResponsibleError}
           helperText={getErrorMessage('responsiblePersons')}
-          TextFieldProps={{
-            size: 'small',
-            fullWidth: true,
-            sx: {
-              '& .MuiInputBase-root': {
-                fontSize: '0.875rem',
-              },
-              '& .MuiFormHelperText-root': {
-                fontSize: '0.75rem',
-                marginTop: 0.5,
-              },
-            },
-          }}
         />
 
         <Box

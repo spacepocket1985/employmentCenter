@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Box, Chip } from '@mui/material';
-import { SaturdayData } from '../../types/workPlan.types';
+import { SaturdayData } from '../../../types/workPlan.types';
 
 interface SaturdaySelectorProps {
   saturdays: SaturdayData[];

@@ -10,6 +10,9 @@ interface PlanActionsProps {
   isDisabled: boolean;
   hasValidationErrors?: boolean;
   hasEmptyDays?: boolean;
+  mode?: 'create' | 'edit';
+  submitLabel?: string;
+  cancelLabel?: string;
 }
 
 const PlanActions: React.FC<PlanActionsProps> = ({
@@ -19,6 +22,9 @@ const PlanActions: React.FC<PlanActionsProps> = ({
   isDisabled,
   hasValidationErrors = false,
   hasEmptyDays = false,
+  mode = 'create',
+  submitLabel,
+  cancelLabel,
 }) => {
   const getErrorMessage = () => {
     if (hasValidationErrors) {
@@ -37,7 +43,17 @@ const PlanActions: React.FC<PlanActionsProps> = ({
     if (hasEmptyDays) {
       return 'Дни без мероприятий';
     }
-    return isSubmitting ? 'Сохранение...' : 'Сохранить план';
+    
+    // Если передана кастомная надпись - используем её
+    if (submitLabel) {
+      return isSubmitting ? `${submitLabel}...` : submitLabel;
+    }
+    
+    // Иначе используем стандартные надписи в зависимости от режима
+    if (isSubmitting) {
+      return mode === 'create' ? 'Создание...' : 'Сохранение...';
+    }
+    return mode === 'create' ? 'Создать план' : 'Сохранить изменения';
   };
 
   const getButtonColor = () => {
@@ -56,11 +72,20 @@ const PlanActions: React.FC<PlanActionsProps> = ({
   const getTooltipTitle = () => {
     if (hasValidationErrors) return "Исправьте ошибки перед сохранением";
     if (hasEmptyDays) return "Добавьте мероприятия во все дни";
-    return "";
+    if (mode === 'edit') return "Сохранить внесенные изменения";
+    return "Создать новый план мероприятий";
   };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      mt: 3, 
+      p: 2, 
+      bgcolor: 'grey.50', 
+      borderRadius: 1 
+    }}>
       <Box>
         {(hasValidationErrors || hasEmptyDays) && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -73,8 +98,12 @@ const PlanActions: React.FC<PlanActionsProps> = ({
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button variant="outlined" color="inherit" onClick={onCancel}>
-          Отменить
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          onClick={onCancel}
+        >
+          {cancelLabel || (mode === 'create' ? 'Отменить' : 'Отменить редактирование')}
         </Button>
 
         <Tooltip 

@@ -9,10 +9,10 @@ export type Event = {
 // Новый тип для анонса мероприятия
 export type Announcement = {
   id: string;
-  dayNumber: number;        // К какому дню привязан анонс
-  title: string;           // "Неделя охраны труда"
+  dayNumber: number; // К какому дню привязан анонс
+  title: string; // "Неделя охраны труда"
   style?: 'warning' | 'info' | 'success' | 'primary'; // Стиль отображения
-  order?: number;          // Порядок отображения (по умолчанию 0)
+  order?: number; // Порядок отображения (по умолчанию 0)
 };
 
 export type DayPlan = {
@@ -30,7 +30,8 @@ export type WorkPlan = {
   monthNumber: number;
   year: number;
   days: DayPlan[];
-  announcements: Announcement[]; // Новое поле
+  announcements: Announcement[];
+  workingSaturdays?: number[];
 };
 
 export type CreateWorkPlanRequest = {
@@ -38,12 +39,14 @@ export type CreateWorkPlanRequest = {
   monthNumber: number;
   year: number;
   days: DayPlan[];
-  announcements?: Announcement[]; // Новое поле
+  announcements?: Announcement[];
+  workingSaturdays?: number[];
 };
 
 export type UpdateWorkPlanRequest = {
   days?: DayPlan[];
-  announcements?: Announcement[]; // Новое поле
+  announcements?: Announcement[];
+  workingSaturdays?: number[];
 };
 
 export type ApiResponse<T = unknown> = {
@@ -100,4 +103,11 @@ export type LocalAnnouncement = {
   title: string;
   style?: 'warning' | 'info' | 'success' | 'primary';
   order?: number;
+};
+
+export type SpecialDay = {
+  id: string;
+  dayNumber: number;
+  title: string;
+  dayOfWeek: string;
 };

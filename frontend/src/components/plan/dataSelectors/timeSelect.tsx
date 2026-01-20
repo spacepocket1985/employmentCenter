@@ -28,6 +28,25 @@ const isValidTimeFormat = (value: string): boolean => {
   return m !== null;
 };
 
+// Мемоизированный селектор для timeActivities
+const useTimeActivities = () => {
+  const timeActivities = useAppSelector((state) => state.data.timeActivities);
+  
+  // Мемоизируем преобразование в TimeOption
+  const timeOptions = useMemo(
+    () => timeActivities.map((t) => ({ label: t, value: t })),
+    [timeActivities]
+  );
+  
+  // Мемоизируем массив значений для Autocomplete
+  const options = useMemo(
+    () => timeActivities,
+    [timeActivities]
+  );
+  
+  return { timeOptions, options, timeActivities };
+};
+
 const TimeSelect: React.FC<TimeSelectProps> = ({
   value,
   onChange,
@@ -44,6 +63,9 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
   const [, setIsTyping] = useState<boolean>(false);
   const [hasFormatError, setHasFormatError] = useState<boolean>(false);
 
+  // Используем мемоизированный селектор
+  const { options } = useTimeActivities();
+
   // синхронизация снаружи
   useEffect(() => {
     setInputValue(value);
@@ -54,20 +76,6 @@ const TimeSelect: React.FC<TimeSelectProps> = ({
       setHasFormatError(false);
     }
   }, [value]);
-
-  const timeOptions: TimeOption[] = useAppSelector(
-    (state) =>
-      state.data.timeActivities.map((t) => ({
-        label: t,
-        value: t,
-      })) as TimeOption[]
-  );
-
-  // Получаем массив значений для Autocomplete
-  const options = useMemo(
-    () => timeOptions.map((option) => option.value),
-    [timeOptions]
-  );
 
   // Обработчик изменения значения (выбор из списка или ввод)
   const handleChange = (_: React.SyntheticEvent, newValue: string | null) => {

@@ -8,8 +8,9 @@ import {
   Box,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { MonthOption } from '../../types/workPlan.types';
+
 import { MONTHS } from '@utils/dateUtils';
+import { MonthOption } from 'src/types/workPlan.types';
 
 interface MonthSelectorProps {
   selectedMonth: string;

@@ -7,7 +7,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Chip,
   CircularProgress,
@@ -19,10 +18,11 @@ import InfoIcon from '@mui/icons-material/Info';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AnnouncementIcon from '@mui/icons-material/Announcement';
 
-import { MONTHS } from '@utils/dateUtils';
 import { getErrorMessage } from '@utils/errorUtils';
 import { useGetWorkPlanByIdQuery } from '@store/slices/workPlanApiSlice';
 import { Announcement } from 'src/types/workPlan.types';
+import PlanHeader from './planHeader';
+import { TableHeader } from './table';
 
 interface AnnouncementDisplayProps {
   announcement: Announcement;
@@ -70,24 +70,26 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
   const styleConfig = getStyleConfig();
 
   return (
-    <TableRow sx={{ 
-      bgcolor: styleConfig.bgcolor,
-    }}>
+    <TableRow
+      sx={{
+        bgcolor: styleConfig.bgcolor,
+      }}
+    >
       <TableCell colSpan={4}>
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          gap: 2,
-          py: 1,
-          px: 2,
-        }}>
-          <Icon sx={{ color: styleConfig.color }}>
-            {styleConfig.icon}
-          </Icon>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            py: 1,
+            px: 2,
+          }}
+        >
+          <Icon sx={{ color: styleConfig.color }}>{styleConfig.icon}</Icon>
           <Box>
-            <Typography 
-              variant="body1" 
-              sx={{ 
+            <Typography
+              variant="body1"
+              sx={{
                 fontWeight: 'bold',
                 color: styleConfig.color,
                 textTransform: 'uppercase',
@@ -95,9 +97,9 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
             >
               {announcement.title}
             </Typography>
-            <Typography 
-              variant="caption" 
-              sx={{ 
+            <Typography
+              variant="caption"
+              sx={{
                 color: styleConfig.color,
                 opacity: 0.9,
                 display: 'block',
@@ -120,20 +122,20 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
   const announcementsByDay = React.useMemo(() => {
     const plan = data?.data;
     if (!plan || !plan.announcements) return {};
-    
+
     const groups: Record<number, Announcement[]> = {};
-    plan.announcements.forEach(announcement => {
+    plan.announcements.forEach((announcement) => {
       if (!groups[announcement.dayNumber]) {
         groups[announcement.dayNumber] = [];
       }
       groups[announcement.dayNumber].push(announcement);
     });
-    
+
     // Сортируем анонсы внутри дня по order
-    Object.keys(groups).forEach(dayNumber => {
+    Object.keys(groups).forEach((dayNumber) => {
       groups[Number(dayNumber)].sort((a, b) => (a.order || 0) - (b.order || 0));
     });
-    
+
     return groups;
   }, [data?.data]);
 
@@ -168,28 +170,12 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
   }
 
   const plan = data.data;
-  const monthName = MONTHS[plan.monthNumber - 1];
 
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
       {/* Заголовок плана */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            mb: 1,
-          }}
-        >
-          П Л А Н
-        </Typography>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          мероприятий по Гродненской ТЭЦ-2
-        </Typography>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          на {monthName} {plan.year} года
-        </Typography>
+        <PlanHeader monthNumber={plan.monthNumber} year={plan.year} />
 
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2 }}>
           <Chip
@@ -198,7 +184,10 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
             variant="outlined"
           />
           <Chip
-            label={`Всего мероприятий: ${plan.days.reduce((total, day) => total + day.events.length, 0)}`}
+            label={`Всего мероприятий: ${plan.days.reduce(
+              (total, day) => total + day.events.length,
+              0
+            )}`}
             color="secondary"
             variant="outlined"
           />
@@ -216,35 +205,13 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
       <Paper elevation={2}>
         <TableContainer>
           <Table sx={{ minWidth: 650 }}>
-            <TableHead sx={{ bgcolor: 'primary.main' }}>
-              <TableRow>
-                <TableCell
-                  sx={{ color: 'white', fontWeight: 'bold', width: '10%' }}
-                >
-                  Дата
-                </TableCell>
-                <TableCell
-                  sx={{ color: 'white', fontWeight: 'bold', width: '10%' }}
-                >
-                  Время
-                </TableCell>
-                <TableCell
-                  sx={{ color: 'white', fontWeight: 'bold', width: '55%' }}
-                >
-                  Мероприятия
-                </TableCell>
-                <TableCell
-                  sx={{ color: 'white', fontWeight: 'bold', width: '25%' }}
-                >
-                  Ответственный за выполнение
-                </TableCell>
-              </TableRow>
-            </TableHead>
+            <TableHeader />
             <TableBody>
               {plan.days.map((day) => {
                 // Получаем анонсы для этого дня
-                const dayAnnouncements = announcementsByDay[day.dayNumber] || [];
-                
+                const dayAnnouncements =
+                  announcementsByDay[day.dayNumber] || [];
+
                 return (
                   <React.Fragment key={day.id}>
                     {/* Отображаем анонсы */}
@@ -255,7 +222,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
                         dayOfWeek={day.dayOfWeek}
                       />
                     ))}
-                    
+
                     {/* Отображаем день */}
                     {day.isSpecialDay ? (
                       // СПЕЦИАЛЬНЫЙ ДЕНЬ - объединяем все колонки кроме даты
@@ -269,16 +236,24 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
                             bgcolor: 'warning.main',
                           }}
                         >
-                          <Typography variant="body1" fontWeight="bold" color="white">
+                          <Typography
+                            variant="body1"
+                            fontWeight="bold"
+                            color="white"
+                          >
                             {day.dayNumber}
                           </Typography>
-                          <Typography variant="body2" color="white" fontSize="0.9rem">
+                          <Typography
+                            variant="body2"
+                            color="white"
+                            fontSize="0.9rem"
+                          >
                             {day.dayOfWeek}
                           </Typography>
                         </TableCell>
-                        
+
                         {/* Объединенные колонки для названия специального дня */}
-                        <TableCell 
+                        <TableCell
                           colSpan={3}
                           sx={{
                             verticalAlign: 'middle',
@@ -286,11 +261,11 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
                             py: 2,
                           }}
                         >
-                          <Typography 
-                            variant="body1" 
-                            color="primary" 
+                          <Typography
+                            variant="body1"
+                            color="primary"
                             fontWeight="bold"
-                            sx={{ 
+                            sx={{
                               textTransform: 'uppercase',
                               fontSize: '1.1rem',
                             }}
@@ -322,7 +297,10 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
                               <Typography variant="body1" fontWeight="bold">
                                 {day.dayNumber}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {day.dayOfWeek}
                               </Typography>
                             </TableCell>
@@ -360,7 +338,13 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({ planId }) => {
 
                           {/* Ответственные */}
                           <TableCell sx={{ verticalAlign: 'top' }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 0.5,
+                              }}
+                            >
                               {event.responsiblePersons.map((person, idx) => (
                                 <Chip
                                   key={idx}
