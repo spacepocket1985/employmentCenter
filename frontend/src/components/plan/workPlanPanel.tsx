@@ -337,7 +337,7 @@ const WorkPlanPanel: React.FC = () => {
       year: selectedYear,
       days: days.map(convertToServerDayPlan),
       announcements: announcements.map(convertToServerAnnouncement),
-      workingSaturdays: workingSaturdays,
+      workingSaturdays,
     };
 
     try {
