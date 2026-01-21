@@ -363,6 +363,106 @@ class WorkPlanController {
       res.status(500).json(response);
     }
   }
+  async getPlanByYearAndMonth(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, monthNumber } = req.params;
+      
+      // Преобразуем параметры в числа
+      const yearNum = parseInt(year, 10);
+      const monthNum = parseInt(monthNumber, 10);
+      
+      // Валидация параметров
+      if (isNaN(yearNum) || isNaN(monthNum)) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Неверные параметры: год и месяц должны быть числами'
+        };
+        res.status(400).json(response);
+        return;
+      }
+      
+      if (monthNum < 1 || monthNum > 12) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'Неверный номер месяца. Допустимые значения: 1-12'
+        };
+        res.status(400).json(response);
+        return;
+      }
+      
+      const plan = await WorkPlanModel.findOne({
+        year: yearNum,
+        monthNumber: monthNum
+      });
+      
+      if (!plan) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'План на указанный месяц и год не найден'
+        };
+        res.status(404).json(response);
+        return;
+      }
+      
+      const response: ApiResponse<WorkPlan> = {
+        success: true,
+        message: 'План получен',
+        data: plan.toObject()
+      };
+      
+      res.json(response);
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка получения плана по году и месяцу:', error);
+      const response: ApiResponse = {
+        success: false,
+        message: 'Ошибка получения плана',
+        error: errorMessage
+      };
+      res.status(500).json(response);
+    }
+  }
+  // Получение текущего плана (на основе текущей даты)
+  async getCurrentPlan(req: Request, res: Response): Promise<void> {
+    try {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1; // getMonth() возвращает 0-11
+      
+      const plan = await WorkPlanModel.findOne({
+        year: currentYear,
+        monthNumber: currentMonth
+      });
+      
+      if (!plan) {
+        const response: ApiResponse = {
+          success: false,
+          message: 'План на текущий месяц не найден'
+        };
+        res.status(404).json(response);
+        return;
+      }
+      
+      const response: ApiResponse<WorkPlan> = {
+        success: true,
+        message: 'Текущий план получен',
+        data: plan.toObject()
+      };
+      
+      res.json(response);
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error('Ошибка получения текущего плана:', error);
+      const response: ApiResponse = {
+        success: false,
+        message: 'Ошибка получения текущего плана',
+        error: errorMessage
+      };
+      res.status(500).json(response);
+    }
+  }
 }
 
 export default new WorkPlanController();

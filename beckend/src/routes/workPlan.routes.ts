@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.post('/', workPlanController.createPlan);
 router.get('/', workPlanController.getAllPlans);
+router.get('/current', workPlanController.getCurrentPlan);
 router.get('/:id', workPlanController.getPlan);
 router.put('/:id', workPlanController.updatePlan);
 router.delete('/:id', workPlanController.deletePlan);
