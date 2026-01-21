@@ -14,7 +14,7 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
   endDate,
 }) => {
   return (
-    <TableRow sx={{ bgcolor: 'rgb(231, 241, 255)' }}>
+    <TableRow sx={{ bgcolor: '#103896' }}>
       <TableCell colSpan={4} sx={{ py: 1 }}>
         <Box
           sx={{
@@ -24,15 +24,15 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
             gap: 1,
           }}
         >
-          <CalendarTodayIcon sx={{ color: 'rgb(16, 56, 150)' }} />
+          <CalendarTodayIcon sx={{ color: '#103896' }} />
           <Typography
-            variant="h6"
+            variant="body1"
             sx={{
               fontWeight: 'bold',
-              color: 'rgb(16, 56, 150)',
+              color: 'white',
             }}
           >
-            Неделя {weekNumber} ({startDate} - {endDate})
+            {weekNumber} неделя  ({startDate} - {endDate})
           </Typography>
         </Box>
       </TableCell>

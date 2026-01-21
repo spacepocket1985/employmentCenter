@@ -23,28 +23,42 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
             <TableCell
               rowSpan={day.events.length}
               sx={{
-                verticalAlign: 'top',
+                verticalAlign: 'center',
                 borderRight: 1,
                 borderColor: 'divider',
+                backgroundColor: '#103896',
+                borderBottom: '1px white solid',
               }}
+              align="center"
             >
-              <Typography variant="body1" fontWeight="bold">
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                color="white"
+                fontSize={'2rem'}
+              >
                 {day.dayNumber}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body1" color="white" fontSize={'1rem'}>
                 {day.dayOfWeek}
               </Typography>
             </TableCell>
           ) : null}
 
           {/* Время */}
-          <TableCell sx={{ verticalAlign: 'top' }}>
-            <Typography variant="body2">{event.time || 'весь день'}</Typography>
+          <TableCell sx={{ verticalAlign: 'center' }}>
+            <Typography variant="body1" fontSize={'1rem'} align="center">
+              {event.time || 'весь день'}
+            </Typography>
           </TableCell>
 
           {/* Мероприятие */}
-          <TableCell sx={{ verticalAlign: 'top' }}>
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+          <TableCell sx={{ verticalAlign: 'center' }}>
+            <Typography
+              variant="body1"
+              fontSize={'1rem'}
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {event.description}
             </Typography>
             {event.notes && (
@@ -63,7 +77,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
           </TableCell>
 
           {/* Ответственные */}
-          <TableCell sx={{ verticalAlign: 'top' }}>
+          <TableCell sx={{ verticalAlign: 'center' }}>
             <Box
               sx={{
                 display: 'flex',
@@ -75,9 +89,11 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
                 <Chip
                   key={idx}
                   label={person}
-                  size="small"
-                  variant="outlined"
+                  size="medium"
+                  variant="filled"
                   sx={{ mb: 0.5 }}
+                  color="info"
+                  
                 />
               ))}
             </Box>

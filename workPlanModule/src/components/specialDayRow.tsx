@@ -12,16 +12,27 @@ const SpecialDayRow: React.FC<SpecialDayRowProps> = ({ day }) => {
       {/* Ячейка даты */}
       <TableCell
         sx={{
-          verticalAlign: 'top',
+          verticalAlign: 'center',
           borderRight: 1,
           borderColor: 'divider',
           bgcolor: 'warning.main',
         }}
       >
-        <Typography variant="body1" fontWeight="bold" color="white">
+        <Typography
+          variant="body1"
+          fontWeight="bold"
+          color="white"
+          fontSize="1.5rem"
+          align="center"
+        >
           {day.dayNumber}
         </Typography>
-        <Typography variant="body2" color="white" fontSize="0.9rem">
+        <Typography
+          variant="body2"
+          color="white"
+          fontSize="1rem"
+          align="center"
+        >
           {day.dayOfWeek}
         </Typography>
       </TableCell>
@@ -32,12 +43,11 @@ const SpecialDayRow: React.FC<SpecialDayRowProps> = ({ day }) => {
         sx={{
           verticalAlign: 'middle',
           textAlign: 'center',
-          py: 2,
         }}
       >
         <Typography
           variant="body1"
-          color="primary"
+          color="white"
           fontWeight="bold"
           sx={{
             textTransform: 'uppercase',

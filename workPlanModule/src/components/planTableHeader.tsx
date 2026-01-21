@@ -2,7 +2,7 @@ import { TableHead, TableRow, TableCell } from "@mui/material";
 
 const PlanTableHeader: React.FC = () => {
   return (
-    <TableHead sx={{ bgcolor: 'primary.main' }}>
+    <TableHead sx={{ bgcolor: '#103896' }}>
       <TableRow>
         <TableCell
           sx={{
