@@ -12,6 +12,7 @@ export enum UserRole {
   ADMIN = 'admin',
   OKIPR = 'okipr',
   COP = 'cop',
+  ONIOT = 'oniot',
 }
 
 export interface ControlItem {
@@ -32,6 +33,8 @@ export const getUserRole = (userName: string | null): UserRole | null => {
       return UserRole.OKIPR;
     case 'cop':
       return UserRole.COP;
+    case 'oniot':
+      return UserRole.ONIOT;
     default:
       return null;
   }

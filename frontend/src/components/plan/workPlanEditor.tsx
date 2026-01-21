@@ -1,24 +1,22 @@
-// components/WorkPlanEditor.tsx
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Box, Collapse, Typography } from '@mui/material';
-
 import { useUpdateWorkPlanMutation } from '@store/slices';
-import { validateWorkPlan, ValidationError } from '@utils/validationPlan';
+import { MONTHS } from '@utils/dateUtils';
 import {
-  MONTHS,
-  getDaysInMonth,
-  DAYS_OF_WEEK,
   getSaturdaysOfMonth,
+  DAYS_OF_WEEK,
+  getDaysInMonth,
   getWorkingDays,
 } from '@utils/dateUtils';
+import { useWorkPlanBase } from '@hooks/useWorkPlanBase';
 import {
-  DayPlan,
-  LocalDayPlan,
-  LocalAnnouncement,
-  Announcement,
-  LocalEvent,
-  SpecialDay,
-} from 'src/types/workPlan.types';
+  convertLocalDayToServer,
+  convertLocalAnnouncementToServer,
+} from '@utils/workPlanConverters';
+import {
+  convertServerDaysToLocal,
+  convertServerAnnouncementsToLocal,
+} from '@utils/workPlanConverters';
 import {
   SaturdaySelectionStep,
   SpecialDaysStep,
@@ -27,6 +25,12 @@ import {
 import PlanActions from './planActions';
 import PlanTable from './table/planTable';
 import ValidationErrors from './validationErrors';
+import {
+  DayPlan,
+  Announcement,
+  SpecialDay,
+  LocalDayPlan,
+} from 'src/types/workPlan.types';
 
 interface WorkPlanEditorProps {
   planId: string;
@@ -47,61 +51,9 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  // Состояния
-  const [days, setDays] = useState<LocalDayPlan[]>([]);
-  const [announcements, setAnnouncements] = useState<LocalAnnouncement[]>([]);
-  const [specialDays, setSpecialDays] = useState<SpecialDay[]>([]);
-  const [workingSaturdays, setWorkingSaturdays] = useState<number[]>(
-    initialData.workingSaturdays || []
-  );
-  const [pendingWorkingSaturdays, setPendingWorkingSaturdays] = useState<
-    number[]
-  >(initialData.workingSaturdays || []);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
-    []
-  );
-  const [showErrors, setShowErrors] = useState(false);
-
-  // API для обновления плана
-  const [
-    updateWorkPlan,
-    { isLoading: isUpdating, error: apiError, isSuccess },
-  ] = useUpdateWorkPlanMutation();
-
-  // Инициализация данных при монтировании
-  useEffect(() => {
-    // Конвертируем дни из серверного формата в локальный
-    const convertedDays: LocalDayPlan[] = initialData.days.map((day) => ({
-      id: day.id,
-      dayNumber: day.dayNumber,
-      dayOfWeek: day.dayOfWeek,
-      isSpecialDay: day.isSpecialDay || false,
-      specialDayTitle: day.specialDayTitle || '',
-      events: day.events.map((event) => ({
-        id: event.id,
-        time: event.time,
-        description: event.description,
-        responsiblePersons: event.responsiblePersons || [],
-        notes: event.notes || '',
-      })),
-    }));
-
-    setDays(convertedDays);
-
-    // Конвертируем анонсы
-    const convertedAnnouncements: LocalAnnouncement[] =
-      initialData.announcements.map((announcement, index) => ({
-        id: announcement.id,
-        dayNumber: announcement.dayNumber,
-        title: announcement.title,
-        style: announcement.style,
-        order: announcement.order || index,
-      }));
-
-    setAnnouncements(convertedAnnouncements);
-
-    // Извлекаем специальные дни из days
-    const extractedSpecialDays: SpecialDay[] = initialData.days
+  // Извлекаем специальные дни из начальных данных
+  const initialSpecialDays: SpecialDay[] = useMemo(() => {
+    return initialData.days
       .filter((day) => day.isSpecialDay && day.specialDayTitle)
       .map((day) => ({
         id: day.id,
@@ -109,13 +61,47 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
         title: day.specialDayTitle!,
         dayOfWeek: day.dayOfWeek,
       }));
+  }, [initialData.days]);
 
-    setSpecialDays(extractedSpecialDays);
+  // Используем базовый хук с начальными данными
+  const {
+    days,
+    announcements,
+    specialDays,
+    workingSaturdays,
+    setDays,
+    addEvent,
+    updateEventTime,
+    updateEventDescription,
+    updateEventResponsible,
+    removeEvent,
+    handleAnnouncementAdd,
+    handleAnnouncementRemove,
+    handleSpecialDayAdd,
+    handleSpecialDayRemove,
+    handleWorkingSaturdaysUpdate,
+    validation,
+    stateChecks,
+  } = useWorkPlanBase({
+    initialDays: convertServerDaysToLocal(initialData.days),
+    initialAnnouncements: convertServerAnnouncementsToLocal(
+      initialData.announcements
+    ),
+    initialSpecialDays,
+    initialWorkingSaturdays: initialData.workingSaturdays || [],
+    autoValidate: false,
+  });
 
-    // Устанавливаем рабочие субботы
-    setWorkingSaturdays(initialData.workingSaturdays || []);
-    setPendingWorkingSaturdays(initialData.workingSaturdays || []);
-  }, [initialData]);
+  // Состояние для временных суббот
+  const [pendingWorkingSaturdays, setPendingWorkingSaturdays] = React.useState<
+    number[]
+  >(initialData.workingSaturdays || []);
+
+  // API для обновления плана
+  const [
+    updateWorkPlan,
+    { isLoading: isUpdating, error: apiError, isSuccess },
+  ] = useUpdateWorkPlanMutation();
 
   // Вычисляем все дни месяца
   const allDaysInMonth = useMemo(() => {
@@ -137,20 +123,6 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
     return getSaturdaysOfMonth(initialData.year, initialData.monthNumber);
   }, [initialData.year, initialData.monthNumber]);
 
-  // Проверяем, есть ли дни без мероприятий
-  const hasEmptyDays = useMemo(() => {
-    return days.some((day) => !day.isSpecialDay && day.events.length === 0);
-  }, [days]);
-
-  // Проверяем, все ли обязательные поля заполнены
-  const isPlanComplete = useMemo(() => {
-    if (days.length === 0) return false;
-    if (hasEmptyDays) return false;
-
-    const errors = validateWorkPlan(days);
-    return errors.length === 0;
-  }, [days, hasEmptyDays]);
-
   // Проверяем, изменились ли субботы
   const hasSaturdayChanges = useMemo(() => {
     const currentSorted = [...workingSaturdays].sort();
@@ -167,9 +139,10 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
     );
   };
 
-  // Обновить субботы и пересчитать дни
+  // Обновить субботы и пересчитать дни - ИСПРАВЛЕННАЯ ВЕРСИЯ
   const handleUpdateSaturdays = () => {
-    setWorkingSaturdays(pendingWorkingSaturdays);
+    // Обновляем субботы через хук
+    handleWorkingSaturdaysUpdate(pendingWorkingSaturdays);
 
     // Обновляем дни в плане на основе новых суббот
     const workingDays = getWorkingDays(
@@ -178,7 +151,7 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
       pendingWorkingSaturdays
     );
 
-    // Фильтруем текущие дни - оставляем только те, которые есть в новых рабочих днях
+    // Фильтруем текущие дни - оставляем только те, которые есть в новых рабочих днях или являются специальными
     const updatedDays = days.filter((day) => {
       const isWorking = workingDays.some(
         (wd) => wd.dayNumber === day.dayNumber
@@ -225,47 +198,15 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
     setPendingWorkingSaturdays(workingSaturdays);
   };
 
-  // Конвертеры для отправки на сервер
-  const convertToServerDayPlan = (localDay: LocalDayPlan): DayPlan => ({
-    id: localDay.id,
-    dayNumber: localDay.dayNumber,
-    dayOfWeek: localDay.dayOfWeek,
-    isSpecialDay: localDay.isSpecialDay,
-    specialDayTitle: localDay.specialDayTitle,
-    events: localDay.events.map((event) => ({
-      id: event.id,
-      time: event.time,
-      description: event.description,
-      responsiblePersons: event.responsiblePersons,
-      notes: event.notes,
-    })),
-  });
-
-  const convertToServerAnnouncement = (
-    localAnnouncement: LocalAnnouncement
-  ): Announcement => ({
-    id: localAnnouncement.id,
-    dayNumber: localAnnouncement.dayNumber,
-    title: localAnnouncement.title,
-    style: localAnnouncement.style,
-    order: localAnnouncement.order,
-  });
-
-  // Обработчики для специальных дней
-  const handleSpecialDayAdd = (dayNumber: number, title: string) => {
+  // Обработчик добавления специального дня
+  const handleSpecialDayAddWithLogic = (dayNumber: number, title: string) => {
     const dayInfo = allDaysInMonth.find((d) => d.dayNumber === dayNumber);
     if (!dayInfo) return;
 
-    const newSpecialDay: SpecialDay = {
-      id: `special-${Math.random().toString(36).substring(2, 9)}`,
-      dayNumber,
-      title,
-      dayOfWeek: dayInfo.dayOfWeek,
-    };
+    // Добавляем специальный день через хук
+    handleSpecialDayAdd(dayNumber, title, dayInfo.dayOfWeek);
 
-    setSpecialDays((prev) => [...prev, newSpecialDay]);
-
-    // Обновляем days, добавляя специальный день
+    // Проверяем, существует ли уже день с таким номером
     const existingDay = days.find((d) => d.dayNumber === dayNumber);
     if (existingDay) {
       // Если день уже существует, обновляем его
@@ -313,11 +254,13 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
     }
   };
 
-  const handleSpecialDayRemove = (id: string) => {
+  // Обработчик удаления специального дня
+  const handleSpecialDayRemoveWithLogic = (id: string) => {
     const specialDay = specialDays.find((sd) => sd.id === id);
     if (!specialDay) return;
 
-    setSpecialDays((prev) => prev.filter((day) => day.id !== id));
+    // Удаляем специальный день через хук
+    handleSpecialDayRemove(id);
 
     // Удаляем специальный день из days или преобразуем в обычный
     setDays((prev) =>
@@ -339,175 +282,14 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
     );
   };
 
-  // Обработчики для анонсов
-  const handleAnnouncementAdd = (
-    dayNumber: number,
-    title: string,
-    style?: LocalAnnouncement['style']
-  ) => {
-    const newAnnouncement: LocalAnnouncement = {
-      id: `announcement-${Math.random().toString(36).substring(2, 9)}`,
-      dayNumber,
-      title,
-      style,
-      order: announcements.length,
-    };
-
-    setAnnouncements((prev) => [...prev, newAnnouncement]);
-  };
-
-  const handleAnnouncementRemove = (id: string) => {
-    setAnnouncements((prev) =>
-      prev.filter((announcement) => announcement.id !== id)
-    );
-  };
-
-  // Обработчики для таблицы
-  const handleAddEvent = (dayId: string) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId && !day.isSpecialDay) {
-          const newEvent: LocalEvent = {
-            id: `event-${Math.random().toString(36).substring(2, 9)}`,
-            time: '',
-            description: '',
-            responsiblePersons: [],
-          };
-          return { ...day, events: [...day.events, newEvent] };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleUpdateEventTime = (
-    dayId: string,
-    eventId: string,
-    time: string
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, time } : event
-          );
-
-          // Проверяем валидацию после обновления
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleUpdateEventDescription = (
-    dayId: string,
-    eventId: string,
-    description: string
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, description } : event
-          );
-
-          // Проверяем валидацию после обновления
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleUpdateEventResponsible = (
-    dayId: string,
-    eventId: string,
-    responsiblePersons: string[]
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, responsiblePersons } : event
-          );
-
-          // Проверяем валидацию после обновления
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleRemoveEvent = (dayId: string, eventId: string) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId && !day.isSpecialDay) {
-          const newEvents = day.events.filter((event) => event.id !== eventId);
-
-          // Проверяем валидацию после удаления
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: newEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return { ...day, events: newEvents };
-        }
-        return day;
-      })
-    );
-  };
-
   // Обработчик отправки для редактирования
   const handleSubmit = async () => {
     if (days.length === 0) return;
 
     // Проверяем валидацию
-    const errors = validateWorkPlan(days);
+    const errors = validation.validate();
     if (errors.length > 0) {
-      setValidationErrors(errors);
-      setShowErrors(true);
+      validation.setShowErrors(true);
       return;
     }
 
@@ -516,22 +298,17 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
       await updateWorkPlan({
         id: planId,
         data: {
-          days: days.map(convertToServerDayPlan),
-          announcements: announcements.map(convertToServerAnnouncement),
+          days: days.map(convertLocalDayToServer),
+          announcements: announcements.map(convertLocalAnnouncementToServer),
           workingSaturdays: workingSaturdays,
         },
       }).unwrap();
 
-      setValidationErrors([]);
-      setShowErrors(false);
+      validation.clearErrors();
       onSuccess?.();
     } catch (err) {
       console.error('Ошибка при обновлении плана:', err);
     }
-  };
-
-  const handleCancel = () => {
-    onCancel?.();
   };
 
   return (
@@ -576,10 +353,12 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
           specialDays={specialDays}
           selectedMonthNumber={initialData.monthNumber}
           isLoading={false}
-          onAddSpecialDay={handleSpecialDayAdd}
-          onRemoveSpecialDay={handleSpecialDayRemove}
+          onAddSpecialDay={handleSpecialDayAddWithLogic}
+          onRemoveSpecialDay={handleSpecialDayRemoveWithLogic}
           title="2. Специальные дни"
         />
+
+        {/* Анонсы */}
         <AnnouncementsStep
           allDays={allDaysInMonth}
           announcements={announcements}
@@ -591,11 +370,11 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
       </Box>
 
       {/* Отображение ошибок валидации */}
-      <Collapse in={showErrors && validationErrors.length > 0}>
+      <Collapse in={validation.showErrors && validation.errors.length > 0}>
         <Box sx={{ mb: 3 }}>
           <ValidationErrors
-            errors={validationErrors}
-            onClose={() => setShowErrors(false)}
+            errors={validation.errors}
+            onClose={() => validation.setShowErrors(false)}
           />
         </Box>
       </Collapse>
@@ -610,23 +389,29 @@ export const WorkPlanEditor: React.FC<WorkPlanEditorProps> = ({
             year={initialData.year}
             error={apiError}
             isSuccess={isSuccess}
-            onAddEvent={handleAddEvent}
-            onUpdateEventTime={handleUpdateEventTime}
-            onUpdateEventDescription={handleUpdateEventDescription}
-            onUpdateEventResponsible={handleUpdateEventResponsible}
-            onRemoveEvent={handleRemoveEvent}
-            validationErrors={validationErrors}
-            hasEmptyDays={hasEmptyDays}
+            onAddEvent={(dayId) => addEvent(dayId, false)}
+            onUpdateEventTime={updateEventTime}
+            onUpdateEventDescription={updateEventDescription}
+            onUpdateEventResponsible={updateEventResponsible}
+            onRemoveEvent={(dayId, eventId) =>
+              removeEvent(dayId, eventId, false)
+            }
+            validationErrors={validation.errors}
+            hasEmptyDays={stateChecks.hasEmptyDays}
             mode="edit"
           />
 
           <PlanActions
-            onCancel={handleCancel}
+            onCancel={onCancel || (() => {})}
             onSubmit={handleSubmit}
             isSubmitting={isUpdating}
-            isDisabled={days.length === 0 || hasEmptyDays || !isPlanComplete}
-            hasValidationErrors={validationErrors.length > 0}
-            hasEmptyDays={hasEmptyDays}
+            isDisabled={
+              days.length === 0 ||
+              stateChecks.hasEmptyDays ||
+              !stateChecks.isPlanComplete
+            }
+            hasValidationErrors={validation.errors.length > 0}
+            hasEmptyDays={stateChecks.hasEmptyDays}
             mode="edit"
             submitLabel="Сохранить изменения"
             cancelLabel="Отменить редактирование"

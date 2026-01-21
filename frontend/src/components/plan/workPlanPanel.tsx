@@ -1,43 +1,31 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Collapse } from '@mui/material';
-
 import { useCreateWorkPlanMutation } from '@store/slices';
-import { validateWorkPlan, ValidationError } from '@utils/validationPlan';
 import { MONTHS } from '@utils/dateUtils';
-import { LocalDayPlan } from 'src/types/workPlan.types';
-
 import { getWorkingDays } from '@utils/dateUtils';
 import { useWorkPlanCreation } from '@hooks/useWorkPlanCreation';
-import {
-  MonthSelectionStep,
-  SaturdaySelectionStep,
-  PlaceholderStep,
-  AnnouncementsStep,
-  TemplateActionsStep,
-  SpecialDaysStep,
+import { 
+  MonthSelectionStep, 
+  SaturdaySelectionStep, 
+  PlaceholderStep, 
+  AnnouncementsStep, 
+  TemplateActionsStep, 
+  SpecialDaysStep 
 } from './creationSteps';
 import PlanActions from './planActions';
-
 import ValidationErrors from './validationErrors';
-
-import {
-  DayPlan,
-  LocalAnnouncement,
-  Announcement,
-} from 'src/types/workPlan.types';
 import PlanTable from './table/planTable';
+import { LocalDayPlan } from 'src/types/workPlan.types';
+import { useWorkPlanBase } from '@hooks/useWorkPlanBase';
+import { convertLocalDayToServer, convertLocalAnnouncementToServer } from '@utils/workPlanConverters';
+
 
 const WorkPlanPanel: React.FC = () => {
   const {
-    // Состояния
+    // Состояния из старого хука
     selectedMonth,
     selectedMonthNumber,
     selectedYear,
-    workingSaturdays,
-    specialDays,
-    announcements,
-    days,
-    isSubmitted,
     isLoadingPlans,
 
     // Вычисляемые значения
@@ -45,83 +33,54 @@ const WorkPlanPanel: React.FC = () => {
     saturdaysOfMonth,
     allDaysInMonth,
 
-    // Обработчики
+    // Обработчики из старого хука
     handleMonthSelect,
-    handleSaturdayToggle,
-    handleSpecialDayAdd,
-    handleSpecialDayRemove,
-    handleAnnouncementAdd,
-    handleAnnouncementRemove,
-    handleResetAll,
-    setTemplateDays,
-    setDays,
+    handleResetAll: resetOldHookData,
   } = useWorkPlanCreation();
 
-  // Локальные состояния для валидации
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
-    []
-  );
-  const [showErrors, setShowErrors] = useState(false);
+  // Используем новый базовый хук
+  const {
+    days,
+    announcements,
+    specialDays,
+    workingSaturdays,
+    setDays,
+    addEvent,
+    updateEventTime,
+    updateEventDescription,
+    updateEventResponsible,
+    removeEvent,
+    handleAnnouncementAdd,
+    handleAnnouncementRemove,
+    handleSpecialDayAdd,
+    handleSpecialDayRemove,
+    handleWorkingSaturdayToggle,
+    validation,
+    stateChecks,
+    resetAll: resetBaseData
+  } = useWorkPlanBase();
+
+  // Состояние для отслеживания создания шаблона
+  const [isTemplateCreated, setIsTemplateCreated] = useState(false);
 
   // API для создания плана
   const [
     createWorkPlan,
-    { isLoading: isCreating, error: apiError, isSuccess },
+    { isLoading: isCreating, error: apiError, isSuccess }
   ] = useCreateWorkPlanMutation();
 
-  // Проверяем, есть ли дни без мероприятий
-  const hasEmptyDays = useMemo(() => {
-    return days.some((day) => !day.isSpecialDay && day.events.length === 0);
-  }, [days]);
-
-  // Проверяем, все ли обязательные поля заполнены
-  const isPlanComplete = useMemo(() => {
-    if (days.length === 0) return false;
-    if (hasEmptyDays) return false;
-
-    const errors = validateWorkPlan(days);
-    return errors.length === 0;
-  }, [days, hasEmptyDays]);
-
-  // Конвертеры для отправки на сервер
-  const convertToServerDayPlan = (localDay: LocalDayPlan): DayPlan => ({
-    id: localDay.id,
-    dayNumber: localDay.dayNumber,
-    dayOfWeek: localDay.dayOfWeek,
-    isSpecialDay: localDay.isSpecialDay,
-    specialDayTitle: localDay.specialDayTitle,
-    events: localDay.events.map((event) => ({
-      id: event.id,
-      time: event.time,
-      description: event.description,
-      responsiblePersons: event.responsiblePersons,
-      notes: event.notes,
-    })),
-  });
-
-  const convertToServerAnnouncement = (
-    localAnnouncement: LocalAnnouncement
-  ): Announcement => ({
-    id: localAnnouncement.id,
-    dayNumber: localAnnouncement.dayNumber,
-    title: localAnnouncement.title,
-    style: localAnnouncement.style,
-    order: localAnnouncement.order,
-  });
-
-  // Обработчик создания шаблона (логика из handleCreateTemplate)
+  // Обработчик создания шаблона - исправленная версия
   const handleCreateTemplate = () => {
     if (!selectedMonthNumber || !selectedYear) return;
 
-    // Используем существующую логику создания шаблона
     const workingDays = getWorkingDays(
       selectedYear,
       selectedMonthNumber,
       workingSaturdays
     );
 
-    // Создаем массив всех дней месяца
-    const allDays = allDaysInMonth.map((day) => {
+    // Создаем массив всех дней месяца с правильными типами
+    const allDays: LocalDayPlan[] = allDaysInMonth.map((day) => {
       // Проверяем, является ли этот день рабочим
       const isWorkingDay = workingDays.some(
         (wd) => wd.dayNumber === day.dayNumber
@@ -137,7 +96,7 @@ const WorkPlanPanel: React.FC = () => {
         return {
           id: specialDay.id,
           dayNumber: day.dayNumber,
-          dayOfWeek: day.dayOfWeek,
+          dayOfWeek: day.dayOfWeek, // Исправлено: должно быть string, а не number
           isSpecialDay: true,
           specialDayTitle: specialDay.title,
           events: [
@@ -154,7 +113,7 @@ const WorkPlanPanel: React.FC = () => {
         return {
           id: `day-${Math.random().toString(36).substring(2, 9)}`,
           dayNumber: day.dayNumber,
-          dayOfWeek: day.dayOfWeek,
+          dayOfWeek: day.dayOfWeek, // Исправлено: должно быть string, а не number
           events: [],
         };
       } else {
@@ -162,7 +121,7 @@ const WorkPlanPanel: React.FC = () => {
         return {
           id: `day-${Math.random().toString(36).substring(2, 9)}`,
           dayNumber: day.dayNumber,
-          dayOfWeek: day.dayOfWeek,
+          dayOfWeek: day.dayOfWeek, // Исправлено: должно быть string, а не number
           events: [],
         };
       }
@@ -182,152 +141,26 @@ const WorkPlanPanel: React.FC = () => {
     // Сортируем по номеру дня
     daysToShow.sort((a, b) => a.dayNumber - b.dayNumber);
 
-    setTemplateDays(daysToShow as LocalDayPlan[]);
-    setValidationErrors([]);
-    setShowErrors(false);
+    setDays(daysToShow);
+    setIsTemplateCreated(true);
+    validation.clearErrors();
   };
 
-  // Обработчики для таблицы (перенесены из оригинала)
-  const handleAddEvent = (dayId: string) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const newEvent = {
-            id: `event-${Math.random().toString(36).substring(2, 9)}`,
-            time: '',
-            description: '',
-            responsiblePersons: [],
-          };
-          return { ...day, events: [...day.events, newEvent] };
-        }
-        return day;
-      })
-    );
+  // Обработчик сброса всех данных
+  const handleResetAll = () => {
+    resetBaseData();
+    resetOldHookData();
+    setIsTemplateCreated(false);
   };
 
-  const handleUpdateEventTime = (
-    dayId: string,
-    eventId: string,
-    time: string
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, time } : event
-          );
-
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleUpdateEventDescription = (
-    dayId: string,
-    eventId: string,
-    description: string
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, description } : event
-          );
-
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleUpdateEventResponsible = (
-    dayId: string,
-    eventId: string,
-    responsiblePersons: string[]
-  ) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId) {
-          const updatedEvents = day.events.map((event) =>
-            event.id === eventId ? { ...event, responsiblePersons } : event
-          );
-
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: updatedEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return {
-            ...day,
-            events: updatedEvents,
-          };
-        }
-        return day;
-      })
-    );
-  };
-
-  const handleRemoveEvent = (dayId: string, eventId: string) => {
-    setDays((prev) =>
-      prev.map((day) => {
-        if (day.id === dayId && !day.isSpecialDay) {
-          const newEvents = day.events.filter((event) => event.id !== eventId);
-
-          setTimeout(() => {
-            const errors = validateWorkPlan(
-              prev.map((d) =>
-                d.id === dayId ? { ...day, events: newEvents } : d
-              )
-            );
-            setValidationErrors(errors);
-          }, 0);
-
-          return { ...day, events: newEvents };
-        }
-        return day;
-      })
-    );
-  };
-
+  // Обработчик отправки формы
   const handleSubmit = async () => {
     if (!selectedMonthNumber || !selectedYear || days.length === 0) return;
 
     // Проверяем валидацию
-    const errors = validateWorkPlan(days);
+    const errors = validation.validate();
     if (errors.length > 0) {
-      setValidationErrors(errors);
-      setShowErrors(true);
+      validation.setShowErrors(true);
       return;
     }
 
@@ -335,26 +168,38 @@ const WorkPlanPanel: React.FC = () => {
       month: MONTHS[selectedMonthNumber - 1],
       monthNumber: selectedMonthNumber,
       year: selectedYear,
-      days: days.map(convertToServerDayPlan),
-      announcements: announcements.map(convertToServerAnnouncement),
+      days: days.map(convertLocalDayToServer),
+      announcements: announcements.map(convertLocalAnnouncementToServer),
       workingSaturdays,
     };
 
     try {
       await createWorkPlan(planData).unwrap();
-      setValidationErrors([]);
-      setShowErrors(false);
-      // очистить анонсы через хук, если нужно
+      validation.clearErrors();
       handleResetAll();
     } catch (err) {
       console.error('Ошибка при создании плана:', err);
     }
   };
 
+  // Обработчик отмены
   const handleCancel = () => {
     setDays([]);
-    setValidationErrors([]);
-    setShowErrors(false);
+    setIsTemplateCreated(false);
+    validation.clearErrors();
+  };
+
+  // Обработчик выбора субботы с обновлением локального состояния
+  const handleSaturdayToggleWithUpdate = (dayNumber: number) => {
+    handleWorkingSaturdayToggle(dayNumber);
+  };
+
+  // Обработчик добавления специального дня с обновлением локального состояния
+  const handleSpecialDayAddWithUpdate = (dayNumber: number, title: string) => {
+    const dayInfo = allDaysInMonth.find((d) => d.dayNumber === dayNumber);
+    if (dayInfo) {
+      handleSpecialDayAdd(dayNumber, title, dayInfo.dayOfWeek);
+    }
   };
 
   return (
@@ -384,7 +229,7 @@ const WorkPlanPanel: React.FC = () => {
             workingSaturdays={workingSaturdays}
             selectedMonthNumber={selectedMonthNumber}
             isLoading={isLoadingPlans}
-            onSaturdayToggle={handleSaturdayToggle}
+            onSaturdayToggle={handleSaturdayToggleWithUpdate}
           />
         ) : (
           <PlaceholderStep message="Сначала выберите месяц для отображения суббот" />
@@ -411,7 +256,7 @@ const WorkPlanPanel: React.FC = () => {
             specialDays={specialDays}
             selectedMonthNumber={selectedMonthNumber}
             isLoading={isLoadingPlans}
-            onAddSpecialDay={handleSpecialDayAdd}
+            onAddSpecialDay={handleSpecialDayAddWithUpdate}
             onRemoveSpecialDay={handleSpecialDayRemove}
           />
 
@@ -437,16 +282,16 @@ const WorkPlanPanel: React.FC = () => {
       )}
 
       {/* Отображение ошибок валидации */}
-      <Collapse in={showErrors && validationErrors.length > 0}>
+      <Collapse in={validation.showErrors && validation.errors.length > 0}>
         <Box sx={{ mb: 3 }}>
           <ValidationErrors
-            errors={validationErrors}
-            onClose={() => setShowErrors(false)}
+            errors={validation.errors}
+            onClose={() => validation.setShowErrors(false)}
           />
         </Box>
       </Collapse>
 
-      {isSubmitted && days.length > 0 && (
+      {isTemplateCreated && days.length > 0 && (
         <>
           <PlanTable
             days={days}
@@ -455,21 +300,21 @@ const WorkPlanPanel: React.FC = () => {
             year={selectedYear}
             error={apiError}
             isSuccess={isSuccess}
-            onAddEvent={handleAddEvent}
-            onUpdateEventTime={handleUpdateEventTime}
-            onUpdateEventDescription={handleUpdateEventDescription}
-            onUpdateEventResponsible={handleUpdateEventResponsible}
-            onRemoveEvent={handleRemoveEvent}
-            validationErrors={validationErrors}
-            hasEmptyDays={hasEmptyDays}
+            onAddEvent={addEvent}
+            onUpdateEventTime={updateEventTime}
+            onUpdateEventDescription={updateEventDescription}
+            onUpdateEventResponsible={updateEventResponsible}
+            onRemoveEvent={removeEvent}
+            validationErrors={validation.errors}
+            hasEmptyDays={stateChecks.hasEmptyDays}
           />
 
           <PlanActions
             onCancel={handleCancel}
             onSubmit={handleSubmit}
             isSubmitting={isCreating}
-            isDisabled={days.length === 0 || hasEmptyDays || !isPlanComplete}
-            hasValidationErrors={validationErrors.length > 0}
+            isDisabled={days.length === 0 || stateChecks.hasEmptyDays || !stateChecks.isPlanComplete}
+            hasValidationErrors={validation.errors.length > 0}
           />
         </>
       )}

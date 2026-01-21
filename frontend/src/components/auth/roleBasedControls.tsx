@@ -38,23 +38,18 @@ export const controlsConfig: ControlItem[] = [
     link: RoutePaths.MENU,
     roles: [UserRole.ADMIN, UserRole.COP],
   },
-  {
-    text: 'План работ',
-    icon: CalendarMonthIcon,
-    link: RoutePaths.PLAN,
-    roles: [UserRole.ADMIN],
-  },
+
   {
     text: 'Планы работ',
     icon: CalendarMonthIcon,
     link: RoutePaths.PLANS,
-    roles: [UserRole.ADMIN],
+    roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
   {
     text: 'Создать план работ',
     icon: EditCalendarIcon,
     link: RoutePaths.CREATE_PLANS,
-    roles: [UserRole.ADMIN],
+    roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
 ];
 
