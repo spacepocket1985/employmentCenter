@@ -2,26 +2,11 @@ import React from 'react';
 import { Typography } from '@mui/material';
 
 interface PlanHeaderProps {
-  monthNumber: number;
+  monthName: string;
   year: number;
 }
 
-const PlanHeader: React.FC<PlanHeaderProps> = ({ monthNumber, year }) => {
-  const MONTHS = [
-    'январь',
-    'февраль',
-    'март',
-    'апрель',
-    'май',
-    'июнь',
-    'июль',
-    'август',
-    'сентябрь',
-    'октябрь',
-    'ноябрь',
-    'декабрь',
-  ];
-
+const PlanHeader: React.FC<PlanHeaderProps> = ({ monthName, year }) => {
   return (
     <Typography
       variant="h5"
@@ -37,7 +22,7 @@ const PlanHeader: React.FC<PlanHeaderProps> = ({ monthNumber, year }) => {
       <br />
       мероприятий по Гродненской ТЭЦ-2
       <br />
-      на {MONTHS[monthNumber - 1]} {year} года
+      на {monthName} {year} года
     </Typography>
   );
 };

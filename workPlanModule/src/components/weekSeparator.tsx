@@ -1,21 +1,25 @@
 import React from 'react';
 import { TableRow, TableCell, Typography, Box } from '@mui/material';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 interface WeekSeparatorProps {
   weekNumber: number;
   startDate: string;
   endDate: string;
+  monthName: string;
 }
 
 const WeekSeparator: React.FC<WeekSeparatorProps> = ({
   weekNumber,
   startDate,
   endDate,
+  monthName,
 }) => {
   return (
-    <TableRow sx={{ bgcolor: '#103896' }}>
-      <TableCell colSpan={4} sx={{ py: 1 }}>
+    <TableRow sx={{ bgcolor: '#f0f4f8' }}>
+      <TableCell
+        colSpan={4}
+        sx={{ py: 1.5, borderBottom: '2px solid #3a506b' }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -24,15 +28,27 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
             gap: 1,
           }}
         >
-          <CalendarTodayIcon sx={{ color: '#103896' }} />
           <Typography
-            variant="body1"
+            variant="subtitle1"
             sx={{
-              fontWeight: 'bold',
-              color: 'white',
+              backgroundColor: '#2c3e50',
+              color: '#fff',
+              p: 1,
+              borderRadius: 2,
             }}
           >
-            {weekNumber} неделя  ({startDate} - {endDate})
+            {weekNumber} неделя {monthName}
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              backgroundColor: '#2c3e50',
+              color: '#fff',
+              p: 1,
+              borderRadius: 2,
+            }}
+          >
+            ({startDate} - {endDate})
           </Typography>
         </Box>
       </TableCell>

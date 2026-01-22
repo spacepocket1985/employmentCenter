@@ -1,4 +1,3 @@
-// WorkPlanView.tsx (обновленная версия)
 import React from 'react';
 import {
   Box,
@@ -13,101 +12,57 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { usePlanDisplay } from '@hooks/usePlanDisplay';
-import { DayPlan, Announcement } from 'src/types/plan.types';
+
+import { Announcement, WorkPlan } from 'src/types/plan.types';
 import PlanHeader from './planHeader';
 import PlanTableHeader from './planTableHeader';
 import WeekSeparator from './weekSeparator';
-import AnnouncementDisplay from './announcementDisplay';
-import SpecialDayRow from './specialDayRow';
-import NormalDayRow from './normalDayRow';
+import WeekFilter from './weekFilter';
 
-// Вспомогательная функция для получения номера недели месяца
-const getWeekNumber = (dayNumber: number, firstDayOfMonth: number): number => {
-  return Math.floor((dayNumber + firstDayOfMonth - 1) / 7);
+import { getMonthName, groupDaysByWeek } from '@utils/weekUtils';
+import { DayWithAnnouncements } from './dayWithAnnouncements';
+
+type WorkPlanViewProps = {
+  plan?: WorkPlan;
+  isLoading: boolean;
+  error: string | null;
 };
 
-// Функция для группировки дней по неделям
-const groupDaysByWeek = (
-  days: DayPlan[],
-  year: number,
-  monthNumber: number
-): Array<{
-  weekNumber: number;
-  days: DayPlan[];
-  startDate: string;
-  endDate: string;
-}> => {
-  // Получаем первый день месяца (0 - воскресенье, 1 - понедельник и т.д.)
-  const firstDayOfMonth = new Date(year, monthNumber - 1, 1).getDay();
-  // Преобразуем к формату, где понедельник = 0
-  const firstDayAdjusted = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
-  const weeksMap = new Map<number, DayPlan[]>();
-
-  // Группируем дни по неделям
-  days.forEach((day) => {
-    const weekNum = getWeekNumber(day.dayNumber, firstDayAdjusted);
-    if (!weeksMap.has(weekNum)) {
-      weeksMap.set(weekNum, []);
-    }
-    weeksMap.get(weekNum)!.push(day);
-  });
-
-  // Сортируем по номеру недели и создаем результат
-  return Array.from(weeksMap.entries())
-    .sort(([weekA], [weekB]) => weekA - weekB)
-    .map(([weekNumber, weekDays]) => {
-      // Сортируем дни внутри недели по номеру дня
-      const sortedDays = weekDays.sort((a, b) => a.dayNumber - b.dayNumber);
-      
-      // Определяем даты начала и конца недели
-      const startDay = sortedDays[0].dayNumber;
-      const endDay = sortedDays[sortedDays.length - 1].dayNumber;
-      
-      return {
-        weekNumber: weekNumber + 1, // Нумерация недель с 1
-        days: sortedDays,
-        startDate: `${startDay} ${sortedDays[0].dayOfWeek}`,
-        endDate: `${endDay} ${sortedDays[sortedDays.length - 1].dayOfWeek}`,
-      };
-    });
-};
-
-// Компонент для отображения дня с анонсами
-interface DayWithAnnouncementsProps {
-  day: DayPlan;
-  announcements: Announcement[];
-}
-
-const DayWithAnnouncements: React.FC<DayWithAnnouncementsProps> = ({
-  day,
-  announcements,
+const WorkPlanView: React.FC<WorkPlanViewProps> = ({
+  plan,
+  isLoading,
+  error,
 }) => {
-  return (
-    <React.Fragment key={day.id}>
-      {/* Отображаем анонсы для этого дня */}
-      {announcements.map((announcement) => (
-        <AnnouncementDisplay
-          key={announcement.id}
-          announcement={announcement}
-          dayOfWeek={day.dayOfWeek}
-        />
-      ))}
-
-      {/* Отображаем день */}
-      {day.isSpecialDay ? (
-        <SpecialDayRow day={day} />
-      ) : (
-        <NormalDayRow day={day} isFirstEvent={true} />
-      )}
-    </React.Fragment>
+  // Состояния для фильтрации по неделям
+  const [weekFilterType, setWeekFilterType] = React.useState<'all' | 'week'>(
+    'all'
   );
-};
+  const [selectedWeek, setSelectedWeek] = React.useState<number | null>(null);
 
-// Основной компонент отображения плана
-const WorkPlanView: React.FC = () => {
-  const { plan, isLoading, error } = usePlanDisplay();
+  const weeks = React.useMemo(() => {
+    if (!plan?.days) return [];
+    return groupDaysByWeek(plan.days, plan.year, plan.monthNumber);
+  }, [plan]);
+  // Определяем текущую неделю (по сегодняшней дате)
+  const currentWeek = React.useMemo(() => {
+    if (!plan) return null;
+
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    // Проверяем, что сегодняшний день попадает в отображаемый месяц
+    if (currentMonth === plan.monthNumber && currentYear === plan.year) {
+      // Находим неделю, содержащую сегодняшний день
+      const week = weeks.find((w) =>
+        w.days.some((d) => d.dayNumber === currentDay)
+      );
+      return week?.weekNumber || null;
+    }
+
+    return null;
+  }, [plan, weeks]);
 
   // Группируем анонсы по дням
   const announcementsByDay = React.useMemo(() => {
@@ -130,10 +85,30 @@ const WorkPlanView: React.FC = () => {
   }, [plan]);
 
   // Группируем дни по неделям
-  const weeks = React.useMemo(() => {
-    if (!plan?.days) return [];
-    return groupDaysByWeek(plan.days, plan.year, plan.monthNumber);
-  }, [plan]);
+
+  // Фильтруем недели в зависимости от выбранного фильтра
+  const weeksToDisplay = React.useMemo(() => {
+    if (weekFilterType === 'all') {
+      return weeks;
+    } else if (selectedWeek) {
+      return weeks.filter((week) => week.weekNumber === selectedWeek);
+    }
+    return weeks;
+  }, [weeks, weekFilterType, selectedWeek]);
+
+  // Обработчик изменения типа фильтра
+  const handleFilterTypeChange = (type: 'all' | 'week') => {
+    setWeekFilterType(type);
+    if (type === 'week' && !selectedWeek && weeks.length > 0) {
+      // При первом переключении на "выбрать неделю" выбираем текущую неделю или первую
+      setSelectedWeek(currentWeek || weeks[0].weekNumber);
+    }
+  };
+
+  // Обработчик изменения выбранной недели
+  const handleWeekChange = (weekNumber: number | null) => {
+    setSelectedWeek(weekNumber);
+  };
 
   // Считаем общее количество мероприятий
   const totalEvents = React.useMemo(() => {
@@ -173,109 +148,176 @@ const WorkPlanView: React.FC = () => {
     );
   }
 
-  return (
-    <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
-      {/* Заголовок плана */}
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <PlanHeader monthNumber={plan.monthNumber} year={plan.year} />
+  const monthName = getMonthName(plan?.monthNumber);
 
-        {/* Статистика */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2, flexWrap: 'wrap' }}>
-          <Chip
-            label={`Всего дней: ${plan.days.length}`}
-            color="primary"
-            variant="outlined"
-          />
-          <Chip
-            label={`Всего мероприятий: ${totalEvents}`}
-            color="secondary"
-            variant="outlined"
-          />
-          {plan.announcements && plan.announcements.length > 0 && (
+  // Подготавливаем данные для WeekFilter
+  const weekData = weeks.map((week) => ({
+    weekNumber: week.weekNumber,
+    startDate: week.startDate,
+    endDate: week.endDate,
+    monthName: monthName,
+  }));
+
+  return (
+    <>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
+        {/* Заголовок плана */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <PlanHeader monthName={plan.month} year={plan.year} />
+
+          {/* Статистика */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 3,
+              mt: 2,
+              flexWrap: 'wrap',
+            }}
+          >
             <Chip
-              label={`Анонсов: ${plan.announcements.length}`}
-              color="info"
+              label={`Всего дней: ${plan.days.length}`}
+              color="primary"
               variant="outlined"
+              sx={{ borderColor: '#2c3e50', color: '#2c3e50' }}
             />
-          )}
-          {plan.workingSaturdays && plan.workingSaturdays.length > 0 && (
             <Chip
-              label={`Рабочих суббот: ${plan.workingSaturdays.length}`}
-              color="warning"
+              label={`Всего мероприятий: ${totalEvents}`}
+              color="primary"
               variant="outlined"
+              sx={{ borderColor: '#2c3e50', color: '#2c3e50' }}
             />
-          )}
-          {weeks.length > 0 && (
-            <Chip
-              label={`Всего недель: ${weeks.length}`}
-              color="success"
-              variant="outlined"
-            />
-          )}
+            {plan.announcements && plan.announcements.length > 0 && (
+              <Chip
+                label={`Анонсов: ${plan.announcements.length}`}
+                color="primary"
+                variant="outlined"
+                sx={{ borderColor: '#2c3e50', color: '#2c3e50' }}
+              />
+            )}
+            {plan.workingSaturdays && plan.workingSaturdays.length > 0 && (
+              <Chip
+                label={`Рабочих суббот: ${plan.workingSaturdays.length}`}
+                color="primary"
+                variant="outlined"
+                sx={{ borderColor: '#2c3e50', color: '#2c3e50' }}
+              />
+            )}
+          </Box>
         </Box>
+
+        {/* Фильтр по неделям */}
+        <WeekFilter
+          weeks={weekData}
+          filterType={weekFilterType}
+          selectedWeek={selectedWeek}
+          onFilterTypeChange={handleFilterTypeChange}
+          onWeekChange={handleWeekChange}
+          currentWeek={currentWeek}
+        />
+
+        {/* Таблица с планом */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            overflow: 'hidden',
+          }}
+        >
+          <TableContainer>
+            <Table sx={{ minWidth: 650 }} size="small">
+              <PlanTableHeader />
+              <TableBody>
+                {weeksToDisplay.map((week) => (
+                  <React.Fragment key={week.weekNumber}>
+                    {/* Разделитель недели */}
+                    <WeekSeparator
+                      weekNumber={week.weekNumber}
+                      startDate={week.startDate}
+                      endDate={week.endDate}
+                      monthName={monthName}
+                    />
+
+                    {/* Дни недели */}
+                    {week.days.map((day) => (
+                      <DayWithAnnouncements
+                        key={day.id}
+                        day={day}
+                        announcements={announcementsByDay[day.dayNumber] || []}
+                      />
+                    ))}
+                  </React.Fragment>
+                ))}
+
+                {/* Если дней нет */}
+                {weeksToDisplay.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        {weekFilterType === 'week' && selectedWeek
+                          ? `На неделе ${selectedWeek} нет мероприятий`
+                          : 'Нет мероприятий на этот месяц'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+
+        {/* Информация о рабочих субботах */}
+        {plan.workingSaturdays && plan.workingSaturdays.length > 0 && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              bgcolor: '#f8f9fa',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 600, color: '#2c3e50' }}
+            >
+              Рабочие субботы:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {plan.workingSaturdays.map((dayNumber, index) => (
+                <Chip
+                  key={index}
+                  label={`${dayNumber} (суббота)`}
+                  sx={{
+                    bgcolor: '#e8f4fd',
+                    color: '#1976d2',
+                    border: '1px solid #90caf9',
+                  }}
+                  size="small"
+                />
+              ))}
+            </Box>
+          </Paper>
+        )}
+
+        {/* Информация о выбранном фильтре */}
+        {weekFilterType === 'week' && selectedWeek && (
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Показана неделя {selectedWeek} из {weeks.length}
+              {currentWeek === selectedWeek && ' (текущая неделя)'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Для просмотра всех недель переключите фильтр на Все недели
+            </Typography>
+          </Box>
+        )}
       </Box>
 
-      {/* Таблица с планом */}
-      <Paper elevation={2} sx={{ mb: 4 }}>
-        <TableContainer>
-          <Table sx={{ minWidth: 650 }}>
-            <PlanTableHeader />
-            <TableBody>
-              {weeks.map((week) => (
-                <React.Fragment key={week.weekNumber}>
-                  {/* Разделитель недели */}
-                  <WeekSeparator
-                    weekNumber={week.weekNumber}
-                    startDate={week.startDate}
-                    endDate={week.endDate}
-                  />
-
-                  {/* Дни недели */}
-                  {week.days.map((day) => (
-                    <DayWithAnnouncements
-                      key={day.id}
-                      day={day}
-                      announcements={announcementsByDay[day.dayNumber] || []}
-                    />
-                  ))}
-                </React.Fragment>
-              ))}
-
-              {/* Если дней нет */}
-              {weeks.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body1" color="text.secondary">
-                      Нет мероприятий на этот месяц
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-
-      {/* Информация о рабочих субботах */}
-      {plan.workingSaturdays && plan.workingSaturdays.length > 0 && (
-        <Paper elevation={1} sx={{ p: 2, bgcolor: 'warning.50' }}>
-          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Рабочие субботы:
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {plan.workingSaturdays.map((dayNumber, index) => (
-              <Chip
-                key={index}
-                label={`${dayNumber} (суббота)`}
-                color="warning"
-                variant="filled"
-                size="small"
-              />
-            ))}
-          </Box>
-        </Paper>
-      )}
-    </Box>
+    </>
   );
 };
 

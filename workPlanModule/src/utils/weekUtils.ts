@@ -1,4 +1,3 @@
-// utils/weekUtils.ts
 import { DayPlan, WorkPlan } from 'src/types/plan.types';
 
 export interface WeekInfo {
@@ -12,7 +11,7 @@ export interface WeekInfo {
 /**
  * Получает номер недели в месяце для указанного дня
  */
-const getWeekNumberInMonth = (dayNumber: number): number => {
+export const getWeekNumberInMonth = (dayNumber: number): number => {
   return Math.ceil(dayNumber / 7);
 };
 
@@ -63,13 +62,7 @@ export const splitPlanIntoWeeks = (plan: WorkPlan): WeekInfo[] => {
     weekDays.sort((a, b) => a.dayNumber - b.dayNumber);
 
     // Формируем метку недели
-    const weekLabel = getWeekLabel(
-      weekNumber,
-      start,
-      end,
-      plan.monthNumber,
-      plan.year
-    );
+    const weekLabel = getWeekLabel(weekNumber, start, end, plan.monthNumber);
 
     weeks.push({
       weekNumber,
@@ -105,13 +98,8 @@ export const getCurrentWeek = (
 /**
  * Форматирует метку недели
  */
-export const getWeekLabel = (
-  weekNumber: number,
-  startDay: number,
-  endDay: number,
-  monthNumber: number,
-  year: number
-): string => {
+
+export const getMonthName = (monthNumber: number): string => {
   const monthNames = [
     'января',
     'февраля',
@@ -128,6 +116,17 @@ export const getWeekLabel = (
   ];
 
   const monthName = monthNames[monthNumber - 1];
+
+  return monthName;
+};
+
+export const getWeekLabel = (
+  weekNumber: number,
+  startDay: number,
+  endDay: number,
+  monthNumber: number
+): string => {
+  const monthName = getMonthName(monthNumber);
 
   return `Неделя ${weekNumber} (${startDay}-${endDay} ${monthName})`;
 };
@@ -177,4 +176,114 @@ export const getWeekDaysWithData = (
   }
 
   return result;
+};
+
+// Вспомогательная функция для получения номера недели месяца
+export const getWeekNumber = (
+  dayNumber: number,
+  firstDayOfMonth: number
+): number => {
+  return Math.floor((dayNumber + firstDayOfMonth - 1) / 7);
+};
+
+// Функция для группировки дней по неделям
+export const groupDaysByWeek = (
+  days: DayPlan[],
+  year: number,
+  monthNumber: number
+): Array<{
+  weekNumber: number;
+  days: DayPlan[];
+  startDate: string;
+  endDate: string;
+}> => {
+  // Получаем первый день месяца (0 - воскресенье, 1 - понедельник и т.д.)
+  const firstDayOfMonth = new Date(year, monthNumber - 1, 1).getDay();
+  // Преобразуем к формату, где понедельник = 0
+  const firstDayAdjusted = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+  const weeksMap = new Map<number, DayPlan[]>();
+
+  // Группируем дни по неделям
+  days.forEach((day) => {
+    const weekNum = getWeekNumber(day.dayNumber, firstDayAdjusted);
+    if (!weeksMap.has(weekNum)) {
+      weeksMap.set(weekNum, []);
+    }
+    weeksMap.get(weekNum)!.push(day);
+  });
+
+  // Сортируем по номеру недели и создаем результат
+  return Array.from(weeksMap.entries())
+    .sort(([weekA], [weekB]) => weekA - weekB)
+    .map(([weekNumber, weekDays]) => {
+      // Сортируем дни внутри недели по номеру дня
+      const sortedDays = weekDays.sort((a, b) => a.dayNumber - b.dayNumber);
+
+      // Определяем даты начала и конца недели
+      const startDay = sortedDays[0].dayNumber;
+      const endDay = sortedDays[sortedDays.length - 1].dayNumber;
+
+      return {
+        weekNumber: weekNumber + 1, // Нумерация недель с 1
+        days: sortedDays,
+        startDate: `${startDay} ${sortedDays[0].dayOfWeek}`,
+        endDate: `${endDay} ${sortedDays[sortedDays.length - 1].dayOfWeek}`,
+      };
+    });
+};
+
+export const getCurrentWeekNumber = (
+  weeks: Array<{ weekNumber: number; days: DayPlan[] }>,
+  currentDate: Date = new Date()
+): number | null => {
+  const currentDay = currentDate.getDate();
+  
+  for (const week of weeks) {
+    if (week.days.some(day => day.dayNumber === currentDay)) {
+      return week.weekNumber;
+    }
+  }
+  
+  return null;
+};
+
+// Вспомогательная функция для форматирования даты
+export const formatTodayDate = (): string => {
+  const today = new Date();
+  const day = today.getDate();
+  const monthNames = [
+    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+  ];
+  const month = monthNames[today.getMonth()];
+  const year = today.getFullYear();
+  const dayOfWeek = today.toLocaleDateString('ru-RU', { weekday: 'long' });
+  
+  return `${day} ${month} ${year} года, ${dayOfWeek}`;
+};
+
+// Функция для получения сегодняшнего дня из плана
+export const getTodayEvents = (plan: WorkPlan): { day: DayPlan | null; hasValidPlan: boolean } => {
+  if (!plan) return { day: null, hasValidPlan: false };
+  
+  const today = new Date();
+  const todayDay = today.getDate();
+  const todayMonth = today.getMonth() + 1;
+  const todayYear = today.getFullYear();
+  
+  // Проверяем, что план на текущий месяц и год
+  const isPlanForCurrentMonth = plan.monthNumber === todayMonth && plan.year === todayYear;
+  
+  if (!isPlanForCurrentMonth) {
+    return { day: null, hasValidPlan: false };
+  }
+  
+  // Ищем сегодняшний день в плане
+  const todayDayPlan = plan.days.find((day: DayPlan) => day.dayNumber === todayDay);
+  
+  return { 
+    day: todayDayPlan || null, 
+    hasValidPlan: true 
+  };
 };

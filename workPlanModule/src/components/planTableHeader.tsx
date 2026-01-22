@@ -2,14 +2,16 @@ import { TableHead, TableRow, TableCell } from "@mui/material";
 
 const PlanTableHeader: React.FC = () => {
   return (
-    <TableHead sx={{ bgcolor: '#103896' }}>
+    <TableHead sx={{ bgcolor: '#2c3e50' }}>
       <TableRow>
         <TableCell
           sx={{
             color: 'white',
-            fontWeight: 'bold',
+            fontWeight: 600,
             width: '15%',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
+            borderRight: '1px solid #3a506b',
+            py: 1.5
           }}
           align="center"
         >
@@ -18,9 +20,11 @@ const PlanTableHeader: React.FC = () => {
         <TableCell
           sx={{
             color: 'white',
-            fontWeight: 'bold',
+            fontWeight: 600,
             width: '10%',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
+            borderRight: '1px solid #3a506b',
+            py: 1.5
           }}
           align="center"
         >
@@ -29,9 +33,11 @@ const PlanTableHeader: React.FC = () => {
         <TableCell
           sx={{
             color: 'white',
-            fontWeight: 'bold',
+            fontWeight: 600,
             width: '55%',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
+            borderRight: '1px solid #3a506b',
+            py: 1.5
           }}
           align="center"
         >
@@ -40,9 +46,10 @@ const PlanTableHeader: React.FC = () => {
         <TableCell
           sx={{
             color: 'white',
-            fontWeight: 'bold',
+            fontWeight: 600,
             width: '20%',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
+            py: 1.5
           }}
           align="center"
         >
