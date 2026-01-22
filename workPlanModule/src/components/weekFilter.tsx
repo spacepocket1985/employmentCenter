@@ -192,7 +192,10 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
                     >
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: isSelected ? 600 : 400 }}
+                        sx={{
+                          fontWeight: isSelected ? 600 : 400,
+                          color: isCurrentWeek ? '#1976d2' : 'inherit',
+                        }}
                       >
                         Неделя {week.weekNumber}
                         {' - '}

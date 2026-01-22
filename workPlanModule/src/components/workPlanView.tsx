@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -35,7 +35,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
 }) => {
   // Состояния для фильтрации по неделям
   const [weekFilterType, setWeekFilterType] = React.useState<'all' | 'week'>(
-    'all'
+    'week'
   );
   const [selectedWeek, setSelectedWeek] = React.useState<number | null>(null);
 
@@ -63,6 +63,17 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
 
     return null;
   }, [plan, weeks]);
+
+  useEffect(() => {
+    if (weeks.length > 0 && currentWeek && !selectedWeek) {
+      setSelectedWeek(currentWeek);
+      setWeekFilterType('week');
+    } else if (weeks.length > 0 && !selectedWeek) {
+      // Если текущей недели нет (план на другой месяц), показываем первую неделю
+      setSelectedWeek(weeks[0].weekNumber);
+      setWeekFilterType('week');
+    }
+  }, [weeks, currentWeek, selectedWeek]);
 
   // Группируем анонсы по дням
   const announcementsByDay = React.useMemo(() => {
@@ -316,7 +327,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
           </Box>
         )}
       </Box>
-
     </>
   );
 };
