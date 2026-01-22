@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 
 interface PlanHeaderProps {
   monthName: string;
@@ -8,22 +8,25 @@ interface PlanHeaderProps {
 
 const PlanHeader: React.FC<PlanHeaderProps> = ({ monthName, year }) => {
   return (
-    <Typography
-      variant="h5"
-      align="center"
-      gutterBottom
+    <Paper
       sx={{
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-        mb: 4,
+        p: 3,
+        mb: 3,
+        background: 'linear-gradient(135deg, #103896, #1a4ec2)',
+        color: 'white',
       }}
     >
-      П Л А Н
-      <br />
-      мероприятий по Гродненской ТЭЦ-2
-      <br />
-      на {monthName} {year} года
-    </Typography>
+      <Typography
+        variant="h5"
+        align="center"
+        gutterBottom
+        sx={{ fontWeight: 700 }}
+      >
+        ПЛАН мероприятий
+        <br />
+        по Гродненской ТЭЦ-2 на {monthName} {year} года
+      </Typography>
+    </Paper>
   );
 };
 

@@ -1,3 +1,4 @@
+// normalDayRow.tsx - упрощенная версия
 import React from 'react';
 import { TableRow, TableCell, Typography, Box } from '@mui/material';
 import { DayPlan } from 'src/types/plan.types';
@@ -12,17 +13,20 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
     <>
       {day.events.map((event, index) => {
         const isEvenRow = index % 2 === 0;
-
+        const isLastEventInDay = index === day.events.length - 1;
+        
         return (
           <TableRow
             key={`${day.id}-${event.id}`}
             sx={{
               bgcolor: isEvenRow ? '#ffffff' : '#f8f9fa',
-              borderBottom: '1px solid #e0e0e0',
+              borderBottom: isLastEventInDay ? '2px solid #b0b0b0' : '1px solid #e0e0e0',
               '&:hover': {
                 bgcolor: '#f0f4f8',
                 transition: 'background-color 0.2s ease',
               },
+              // Добавляем отступ снизу для последнего мероприятия дня
+              mb: isLastEventInDay ? 0.5 : 0,
             }}
           >
             {/* Дата - показываем только для первого мероприятия дня */}
@@ -33,7 +37,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
                   verticalAlign: 'center',
                   borderRight: '1px solid #e0e0e0',
                   backgroundColor: '#f5f7fa',
-                  borderBottom: '1px solid #e0e0e0',
+                  borderBottom: isLastEventInDay ? '2px solid #b0b0b0' : '1px solid #e0e0e0',
                   width: '15%',
                 }}
                 align="center"
@@ -63,6 +67,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
                 verticalAlign: 'center',
                 borderRight: '1px solid #e0e0e0',
                 width: '10%',
+                borderBottom: isLastEventInDay ? '2px solid #b0b0b0' : '1px solid #e0e0e0',
               }}
               align="center"
             >
@@ -77,6 +82,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
                 verticalAlign: 'center',
                 borderRight: '1px solid #e0e0e0',
                 width: '55%',
+                borderBottom: isLastEventInDay ? '2px solid #b0b0b0' : '1px solid #e0e0e0',
               }}
             >
               <Typography
@@ -108,6 +114,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
               sx={{
                 verticalAlign: 'center',
                 width: '20%',
+                borderBottom: isLastEventInDay ? '2px solid #b0b0b0' : '1px solid #e0e0e0',
               }}
             >
               <Box>
@@ -137,6 +144,19 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
           </TableRow>
         );
       })}
+      
+      {/* Пустая строка-разделитель между днями */}
+      <TableRow sx={{ height: '12px' }}>
+        <TableCell 
+          colSpan={4} 
+          sx={{ 
+            p: 0, 
+            border: 'none',
+            backgroundColor: 'transparent',
+            height: '12px',
+          }}
+        />
+      </TableRow>
     </>
   );
 };

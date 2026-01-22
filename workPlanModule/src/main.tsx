@@ -5,4 +5,5 @@ import App from './App';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
-//ReactDOM.createRoot(document.getElementById('foodMenu')!).render(<App />);
+//ReactDOM.createRoot(document.getElementById('fullWorkPlan')!).render(<App />);
+//ReactDOM.createRoot(document.getElementById('compactWorkPlan')!).render(<App />);
