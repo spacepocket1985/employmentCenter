@@ -52,9 +52,6 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
       // При переключении на "все недели" сбрасываем выбранную неделю
       if (value === 'all') {
         onWeekChange(null);
-      } else if (value === 'week' && !selectedWeek && weeks.length > 0) {
-        // При переключении на "выбрать неделю" выбираем текущую неделю, если она есть
-        onWeekChange(currentWeek || weeks[0].weekNumber);
       }
     }
   };

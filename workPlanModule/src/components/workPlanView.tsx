@@ -67,11 +67,10 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
   useEffect(() => {
     if (weeks.length > 0 && currentWeek && !selectedWeek) {
       setSelectedWeek(currentWeek);
-      setWeekFilterType('week');
+      // УБРАТЬ: setWeekFilterType('week');
     } else if (weeks.length > 0 && !selectedWeek) {
       // Если текущей недели нет (план на другой месяц), показываем первую неделю
       setSelectedWeek(weeks[0].weekNumber);
-      setWeekFilterType('week');
     }
   }, [weeks, currentWeek, selectedWeek]);
 
