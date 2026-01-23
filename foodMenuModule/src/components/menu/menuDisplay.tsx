@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 
 import {
   Box,
@@ -23,7 +24,6 @@ import { Menu, DayMenu } from 'src/types/menu.types';
 import CompactMenuFilter from './compactMenuFilter';
 
 import { tableStyles } from '@const/menu.conts';
-import { usePrintStyles } from '@hooks/usePrintStyles';
 
 interface MenuDisplayProps {
   menu: Menu;
@@ -31,7 +31,7 @@ interface MenuDisplayProps {
   error: string | null;
   formatPrice: (price: number) => string;
   isToday: (dateString: string) => boolean;
-  handlePrint: () => void;
+  handlePrint?: () => void;
   refetchMenu: () => void;
   clearError: () => void;
 }
@@ -42,21 +42,18 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   error,
   formatPrice,
   isToday,
-  handlePrint,
   refetchMenu,
   clearError,
 }) => {
   // Стили для печати
-  const printStyles = usePrintStyles({
-    dense: true,
-    fontSize: 10,
-    margin: '0.4cm',
-  });
 
   // === СОСТОЯНИЯ ФИЛЬТРАЦИИ ===
   // Вся логика управления состоянием фильтрации находится здесь
   const [filterType, setFilterType] = useState<'all' | 'day'>('all');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   // === ЭФФЕКТ ДЛЯ АВТОМАТИЧЕСКОГО ВЫБОРА СЕГОДНЯШНЕГО ДНЯ ===
   // Выполняется только при загрузке меню (когда меняется menu)
@@ -188,7 +185,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   return (
     <Box
       sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 3 } }}
-      className="print-area"
+      ref={contentRef}
     >
       {/* Заголовок */}
       <Paper
@@ -245,11 +242,11 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
           <Button
             variant="contained"
             startIcon={<PrintIcon />}
-            onClick={handlePrint}
+            onClick={reactToPrintFn}
             className="no-print"
             sx={{ bgcolor: '#103896', '&:hover': { bgcolor: '#0a2c7a' } }}
           >
-            Распечатать меню
+            Печать меню
           </Button>
         </Box>
       </Box>
@@ -408,7 +405,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
       </Box>
 
       {/* Стили для печати */}
-      <style>{printStyles}</style>
     </Box>
   );
 };
