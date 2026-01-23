@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { useRef } from 'react';
 import {
   Box,
   Paper,
@@ -11,7 +13,9 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
 
 import { Announcement, WorkPlan } from 'src/types/plan.types';
 import PlanHeader from './planHeader';
@@ -38,6 +42,9 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     'week'
   );
   const [selectedWeek, setSelectedWeek] = React.useState<number | null>(null);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const weeks = React.useMemo(() => {
     if (!plan?.days) return [];
@@ -170,7 +177,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
 
   return (
     <>
-      <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }} ref={contentRef}>
         {/* Заголовок плана */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <PlanHeader monthName={plan.month} year={plan.year} />
@@ -213,6 +220,9 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
                 sx={{ borderColor: '#2c3e50', color: '#2c3e50' }}
               />
             )}
+            <Button onClick={reactToPrintFn} startIcon={<PrintIcon />} variant='outlined' size='small'>
+              Печать
+            </Button>
           </Box>
         </Box>
 

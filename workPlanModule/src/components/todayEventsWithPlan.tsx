@@ -170,12 +170,12 @@ export const TodayEventsWithPlan: React.FC<TodayEventsWithPlanProps> = ({
             <Link
               underline="hover"
               color="inherit"
-              href="http://tec23.grodno.energo.net/"
+              href="http://tec23.grodno.energo.net/index.php/fullworkplan"
               sx={{
                 color: '#fff',
                 '&:hover': {
-                  borderColor: '#3a506b',
-                  backgroundColor: 'rgba(44, 62, 80, 0.04)',
+                  borderColor: '#103896',
+                  backgroundColor: '#ced4da',
                 },
               }}
             >
@@ -281,12 +281,12 @@ export const TodayEventsWithPlan: React.FC<TodayEventsWithPlanProps> = ({
             <Link
               underline="hover"
               color="inherit"
-              href="http://tec23.grodno.energo.net/"
+              href="http://tec23.grodno.energo.net/index.php/fullworkplan"
               sx={{
                 color: '#fff',
                 '&:hover': {
-                  borderColor: '#3a506b',
-                  backgroundColor: 'rgba(44, 62, 80, 0.04)',
+                  borderColor: '#103896',
+                  backgroundColor: '#ced4da',
                 },
               }}
             >

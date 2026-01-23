@@ -1,7 +1,7 @@
 import { ApiResponse, WorkPlan } from 'src/types/plan.types';
 
-export const BaseUrl = 'http://localhost:5000/';
-//export const BaseUrl = 'http://10.182.1.143:5000/';
+//export const BaseUrl = 'http://localhost:5000/';
+export const BaseUrl = 'http://10.182.1.143:5000/';
 
 // Вспомогательная функция для запросов
 async function request<T = unknown>(
