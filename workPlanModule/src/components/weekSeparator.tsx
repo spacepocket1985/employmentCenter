@@ -15,10 +15,18 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
   monthName,
 }) => {
   return (
-    <TableRow sx={{ bgcolor: '#f0f4f8' }}>
+    <TableRow
+      sx={{
+        bgcolor: '#f0f4f8',
+      }}
+      className="no-print"
+    >
       <TableCell
         colSpan={4}
-        sx={{ py: 1.5, borderBottom: '2px solid #3a506b' }}
+        sx={{
+          py: 1.5,
+          borderBottom: '2px solid #103896',
+        }}
       >
         <Box
           sx={{
@@ -31,7 +39,7 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
           <Typography
             variant="subtitle1"
             sx={{
-              backgroundColor: '#2c3e50',
+              backgroundColor: '#103896',
               color: '#fff',
               p: 1,
               borderRadius: 2,
@@ -42,7 +50,7 @@ const WeekSeparator: React.FC<WeekSeparatorProps> = ({
           <Typography
             variant="subtitle1"
             sx={{
-              backgroundColor: '#2c3e50',
+              backgroundColor: '#103896',
               color: '#fff',
               p: 1,
               borderRadius: 2,

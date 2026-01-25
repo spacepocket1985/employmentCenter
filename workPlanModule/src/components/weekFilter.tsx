@@ -84,7 +84,7 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
       {/* Заголовок фильтра */}
       <Typography
         variant="subtitle1"
-        sx={{ mr: 2, fontWeight: 600, color: '#2c3e50' }}
+        sx={{ mr: 2, fontWeight: 600, color: '#103896' }}
       >
         Просмотр:
       </Typography>
@@ -101,10 +101,10 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
           value="all"
           sx={{
             '&.Mui-selected': {
-              bgcolor: '#2c3e50',
+              bgcolor: '#103896',
               color: 'white',
               '&:hover': {
-                bgcolor: '#3a506b',
+                bgcolor: '#213c5d',
               },
             },
           }}
@@ -118,7 +118,7 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
           value="week"
           sx={{
             '&.Mui-selected': {
-              bgcolor: '#2c3e50',
+              bgcolor: '#103896',
               color: 'white',
               '&:hover': {
                 bgcolor: '#3a506b',
@@ -149,92 +149,94 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
       {/* Выпадающий список для выбора недели */}
       {filterType === 'week' && (
         <FormControl size="small" sx={{ minWidth: 250 }}>
-          <Select
-            value={selectedWeek || ''}
-            onChange={handleWeekChange}
-            displayEmpty
-            sx={{
-              '& .MuiSelect-select': {
-                display: 'flex',
-                alignItems: 'center',
-              },
-            }}
-          >
-            {/* Плейсхолдер, когда неделя не выбрана */}
-            <MenuItem value="" disabled>
-              Выберите неделю
-            </MenuItem>
-
-            {/* Список недель */}
-            {weeks.map((week) => {
-              const isCurrentWeek = week.weekNumber === currentWeek;
-              const isSelected = week.weekNumber === selectedWeek;
-
-              return (
-                <MenuItem key={week.weekNumber} value={week.weekNumber}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                    }}
-                  >
-                    {/* Информация о неделе */}
-                    <Box
-                      display={'flex'}
-                      alignItems={'center'}
-                      justifyContent={'center'}
-                      gap={1}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontWeight: isSelected ? 600 : 400,
-                          color: isCurrentWeek ? '#1976d2' : 'inherit',
-                        }}
-                      >
-                        Неделя {week.weekNumber}
-                        {' - '}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {week.startDate} - {week.endDate}
-                      </Typography>
-                    </Box>
-
-                    {/* Индикатор текущей недели */}
-                    {isCurrentWeek && (
-                      <Chip
-                        label="Текущая"
-                        color="primary"
-                        size="small"
-                        sx={{
-                          ml: 1,
-                          fontWeight: 'bold',
-                        }}
-                      />
-                    )}
-                  </Box>
-                </MenuItem>
-              );
-            })}
-          </Select>
-
-          {/* Информация о выбранной неделе */}
-          {selectedWeekInfo && (
-            <Typography
-              variant="caption"
+          <Box display={'flex'} alignItems={'center'} gap={1}>
+            <Select
+              value={selectedWeek || ''}
+              onChange={handleWeekChange}
+              displayEmpty
               sx={{
-                display: 'block',
-                mt: 0.5,
-                color: '#546e7a',
-                fontSize: '0.75rem',
+                '& .MuiSelect-select': {
+                  display: 'flex',
+                  alignItems: 'center',
+                },
               }}
             >
-              Выбрана неделя {selectedWeekInfo.weekNumber}:{' '}
-              {selectedWeekInfo.startDate} - {selectedWeekInfo.endDate}
-            </Typography>
-          )}
+              {/* Плейсхолдер, когда неделя не выбрана */}
+              <MenuItem value="" disabled>
+                Выберите неделю
+              </MenuItem>
+
+              {/* Список недель */}
+              {weeks.map((week) => {
+                const isCurrentWeek = week.weekNumber === currentWeek;
+                const isSelected = week.weekNumber === selectedWeek;
+
+                return (
+                  <MenuItem key={week.weekNumber} value={week.weekNumber}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}
+                    >
+                      {/* Информация о неделе */}
+                      <Box
+                        display={'flex'}
+                        alignItems={'center'}
+                        justifyContent={'center'}
+                        gap={1}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontWeight: isSelected ? 600 : 400,
+                            color: isCurrentWeek ? '#1976d2' : 'inherit',
+                          }}
+                        >
+                          Неделя {week.weekNumber}
+                          {' - '}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {week.startDate} - {week.endDate}
+                        </Typography>
+                      </Box>
+
+                      {/* Индикатор текущей недели */}
+                      {isCurrentWeek && (
+                        <Chip
+                          label="Текущая"
+                          color="primary"
+                          size="small"
+                          sx={{
+                            ml: 1,
+                            fontWeight: 'bold',
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </Select>
+
+            {/* Информация о выбранной неделе */}
+            {selectedWeekInfo && (
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  mt: 0.5,
+                  color: '#546e7a',
+                  fontSize: '0.75rem',
+                }}
+              >
+                Выбрана неделя {selectedWeekInfo.weekNumber}:{' '}
+                {selectedWeekInfo.startDate} - {selectedWeekInfo.endDate}
+              </Typography>
+            )}
+          </Box>
         </FormControl>
       )}
     </Box>
