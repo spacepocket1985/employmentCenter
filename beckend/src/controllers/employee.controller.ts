@@ -116,6 +116,128 @@ class EmployeeController {
         .json({ data: deletedEmployee, msg: 'Employee successfully deleted!' });
     }
   }
+  /**
+   * Получить всех сотрудников группы responsibleOnWeekends
+   * (включая подгруппы и отдельных сотрудников)
+   */
+  async getResponsibleOnWeekends(
+    req: Request,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const employees = await employeeService.getResponsibleOnWeekendsEmployees();
+
+    if (!employees || employees.length === 0) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'No responsible on weekends employees found!' });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ 
+          data: employees, 
+          msg: 'Responsible on weekends employees fetched successfully!' 
+        });
+    }
+  }
+
+  /**
+   * Получить всех сотрудников группы safetyOfficers
+   * (включая все подгруппы)
+   */
+  async getSafetyOfficers(
+    req: Request,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const employees = await employeeService.getSafetyOfficersEmployees();
+
+    if (!employees || employees.length === 0) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'No safety officers employees found!' });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ 
+          data: employees, 
+          msg: 'Safety officers employees fetched successfully!' 
+        });
+    }
+  }
+
+  /**
+   * Получить сотрудников по конкретной группе (без учета иерархии)
+   * Например: GET /employees/group/management
+   */
+  async getEmployeesByGroup(
+    req: RequestWithParams<{ groupName: string }>,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const { groupName } = req.params;
+    const employees = await employeeService.getEmployeesByGroup(groupName);
+
+    if (!employees || employees.length === 0) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: `No employees found in group: ${groupName}` });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ 
+          data: employees, 
+          msg: `Employees in group "${groupName}" fetched successfully!` 
+        });
+    }
+  }
+
+  /**
+   * Добавить группу сотруднику
+   * PATCH /employees/:id/groups/:groupName
+   */
+  async addGroupToEmployee(
+    req: RequestWithParams<{ id: string; groupName: string }>,
+    res: Response<EmployeeViewModel<EmployeeType>>
+  ): Promise<void> {
+    const { id, groupName } = req.params;
+    const updatedEmployee = await employeeService.addGroupToEmployee(id, groupName);
+
+    if (!updatedEmployee) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested employee not found!' });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ 
+          data: updatedEmployee, 
+          msg: `Group "${groupName}" successfully added to employee!` 
+        });
+    }
+  }
+
+  /**
+   * Удалить группу у сотрудника
+   * DELETE /employees/:id/groups/:groupName
+   */
+  async removeGroupFromEmployee(
+    req: RequestWithParams<{ id: string; groupName: string }>,
+    res: Response<EmployeeViewModel<EmployeeType>>
+  ): Promise<void> {
+    const { id, groupName } = req.params;
+    const updatedEmployee = await employeeService.removeGroupFromEmployee(id, groupName);
+
+    if (!updatedEmployee) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested employee not found!' });
+    } else {
+      res
+        .status(StatusCodes.OK)
+        .json({ 
+          data: updatedEmployee, 
+          msg: `Group "${groupName}" successfully removed from employee!` 
+        });
+    }
+  }
 }
 
 export const employeeController = new EmployeeController();

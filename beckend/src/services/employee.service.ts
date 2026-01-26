@@ -5,6 +5,34 @@ import { Employee, EmployeeType } from '../models/employee.model';
 import { EmployeeCreateModel } from '../models/employeeCreateModel';
 
 class EmployeeService {
+  // Константы для иерархии групп
+  private readonly GROUP_HIERARCHY = {
+    // Группа safetyOfficers включает все подгруппы
+    safetyOfficers: [
+      'safetyOfficers',
+      'responsibleOnWeekends',
+      'management',
+      'oniot',
+    ],
+    // Группа responsibleOnWeekends включает свою подгруппу
+    responsibleOnWeekends: ['responsibleOnWeekends', 'management'],
+    // Базовые группы (без подгрупп)
+    management: ['management'],
+    boss: ['boss'],
+    oniot: ['oniot'],
+  };
+
+  /**
+   * Получить все группы, связанные с указанной (включая саму группу и все подгруппы)
+   */
+  private getGroupsWithHierarchy(groupName: string): string[] {
+    return (
+      this.GROUP_HIERARCHY[groupName as keyof typeof this.GROUP_HIERARCHY] || [
+        groupName,
+      ]
+    );
+  }
+
   async getAllEmployees() {
     return await Employee.find({}).sort('-createdAt');
   }
@@ -14,7 +42,7 @@ class EmployeeService {
     const todayStr = this.formatDate(today);
 
     const threeDaysLater = new Date();
-    threeDaysLater.setDate(today.getDate() + 3);
+    threeDaysLater.setDate(today.getDate() + 2);
     threeDaysLater.setHours(23, 59, 59, 999);
     const threeDaysLaterStr = this.formatDate(threeDaysLater);
 
@@ -69,10 +97,88 @@ class EmployeeService {
   }
 
   async findEmployeesByNameStart(nameStart: string) {
-    const regex = new RegExp(`^${nameStart}`, 'i'); 
+    const regex = new RegExp(`^${nameStart}`, 'i');
     const employees = await Employee.find({ name: { $regex: regex } });
     return employees;
   }
+
+  /**
+   * Получить всех сотрудников, принадлежащих к группе responsibleOnWeekends
+   * (включая сотрудников из подгруппы management и отдельных сотрудников с этой группой)
+   */
+  async getResponsibleOnWeekendsEmployees() {
+    const responsibleGroups = this.getGroupsWithHierarchy(
+      'responsibleOnWeekends'
+    );
+
+    // Ищем сотрудников, у которых хотя бы одна из групп совпадает с искомыми
+    return await Employee.find({
+      groups: { $in: responsibleGroups },
+    }).sort('-createdAt');
+  }
+
+  /**
+   * Получить всех сотрудников, принадлежащих к группе safetyOfficers
+   * (включая все подгруппы: responsibleOnWeekends, management, oniot)
+   */
+  async getSafetyOfficersEmployees() {
+    const safetyOfficersGroups = this.getGroupsWithHierarchy('safetyOfficers');
+
+    // Ищем сотрудников, у которых хотя бы одна из групп совпадает с искомыми
+    return await Employee.find({
+      groups: { $in: safetyOfficersGroups },
+    }).sort('-createdAt');
+  }
+
+  /**
+   * Получить сотрудников по конкретной группе (без учета иерархии)
+   * Полезно для администрирования через MongoDB Compass
+   */
+  async getEmployeesByGroup(groupName: string) {
+    return await Employee.find({
+      groups: groupName,
+    }).sort('-createdAt');
+  }
+
+  /**
+   * Добавить группу сотруднику
+   */
+  async addGroupToEmployee(employeeId: string, groupName: string) {
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      return null;
+    }
+
+    // Если группа уже есть, не добавляем повторно
+    if (!employee.groups?.includes(groupName)) {
+      employee.groups = [...(employee.groups || []), groupName];
+      await employee.save();
+    }
+
+    return employee;
+  }
+
+  /**
+   * Удалить группу у сотрудника
+   */
+  async removeGroupFromEmployee(employeeId: string, groupName: string) {
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      return null;
+    }
+
+    // Фильтруем массив групп, удаляя указанную группу
+    if (employee.groups) {
+      employee.groups = employee.groups.filter((group) => group !== groupName);
+      await employee.save();
+    }
+
+    return employee;
+  }
+
+  
 }
 
 export const employeeService = new EmployeeService();
