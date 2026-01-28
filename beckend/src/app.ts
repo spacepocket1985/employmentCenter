@@ -3,12 +3,13 @@ import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
 
-import vacancyRouter from './routes/vacancy.routes';
-import authRouter from './routes/auth.routes';
-import employeeRouter from './routes/employees.routes';
+import vacancyRoutes from './routes/vacancy.routes';
+import authRoutes from './routes/auth.routes';
+import employeeRoutes from './routes/employees.routes';
 import { MyPassport } from './middleware/passport';
 import { menuRoutes } from './routes/menu.routes';
 import workPlanRoutes from './routes/workPlan.routes';
+import scheduleRoutes from './routes/schedules.routes';
 
 export const app = express();
 
@@ -25,8 +26,9 @@ app.get('/', (req, res) => {
 });
 
 // routes
-app.use('/vacancies', vacancyRouter);
-app.use('/auth', authRouter);
-app.use('/employees', employeeRouter);
+app.use('/vacancies', vacancyRoutes);
+app.use('/auth', authRoutes);
+app.use('/employees', employeeRoutes);
 app.use('/foodMenu', menuRoutes);
 app.use('/workPlans', workPlanRoutes);
+app.use('/schedules', scheduleRoutes);
