@@ -9,6 +9,9 @@ export type EmployeeType = {
   department: string;
   birthday: string;
   groups?: string[];
+  orderIndex?: number;        // Общий индекс для сортировки
+  responsibleOrder?: number;  // Специфичный для ответственных на выходных
+  safetyOrder?: number;       // Специфичный для безопасности труда
 };
 
 const employeeSchema = new Schema<EmployeeType>(
@@ -32,6 +35,18 @@ const employeeSchema = new Schema<EmployeeType>(
     groups: {
       type: [String],
       default: [],
+    },
+    orderIndex: {
+      type: Number,
+      default: 0,
+    },
+    responsibleOrder: {
+      type: Number,
+      default: 0,
+    },
+    safetyOrder: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

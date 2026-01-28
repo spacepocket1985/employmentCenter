@@ -36,6 +36,7 @@ class EmployeeService {
   async getAllEmployees() {
     return await Employee.find({}).sort('-createdAt');
   }
+
   async getHBEmployees() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -105,6 +106,7 @@ class EmployeeService {
   /**
    * Получить всех сотрудников, принадлежащих к группе responsibleOnWeekends
    * (включая сотрудников из подгруппы management и отдельных сотрудников с этой группой)
+   * Сортировка по responsibleOrder, затем по имени
    */
   async getResponsibleOnWeekendsEmployees() {
     const responsibleGroups = this.getGroupsWithHierarchy(
@@ -112,22 +114,31 @@ class EmployeeService {
     );
 
     // Ищем сотрудников, у которых хотя бы одна из групп совпадает с искомыми
+    // Сортировка: сначала по responsibleOrder (по возрастанию), затем по имени
     return await Employee.find({
       groups: { $in: responsibleGroups },
-    }).sort('-createdAt');
+    }).sort({
+      responsibleOrder: 1, // Сначала по порядку для ответственных
+      name: 1, // Затем по имени (для одинакового порядка)
+    });
   }
 
   /**
    * Получить всех сотрудников, принадлежащих к группе safetyOfficers
    * (включая все подгруппы: responsibleOnWeekends, management, oniot)
+   * Сортировка по safetyOrder, затем по имени
    */
   async getSafetyOfficersEmployees() {
     const safetyOfficersGroups = this.getGroupsWithHierarchy('safetyOfficers');
 
     // Ищем сотрудников, у которых хотя бы одна из групп совпадает с искомыми
+    // Сортировка: сначала по safetyOrder (по возрастанию), затем по имени
     return await Employee.find({
       groups: { $in: safetyOfficersGroups },
-    }).sort('-createdAt');
+    }).sort({
+      safetyOrder: 1, // Сначала по порядку для безопасности
+      name: 1, // Затем по имени (для одинакового порядка)
+    });
   }
 
   /**
@@ -137,7 +148,7 @@ class EmployeeService {
   async getEmployeesByGroup(groupName: string) {
     return await Employee.find({
       groups: groupName,
-    }).sort('-createdAt');
+    }).sort({ orderIndex: 1, name: 1 });
   }
 
   /**
@@ -177,8 +188,6 @@ class EmployeeService {
 
     return employee;
   }
-
-  
 }
 
 export const employeeService = new EmployeeService();
