@@ -15,9 +15,9 @@ router.route('/search/:name').get(employeeController.getEmployeeByName);
 
 // Маршруты для работы с группами
 router
-  .route('/responsible-on-weekends')
+  .route('/responsibleOnWeekends')
   .get(employeeController.getResponsibleOnWeekends);
-router.route('/safety-officers').get(employeeController.getSafetyOfficers);
+router.route('/safetyOfficers').get(employeeController.getSafetyOfficers);
 router.route('/group/:groupName').get(employeeController.getEmployeesByGroup);
 
 // Маршруты для работы с конкретным сотрудником
