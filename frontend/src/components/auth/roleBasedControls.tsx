@@ -51,6 +51,12 @@ export const controlsConfig: ControlItem[] = [
     link: RoutePaths.CREATE_PLANS,
     roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
+  {
+    text: 'Создать график дежурств',
+    icon: EditCalendarIcon,
+    link: RoutePaths.CREATE_SCHEDULE,
+    roles: [UserRole.ADMIN, UserRole.ONIOT],
+  },
 ];
 
 interface RoleBasedControlsProps {

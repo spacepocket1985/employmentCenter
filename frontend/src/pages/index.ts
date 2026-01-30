@@ -10,3 +10,5 @@ export const PageMenu = lazy(() => import('./MenuPage'));
 export const PagePlanCreate = lazy(() => import('./PlanCreatePage'));
 export const PagePlans = lazy(() => import('./PlansPage'));
 export const PagePlan = lazy(() => import('./PlanPage'));
+
+export const PageScheduleCreate = lazy(() => import('./ScheduleCreatePage'));

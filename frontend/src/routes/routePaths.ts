@@ -10,4 +10,5 @@ export enum RoutePaths {
   PLAN = 'plans/:id',
   CREATE_PLANS = 'plans/create',
   EDIT_PLAN = '/plans/:id/edit',
+  CREATE_SCHEDULE = 'schedule/create',
 }

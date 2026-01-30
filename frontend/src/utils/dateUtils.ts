@@ -115,3 +115,11 @@ export const getAvailableMonths = (
 
   return months;
 };
+
+export const formatDateForDisplay = (date: string): string => {
+  return new Date(date).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'short',
+  });
+};

@@ -5,4 +5,5 @@ export * from './vacanciesApiSlice';
 export * from './userApiSlice';
 export * from './menuApiSlice';
 export * from './workPlanApiSlice';
+export * from './scheduleApiSlice';
 

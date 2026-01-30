@@ -16,6 +16,11 @@ export type EmployeeType = {
   birthday: string;
 };
 
+export type EmployeeViewModel<T> = {
+  data?: T;
+  msg: string;
+};
+
 export type UserType = {
   name: string;
   password: string;
