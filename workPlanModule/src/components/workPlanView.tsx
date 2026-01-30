@@ -27,6 +27,7 @@ import PrintApproval from './printApproval';
 import { getMonthName, groupDaysByWeek } from '@utils/weekUtils';
 import { DayWithAnnouncements } from './dayWithAnnouncements';
 import { PRINT_GLOBAL_STYLES } from 'src/const/printStyles';
+import { NoteForPlan } from './noteForPlan';
 
 type WorkPlanViewProps = {
   plan?: WorkPlan;
@@ -316,6 +317,8 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
           )}
         </Box>
 
+        <NoteForPlan />
+
         {/* Информация о выбранном фильтре - скрываем при печати */}
         <Box className="no-print">
           {weekFilterType === 'week' && selectedWeek && (
@@ -332,7 +335,7 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
         </Box>
 
         {/* Блок утверждения - показываем только при печати */}
-        <PrintApproval />
+        <PrintApproval mounth={monthName} />
       </Box>
     </>
   );

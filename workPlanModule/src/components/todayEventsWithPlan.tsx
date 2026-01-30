@@ -14,6 +14,7 @@ import { WorkPlan, Event } from 'src/types/plan.types';
 import { formatTodayDate, getTodayEvents } from '@utils/weekUtils';
 import { EventRow } from './eventRow';
 import { TodayEventsTableHeader } from './todayEventsTableHeader';
+import { LinkFullPlan } from '@api/planApi';
 
 interface TodayEventsWithPlanProps {
   plan: WorkPlan;
@@ -165,18 +166,16 @@ export const TodayEventsWithPlan: React.FC<TodayEventsWithPlanProps> = ({
               justifyContent: 'center',
               alignItems: 'center',
               backgroundColor: '#103896',
+              '&:hover': {
+                backgroundColor: '#6c757d',
+              },
             }}
           >
             <Link
               underline="hover"
-              color="inherit"
-              href="http://tec23.grodno.energo.net/index.php/fullworkplan"
+              href={LinkFullPlan}
               sx={{
                 color: '#fff',
-                '&:hover': {
-                  borderColor: '#103896',
-                  backgroundColor: '#ced4da',
-                },
               }}
             >
               Посмотреть весь план
@@ -268,32 +267,28 @@ export const TodayEventsWithPlan: React.FC<TodayEventsWithPlanProps> = ({
           </Table>
         </TableContainer>
 
-        {!compact && (
-          <Box
+        <Box
+          sx={{
+            p: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#103896',
+            '&:hover': {
+              backgroundColor: '#6c757d',
+            },
+          }}
+        >
+          <Link
+            underline="hover"
+            href={LinkFullPlan}
             sx={{
-              p: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: '#103896',
+              color: '#fff',
             }}
           >
-            <Link
-              underline="hover"
-              color="inherit"
-              href="http://tec23.grodno.energo.net/index.php/fullworkplan"
-              sx={{
-                color: '#fff',
-                '&:hover': {
-                  borderColor: '#103896',
-                  backgroundColor: '#ced4da',
-                },
-              }}
-            >
-              Посмотреть весь план
-            </Link>
-          </Box>
-        )}
+            Посмотреть весь план
+          </Link>
+        </Box>
       </Card>
     </Box>
   );

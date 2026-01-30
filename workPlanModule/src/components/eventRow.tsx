@@ -27,7 +27,7 @@ export const EventRow: React.FC<EventRowProps> = ({
           py: compact ? 1 : 1.5,
           fontWeight: 500,
           color: '#37474f',
-          fontSize: compact ? '0.85rem' : '0.9rem',
+          fontSize: compact ? '0.8rem' : '0.9rem',
           width: '15%',
         }}
         align="center"
@@ -46,7 +46,7 @@ export const EventRow: React.FC<EventRowProps> = ({
           sx={{
             whiteSpace: 'pre-wrap',
             color: '#263238',
-            fontSize: compact ? '0.85rem' : '0.9rem',
+            fontSize: compact ? '0.8rem' : '0.9rem',
             lineHeight: 1.4,
           }}
         >
@@ -83,7 +83,7 @@ export const EventRow: React.FC<EventRowProps> = ({
               sx={{
                 display: 'block',
                 mb: idx < event.responsiblePersons.length - 1 ? 0.5 : 0,
-                fontSize: compact ? '0.8rem' : '0.85rem',
+                fontSize: compact ? '0.8rem' : '0.8rem',
                 lineHeight: 1.3,
               }}
             >

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-const PrintApproval: React.FC = () => {
+type PrintApprovalProps = { mounth: string };
+const PrintApproval: React.FC<PrintApprovalProps> = ({ mounth }) => {
   return (
     <Box
       className="print-only"
@@ -11,13 +12,13 @@ const PrintApproval: React.FC = () => {
       }}
     >
       <Typography variant="h6" fontWeight="bold" mb={2}>
-        УТВЕРЖДАЮ
+        УТВЕРЖДЕНО
       </Typography>
       <Typography variant="body1" mb={4}>
-        Директор станции __________________ Балабанович Д.С.
+        Директор станции  ________  Балабанович Д.С.
       </Typography>
-      <Typography variant="body2" color="text.secondary">
-        __ ___________ 2026 г.
+      <Typography variant="body1" color="text.secondary">
+        {`${mounth} 2026 г.`}
       </Typography>
     </Box>
   );

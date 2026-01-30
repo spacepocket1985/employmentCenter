@@ -232,7 +232,7 @@ const WeekFilter: React.FC<WeekFilterProps> = ({
                   fontSize: '0.75rem',
                 }}
               >
-                Выбрана неделя {selectedWeekInfo.weekNumber}:{' '}
+                Выбрана неделя {selectedWeekInfo.weekNumber}:{' '}<br/>
                 {selectedWeekInfo.startDate} - {selectedWeekInfo.endDate}
               </Typography>
             )}

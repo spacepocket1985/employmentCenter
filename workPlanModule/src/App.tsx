@@ -10,7 +10,7 @@ const App: React.FC = () => {
   return (
     <>
       <WorkPlanView plan={plan} isLoading={isLoading} error={error} />
-      <TodayEventsWithPlan plan={plan!} />
+      {/* {<TodayEventsWithPlan plan={plan!} compact={true}/>} */}
     </>
   );
 };

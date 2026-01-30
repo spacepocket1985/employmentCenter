@@ -40,7 +40,7 @@ export const TodayEventsTableHeader: React.FC<{ compact?: boolean }> = ({
           }}
           align="center"
         >
-          Ответственный за выполнение
+          Ответственный
         </TableCell>
       </TableRow>
     </TableHead>
