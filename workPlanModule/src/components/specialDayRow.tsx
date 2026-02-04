@@ -78,19 +78,7 @@ const SpecialDayRow: React.FC<SpecialDayRowProps> = ({ day }) => {
           py: 2,
           '@media print': PRINT_CELL_STYLES,
         }}
-      >
-        <Typography
-          variant="h6"
-          color="#e65100"
-          fontWeight={600}
-          sx={{
-            fontSize: '1.1rem',
-            '@media print': PRINT_TEXT_STYLES,
-          }}
-        >
-          {day.specialDayTitle || 'Специальный день'}
-        </Typography>
-      </TableCell>
+      ></TableCell>
     </TableRow>
   );
 };

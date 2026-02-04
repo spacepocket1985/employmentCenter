@@ -152,7 +152,7 @@ const NormalDayRow: React.FC<NormalDayRowProps> = ({ day, isFirstEvent }) => {
                     align="center"
                     sx={{
                       mb: idx < event.responsiblePersons.length - 1 ? 0.5 : 0,
-                      fontSize: '0.9rem',
+                      fontSize: '0.85rem',
                       backgroundColor: '#103896',
                       color: '#fff',
                       p: 1,

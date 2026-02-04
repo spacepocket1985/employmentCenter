@@ -19,7 +19,6 @@ interface AnnouncementDisplayProps {
 
 const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
   announcement,
-  dayOfWeek,
 }) => {
   const getStyleConfig = () => {
     switch (announcement.style) {
@@ -80,6 +79,7 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 2,
             py: 0.5,
             px: 2,
@@ -93,27 +93,15 @@ const AnnouncementDisplay: React.FC<AnnouncementDisplayProps> = ({
           })}
           <Box>
             <Typography
-              variant="body2"
+              variant="h6"
+              align="center"
               sx={{
-                fontWeight: 600,
+                fontWeight: 500,
                 color: styleConfig.color,
                 '@media print': PRINT_TEXT_STYLES,
               }}
             >
               {announcement.title}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: styleConfig.color,
-                opacity: 0.8,
-                display: 'block',
-                mt: 0.5,
-                fontSize: '0.8rem',
-                '@media print': PRINT_TEXT_STYLES,
-              }}
-            >
-              Анонс для {announcement.dayNumber} {dayOfWeek}
             </Typography>
           </Box>
         </Box>
