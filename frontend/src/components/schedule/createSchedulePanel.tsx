@@ -1,5 +1,3 @@
-// components/schedule/CreateSchedulePanel.tsx
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -16,26 +14,27 @@ import {
   Snackbar,
   Grid,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Refresh as RefreshIcon,
-  Save as SaveIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { useScheduleForm } from '@hooks/useScheduleForm';
 import {
   useGetResponsibleOnWeekendsQuery,
   useGetSafetyOfficersQuery,
   useGetScheduleByMonthAndTypeQuery,
   useCreateScheduleMutation,
-  useCreateScheduleFromTemplateMutation,
 } from '@store/slices/scheduleApiSlice';
+
 import LoadingErrorWrapper from './loadingErrorWrapper';
 import MonthSelector from './monthSelector';
 import ScheduleEntryRow from './scheduleEntryRow';
 import ScheduleTypeSelector from './scheduleTypeSelector';
 
-
+/**
+ * Компонент создания графика дежурств
+ * Позволяет выбрать месяц и тип графика, автоматически заполнить
+ * список сотрудников, добавить даты дежурств и сохранить график
+ */
 const CreateSchedulePanel: React.FC = () => {
+  // Хук для управления формой графика
   const {
     formData,
     validationErrors,
@@ -52,7 +51,14 @@ const CreateSchedulePanel: React.FC = () => {
     resetForm,
   } = useScheduleForm();
 
-  // Проверка существования графика
+  // Состояние снекбара для уведомлений
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error' | 'warning' | 'info',
+  });
+
+  // Проверка существования графика на выбранный месяц
   const {
     data: existingSchedule,
     isLoading: isLoadingExisting,
@@ -65,7 +71,7 @@ const CreateSchedulePanel: React.FC = () => {
     { skip: !formData.month }
   );
 
-  // Получение сотрудников для автозаполнения
+  // Получение списка ответственных на выходных
   const {
     data: responsibleData,
     isLoading: isLoadingResponsible,
@@ -74,6 +80,7 @@ const CreateSchedulePanel: React.FC = () => {
     skip: formData.scheduleType !== 'responsibleOnWeekends',
   });
 
+  // Получение списка сотрудников охраны труда
   const {
     data: safetyData,
     isLoading: isLoadingSafety,
@@ -82,25 +89,14 @@ const CreateSchedulePanel: React.FC = () => {
     skip: formData.scheduleType !== 'safetyOfficers',
   });
 
-  // Мутации для создания
+  // Мутация для создания графика
   const [createSchedule, { isLoading: isCreating, error: createError }] =
     useCreateScheduleMutation();
-  const [
-    createFromTemplate,
-    { isLoading: isCreatingFromTemplate, error: templateError },
-  ] = useCreateScheduleFromTemplateMutation();
 
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error';
-  }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
-
-  // Автозаполнение при изменении типа графика или загрузке данных
+  /**
+   * Автоматическое заполнение формы при изменении типа графика
+   * или получении данных о сотрудниках
+   */
   useEffect(() => {
     if (
       formData.scheduleType === 'responsibleOnWeekends' &&
@@ -117,66 +113,33 @@ const CreateSchedulePanel: React.FC = () => {
     autoFillFromEmployees,
   ]);
 
-  // Обработчик автозаполнения
-  const handleAutoFill = () => {
-    if (formData.scheduleType === 'responsibleOnWeekends') {
-      refetchResponsible();
-    } else {
-      refetchSafety();
-    }
-  };
-
-  // Обработчик создания из шаблона
-  const handleCreateFromTemplate = async () => {
-    if (!formData.month || !formData.scheduleType) {
-      setSnackbar({
-        open: true,
-        message: 'Сначала выберите месяц и тип графика',
-        severity: 'error',
-      });
-      return;
-    }
-
-    try {
-      await createFromTemplate({
-        month: formData.month,
-        scheduleType: formData.scheduleType,
-      }).unwrap();
-
-      refetchExisting(); // Обновляем проверку существования
-
-      setSnackbar({
-        open: true,
-        message: 'График создан из шаблона',
-        severity: 'success',
-      });
-    } catch (error) {
-      console.error('Ошибка при создании из шаблона:', error);
-    }
-  };
-
-  // Обработчик сохранения
+  /**
+   * Обработчик сохранения графика
+   * Выполняет валидацию формы и отправку данных на сервер
+   */
   const handleSave = async () => {
+    // Валидация формы
     if (!validateForm()) {
       setSnackbar({
         open: true,
-        message: 'Исправьте ошибки в форме',
+        message: 'Исправьте ошибки в форме перед сохранением',
         severity: 'error',
       });
       return;
     }
 
-    // Проверка существования графика
+    // Проверка существующего графика
     if (existingSchedule?.data) {
       setSnackbar({
         open: true,
-        message: `График на ${formData.month} уже существует`,
-        severity: 'error',
+        message: `График на ${formData.month} (${formData.scheduleType}) уже существует`,
+        severity: 'warning',
       });
       return;
     }
 
     try {
+      // Подготовка данных для отправки
       const scheduleData = {
         month: formData.month,
         scheduleType: formData.scheduleType,
@@ -189,37 +152,50 @@ const CreateSchedulePanel: React.FC = () => {
         })),
       };
 
+      // Отправка запроса на создание графика
       await createSchedule(scheduleData).unwrap();
 
+      // Успешное сохранение
       setSnackbar({
         open: true,
         message: 'График успешно создан',
         severity: 'success',
       });
 
+      // Сброс формы
       resetForm();
     } catch (error) {
-      console.error('Ошибка при сохранении:', error);
+      console.error('Ошибка при сохранении графика:', error);
+      setSnackbar({
+        open: true,
+        message: 'Ошибка при сохранении графика',
+        severity: 'error',
+      });
     }
   };
 
+  /**
+   * Обработчик закрытия снекбара
+   */
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+  // Состояние загрузки
   const isLoading =
-    isLoadingExisting ||
-    isLoadingResponsible ||
-    isLoadingSafety ||
-    isCreating ||
-    isCreatingFromTemplate;
+    isLoadingExisting || isLoadingResponsible || isLoadingSafety || isCreating;
 
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', p: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
-        Создание графика
+        Создание графика дежурств
       </Typography>
 
       <Grid container spacing={3}>
-        {/* Левая колонка: Настройки */}
+        {/* Левая колонка: Настройки графика */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, mb: 3 }}>
+            {/* Выбор месяца */}
             <MonthSelector
               month={formData.month}
               monthOptions={monthOptions}
@@ -228,6 +204,7 @@ const CreateSchedulePanel: React.FC = () => {
               disabled={isLoading}
             />
 
+            {/* Выбор типа графика */}
             <ScheduleTypeSelector
               scheduleType={formData.scheduleType}
               onChange={updateScheduleType}
@@ -235,51 +212,53 @@ const CreateSchedulePanel: React.FC = () => {
               disabled={isLoading}
             />
 
+            {/* Предупреждение о существующем графике */}
             {existingSchedule?.data && (
               <Alert severity="warning" sx={{ mb: 2 }}>
-                График на {formData.month} уже существует
+                Внимание: график на {formData.month} уже существует
               </Alert>
             )}
 
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}
-            >
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={handleAutoFill}
-                disabled={isLoading || !formData.month}
-                fullWidth
+            {/* Информация о текущем состоянии */}
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
               >
-                Автозаполнить из сотрудников
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={handleCreateFromTemplate}
-                disabled={
-                  isLoading || !formData.month || !!existingSchedule?.data
-                }
-                fullWidth
-              >
-                Создать из шаблона
-              </Button>
+                Информация:
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                • При выборе типа графика форма автоматически заполнится
+                сотрудниками
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                • Для добавления дат используйте поле ввода в формате ГГГГ-ММ-ДД
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                • Вы можете добавлять новые строки или редактировать
+                существующие
+              </Typography>
             </Box>
           </Paper>
         </Grid>
 
-        {/* Правая колонка: Таблица */}
+        {/* Правая колонка: Таблица графика */}
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3 }}>
             <LoadingErrorWrapper
               isLoading={isLoading}
-              error={createError || templateError}
+              error={createError}
               onRetry={() => {
                 refetchExisting();
-                refetchResponsible();
-                refetchSafety();
+                if (formData.scheduleType === 'responsibleOnWeekends') {
+                  refetchResponsible();
+                } else {
+                  refetchSafety();
+                }
               }}
             >
+              {/* Заголовок таблицы */}
               <Box
                 sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}
               >
@@ -296,81 +275,91 @@ const CreateSchedulePanel: React.FC = () => {
                 </Button>
               </Box>
 
+              {/* Сообщение при пустой таблице */}
               {formData.entries.length === 0 ? (
-                <Alert severity="info">
-                  Добавьте сотрудников или создайте график из шаблона
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  Выберите тип графика для автоматического заполнения
+                  сотрудниками
                 </Alert>
               ) : (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell width="50">№</TableCell>
-                        <TableCell>Ф.И.О.</TableCell>
-                        <TableCell>Должность</TableCell>
-                        <TableCell>Даты дежурств</TableCell>
-                        <TableCell width="80">Действия</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {formData.entries.map((entry, index) => (
-                        <ScheduleEntryRow
-                          key={entry.id}
-                          entry={entry}
-                          index={index}
-                          onUpdate={(updates) => updateEntry(entry.id, updates)}
-                          onRemove={() => removeEntry(entry.id)}
-                          onAddDate={(date) => addDateToEntry(entry.id, date)}
-                          onRemoveDate={(date) =>
-                            removeDateFromEntry(entry.id, date)
-                          }
-                          errors={validationErrors.entries?.[entry.id]}
-                          disabled={isLoading}
-                        />
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
+                <>
+                  {/* Таблица с записями */}
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell width="50">№</TableCell>
+                          <TableCell>Ф.И.О.</TableCell>
+                          <TableCell>Должность</TableCell>
+                          <TableCell>Даты дежурств</TableCell>
+                          <TableCell width="80">Действия</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {formData.entries.map((entry, index) => (
+                          <ScheduleEntryRow
+                            key={entry.id}
+                            entry={entry}
+                            index={index}
+                            onUpdate={(updates) =>
+                              updateEntry(entry.id, updates)
+                            }
+                            onRemove={() => removeEntry(entry.id)}
+                            onAddDate={(date) => addDateToEntry(entry.id, date)}
+                            onRemoveDate={(date) =>
+                              removeDateFromEntry(entry.id, date)
+                            }
+                            errors={validationErrors.entries?.[entry.id]}
+                            disabled={isLoading || !formData.month} // Блокируем если не выбран месяц
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
 
-              {formData.entries.length > 0 && (
-                <Box
-                  sx={{
-                    mt: 3,
-                    display: 'flex',
-                    gap: 2,
-                    justifyContent: 'flex-end',
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    onClick={resetForm}
-                    disabled={isLoading}
-                  >
-                    Отмена
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={handleSave}
-                    disabled={isLoading || !!existingSchedule?.data}
-                  >
-                    Сохранить график
-                  </Button>
-                </Box>
+                  {/* Кнопки управления */}
+                  {formData.entries.length > 0 && (
+                    <Box
+                      sx={{
+                        mt: 3,
+                        display: 'flex',
+                        gap: 2,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        onClick={resetForm}
+                        disabled={isLoading}
+                      >
+                        Отмена
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<SaveIcon />}
+                        onClick={handleSave}
+                        disabled={isLoading || !!existingSchedule?.data}
+                      >
+                        Сохранить график
+                      </Button>
+                    </Box>
+                  )}
+                </>
               )}
             </LoadingErrorWrapper>
           </Paper>
         </Grid>
       </Grid>
 
+      {/* Снекбар для уведомлений */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

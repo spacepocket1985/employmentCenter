@@ -1,62 +1,105 @@
-// src/types/schedule.types.ts
-
+/**
+ * Тип графика дежурств
+ */
 export type ScheduleType = 'responsibleOnWeekends' | 'safetyOfficers';
 
-export type ScheduleFormData = {
-  month: string; // Format: "2024-01"
-  scheduleType: ScheduleType;
-  entries: ScheduleEntryForm[];
+/**
+ * Модель для отображения типа графика
+ */
+export type ScheduleTypeDisplay = {
+  value: ScheduleType;
+  label: string;
+  description: string;
 };
 
-export type ScheduleEntryForm = {
-  id: string;
-  employeeId?: string;
-  customName: string;
-  customJob: string;
-  dates: string[];
-  orderIndex: number;
-  isFromTemplate: boolean; // Флаг, что строка из шаблона
-};
-
+/**
+ * Опция месяца для выпадающего списка
+ */
 export type MonthOption = {
-  value: string; // "2024-01"
+  value: string; // Формат: "2024-01"
   label: string; // "Январь 2024"
   year: number;
   month: number;
 };
 
+/**
+ * Запись в графике (строка таблицы)
+ */
+export type ScheduleEntryForm = {
+  id: string; // Уникальный идентификатор строки
+  employeeId?: string; // ID сотрудника (если из базы)
+  customName: string; // ФИО (может быть из базы или ручной ввод)
+  customJob: string; // Должность
+  dates: string[]; // Массив дат в формате "2024-01-15"
+  orderIndex: number; // Порядковый номер строки
+  isFromTemplate: boolean; // Флаг, что строка создана из шаблона сотрудников
+};
+
+/**
+ * Основная форма создания графика
+ */
+export type ScheduleFormData = {
+  month: string; // Выбранный месяц в формате "2024-01"
+  scheduleType: ScheduleType; // Тип графика
+  entries: ScheduleEntryForm[]; // Список записей
+};
+
+/**
+ * Результат валидации даты
+ */
 export type DateValidationResult = {
   isValid: boolean;
   error?: string;
 };
 
+/**
+ * Ошибки валидации формы графика
+ */
 export type ScheduleValidationErrors = {
   month?: string;
   scheduleType?: string;
-  entries?: Record<string, string[]>; // key: entry id, value: array of errors
+  entries?: Record<string, string[]>; // key: ID записи, value: массив ошибок
 };
 
-export type ScheduleEntry = {
-  _id?: string;
-  employeeId?: string; // Ссылка на сотрудника (если выбран из базы)
-  customName?: string; // Ручной ввод имени (если не из базы)
-  customJob?: string; // Ручной ввод должности (если не из базы)
-  dates: string[]; // Даты в формате "2024-01-06"
-  orderIndex: number; // Порядок в графике
-  notes?: string; // Примечания к конкретной записи
+/**
+ * Состояние снекбара (уведомления)
+ */
+export type SnackbarState = {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error' | 'warning' | 'info';
 };
 
-export type ScheduleCreateModel = {
-  month: string;
-  scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
-  entries: Omit<ScheduleEntry, '_id'>[];
-  notes?: string;
+/**
+ * Пропсы для компонента строки графика
+ */
+export type ScheduleEntryRowProps = {
+  entry: ScheduleEntryForm;
+  index: number;
+  onUpdate: (updates: Partial<ScheduleEntryForm>) => void;
+  onRemove: () => void;
+  onAddDate: (date: string) => void;
+  onRemoveDate: (date: string) => void;
+  errors?: string[];
+  disabled?: boolean;
 };
 
-export type ScheduleEntryCreateModel = Omit<ScheduleEntry, '_id'>;
+/**
+ * Пропсы для компонента выбора типа графика
+ */
+export type ScheduleTypeSelectorProps = {
+  scheduleType: ScheduleType;
+  onChange: (type: ScheduleType) => void;
+  error?: string;
+  disabled?: boolean;
+};
 
-export type ScheduleUpdateModel = {
-  entries?: Omit<ScheduleEntry, '_id'>[];
-  isPublished?: boolean;
-  notes?: string;
+/**
+ * Пропсы для компонента обертки загрузки/ошибок
+ */
+export type LoadingErrorWrapperProps = {
+  isLoading: boolean;
+  error?: unknown;
+  children: React.ReactNode;
+  onRetry?: () => void;
 };
