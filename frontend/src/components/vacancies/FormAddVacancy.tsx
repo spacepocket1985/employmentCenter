@@ -1,9 +1,9 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Grid, Paper } from '@mui/material';
+import { Button, Grid, Paper, Box } from '@mui/material';
 
 import { useAppSelector } from '@hooks/storeHooks';
-import { UIFormInput, UISimpleSelect } from '@components/ui';
+import { UIFormInput, UIFormSelect, UITitle } from '@components/ui';
 import {
   handleSucssestResult,
   handleError,
@@ -32,7 +32,7 @@ type FormAddVacancyPropsType = {
 
 export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isValid },
@@ -52,7 +52,6 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     wageRate,
     education,
     experience,
-
     additionalInformation,
   }) => {
     const newVacancy: VacancyType = {
@@ -93,88 +92,127 @@ export const FormAddVacancy = (props: FormAddVacancyPropsType): JSX.Element => {
     <Paper
       variant="outlined"
       square
-      style={{ margin: 'auto', padding: '10px' }}
+      sx={{ margin: 'auto', padding: 3, maxWidth: 800 }}
     >
       <form onSubmit={handleSubmit(addNewVacancyHandler)}>
+        <UITitle
+          sx={{
+            textAlign: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#1976d2',
+            color: 'white',
+            mb: 3,
+          }}
+        >
+          {!props.isEditMode ? 'Добавить вакансию' : 'Редактировать вакансию'}
+        </UITitle>
+
         <Grid
           container
-          spacing={2}
+          spacing={3}
           direction="row"
-          justifyContent="flex-start"
-          alignItems="center"
+          justifyContent="center"
+          alignItems="flex-start"
         >
+          {/* Первая строка: Вакансия и Зарплата */}
           <UIFormInput
             type="text"
             name="title"
-            about="Вакансия"
-            register={register}
-            error={errors.title?.message ? errors.title.message : null}
+            label="Вакансия"
+            control={control}
+            error={errors.title?.message}
             defaultValue={props.vacancy?.title}
-            gridSize={4}
-          />
-          <UIFormInput
-            type="text"
-            name="salary"
-            about="Зарплата"
-            register={register}
-            error={errors.salary?.message ? errors.salary.message : null}
-            defaultValue={props.vacancy?.salary}
-          />
-          <UIFormInput
-            type="text"
-            name="wageRate"
-            about="Ставка"
-            register={register}
-            error={errors.wageRate?.message ? errors.wageRate.message : null}
-            defaultValue={props.vacancy?.wageRate}
-          />
-          <UISimpleSelect
-            name="education"
-            label="Образование"
-            data={education}
-            defaultValue={props.vacancy?.education}
-            register={register}
-            type={'string'}
-            error={errors.education?.message ? errors.education.message : null}
-          />
-          <UISimpleSelect
-            name="experience"
-            label="Опыт работы"
-            data={experience}
-            defaultValue={props.vacancy?.experience}
-            register={register}
-            type={'string'}
-            error={
-              errors.experience?.message ? errors.experience.message : null
-            }
+            gridSize={6}
+            required
           />
 
+          <UIFormInput
+            type="number"
+            name="salary"
+            label="Зарплата"
+            control={control}
+            error={errors.salary?.message}
+            defaultValue={props.vacancy?.salary}
+            gridSize={6}
+            required
+          />
+
+          {/* Вторая строка: Ставка и Образование */}
+          <UIFormInput
+            type="number"
+            name="wageRate"
+            label="Ставка"
+            control={control}
+            error={errors.wageRate?.message}
+            defaultValue={props.vacancy?.wageRate}
+            gridSize={6}
+            required
+          />
+
+          <UIFormSelect
+            name="education"
+            label="Образование"
+            options={education}
+            control={control}
+            error={errors.education?.message}
+            defaultValue={props.vacancy?.education}
+            gridSize={6}
+            required
+          />
+
+          {/* Третья строка: Опыт работы */}
+          <UIFormSelect
+            name="experience"
+            label="Опыт работы"
+            options={experience}
+            control={control}
+            error={errors.experience?.message}
+            defaultValue={props.vacancy?.experience}
+            gridSize={6}
+            required
+          />
+
+          {/* Дополнительная информация - занимает всю ширину */}
           <UIFormInput
             type="text"
             name="additionalInformation"
-            about="Дополнительно"
-            register={register}
-            error={
-              errors.additionalInformation?.message
-                ? errors.additionalInformation.message
-                : null
-            }
+            label="Дополнительная информация"
+            control={control}
+            error={errors.additionalInformation?.message}
             defaultValue={props.vacancy?.additionalInformation}
             multiline={true}
+            rows={4}
             maxRows={8}
-            gridSize={6}
+            gridSize={12}
           />
 
-          <Button
-            style={{ marginLeft: '15px', marginTop: '10px' }}
-            variant="contained"
-            color={'primary'}
-            type="submit"
-            disabled={!isValid}
-            size="small"
-          >
-            {props.isEditMode ? 'Сохранить' : 'Добавить'}
-          </Button>
+          {/* Кнопки */}
+          <Grid item xs={12}>
+            <Box display="flex" justifyContent="flex-end" mt={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                disabled={!isValid}
+                size="medium"
+                sx={{ minWidth: 120 }}
+              >
+                {props.isEditMode ? 'Сохранить' : 'Добавить'}
+              </Button>
+
+              {props.handleClose && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={props.handleClose}
+                  size="medium"
+                  sx={{ ml: 2, minWidth: 120 }}
+                >
+                  Отмена
+                </Button>
+              )}
+            </Box>
+          </Grid>
         </Grid>
       </form>
     </Paper>

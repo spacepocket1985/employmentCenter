@@ -103,3 +103,9 @@ export type LoadingErrorWrapperProps = {
   children: React.ReactNode;
   onRetry?: () => void;
 };
+
+export type ScheduleFormValues = {
+  month: string;
+  scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
+  entries: ScheduleEntryForm[];
+};

@@ -1,90 +1,85 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   TableRow,
   TableCell,
-  TextField,
   IconButton,
   Box,
   Chip,
   Tooltip,
   Typography,
-  InputAdornment,
-  Stack,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   Person as PersonIcon,
-  Work as WorkIcon,
-  Event as EventIcon,
 } from '@mui/icons-material';
-import { ScheduleEntryRowProps } from 'src/types/schedule.types';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { ScheduleEntryForm, ScheduleFormValues } from 'src/types/schedule.types';
 import { formatDateForDisplay } from 'src/utils/dateUtils';
 import DatePickerPopup from './datePickerPopup';
+import { UIFormInput } from '@components/ui';
+
+
+interface ScheduleEntryRowProps {
+  /** Индекс записи в массиве */
+  index: number;
+  /** Функция удаления записи */
+  onRemove: () => void;
+  /** Отключенное состояние */
+  disabled?: boolean;
+}
 
 /**
- * Компонент строки графика дежурств
- * Отображает информацию о сотруднике и его датах дежурства
- * Позволяет редактировать данные и выбирать даты через календарь
+ * Компонент строки графика дежурств с использованием react-hook-form и UIFormInput
  */
 const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
-  entry,
   index,
-  onUpdate,
   onRemove,
-  onAddDate,
-  onRemoveDate,
-  errors = [],
   disabled = false,
-}) => {
-  const [dateInput, setDateInput] = useState('');
+}): JSX.Element => {
+  const { control, setValue, trigger } = useFormContext<ScheduleFormValues>();
+  
+  const entry: ScheduleEntryForm = useWatch({
+    control,
+    name: `entries.${index}` as const,
+  });
+
+  const month: string = useWatch({
+    control,
+    name: 'month' as const,
+  });
 
   /**
-   * Обработчик изменения ФИО
+   * Обработчик добавления даты к записи
    */
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdate({ customName: e.target.value });
-  };
-
-  /**
-   * Обработчик изменения должности
-   */
-  const handleJobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdate({ customJob: e.target.value });
-  };
-
-  /**
-   * Обработчик изменения поля ввода даты
-   */
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateInput(e.target.value);
-  };
-
-  /**
-   * Добавление даты дежурства через текстовое поле
-   */
-  const handleAddDateFromInput = () => {
-    if (!dateInput.trim()) return;
-    
-    onAddDate(dateInput);
-    setDateInput('');
-  };
-
-  /**
-   * Обработчик нажатия Enter в поле ввода даты
-   */
-  const handleDateKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddDateFromInput();
+  const handleAddDate = (date: string): void => {
+    const currentDates: string[] = entry?.dates || [];
+    if (!currentDates.includes(date)) {
+      const newDates: string[] = [...currentDates, date].sort();
+      setValue(`entries.${index}.dates`, newDates, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      trigger(`entries.${index}.dates`);
     }
   };
 
   /**
-   * Получение ошибок для конкретного поля
+   * Обработчик удаления даты из записи
    */
-  const getNameError = () => errors.find((e) => e.includes('ФИО') || e.includes('сотрудника'));
-  const getJobError = () => errors.find((e) => e.includes('Должность') || e.includes('должность'));
-  const getDatesError = () => errors.find((e) => e.includes('дату') || e.includes('дат'));
+  const handleRemoveDate = (dateToRemove: string): void => {
+    const currentDates: string[] = entry?.dates || [];
+    const newDates: string[] = currentDates.filter((date: string) => date !== dateToRemove);
+    
+    setValue(`entries.${index}.dates`, newDates, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    trigger(`entries.${index}.dates`);
+  };
+
+  if (!entry) {
+    return <div>no entry</div>;
+  }
 
   return (
     <TableRow>
@@ -104,90 +99,59 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
 
       {/* Поле ФИО */}
       <TableCell>
-        <TextField
-          fullWidth
-          size="small"
-          value={entry.customName}
-          onChange={handleNameChange}
-          error={!!getNameError()}
-          helperText={getNameError()}
+        <UIFormInput
+          name={`entries.${index}.customName` as const}
+          control={control}
+          label="ФИО сотрудника"
           disabled={disabled || entry.isFromTemplate}
-          placeholder="Введите ФИО"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <PersonIcon fontSize="small" color="action" />
-              </InputAdornment>
-            ),
+          gridSize={12}
+          textFieldProps={{
+            size: 'small',
+            placeholder: 'Введите ФИО',
+            variant: 'outlined',
           }}
         />
       </TableCell>
 
       {/* Поле должности */}
       <TableCell>
-        <TextField
-          fullWidth
-          size="small"
-          value={entry.customJob}
-          onChange={handleJobChange}
-          error={!!getJobError()}
-          helperText={getJobError()}
+        <UIFormInput
+          name={`entries.${index}.customJob` as const}
+          control={control}
+          label="Должность"
           disabled={disabled || entry.isFromTemplate}
-          placeholder="Введите должность"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <WorkIcon fontSize="small" color="action" />
-              </InputAdornment>
-            ),
+          gridSize={12}
+          textFieldProps={{
+            size: 'small',
+            placeholder: 'Введите должность',
+            variant: 'outlined',
           }}
         />
       </TableCell>
 
       {/* Поле для выбора дат */}
       <TableCell>
-        <Stack spacing={1}>
+        <Box>
           {/* Календарь для выбора дат */}
-          <Box>
+          <Box sx={{ mb: 1 }}>
             <DatePickerPopup
-              selectedDates={entry.dates}
-              onDateSelect={onAddDate}
-              onDateRemove={onRemoveDate}
-              month={entry.dates[0] ? entry.dates[0].substring(0, 7) : ''}
-              disabled={disabled}
-            />
-          </Box>
-
-          {/* Быстрый ввод даты через текстовое поле */}
-          <Box>
-            <TextField
-              fullWidth
-              size="small"
-              value={dateInput}
-              onChange={handleDateInputChange}
-              onKeyPress={handleDateKeyPress}
-              placeholder="Быстрый ввод: ГГГГ-ММ-ДД"
-              disabled={disabled}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EventIcon fontSize="small" color="action" />
-                  </InputAdornment>
-                ),
-              }}
-              helperText="Используйте календарь или введите дату в формате ГГГГ-ММ-ДД"
+              selectedDates={entry.dates || []}
+              onDateSelect={handleAddDate}
+              onDateRemove={handleRemoveDate}
+              month={month}
+              disabled={disabled || !month}
             />
           </Box>
 
           {/* Отображение добавленных дат */}
-          {entry.dates.length > 0 ? (
+          {(entry.dates || []).length > 0 ? (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-              {entry.dates.map((date) => (
+              {entry.dates.map((date: string) => (
                 <Chip
                   key={date}
                   label={formatDateForDisplay(date)}
                   size="small"
-                  onDelete={() => onRemoveDate(date)}
+                  onDelete={(): void => handleRemoveDate(date)}
                   disabled={disabled}
                   color="primary"
                   variant="outlined"
@@ -195,18 +159,11 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
               ))}
             </Box>
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
               Даты не добавлены. Нажмите на иконку календаря для выбора.
             </Typography>
           )}
-
-          {/* Отображение ошибок валидации дат */}
-          {getDatesError() && (
-            <Typography color="error" variant="caption" sx={{ display: 'block' }}>
-              {getDatesError()}
-            </Typography>
-          )}
-        </Stack>
+        </Box>
       </TableCell>
 
       {/* Кнопка удаления строки */}

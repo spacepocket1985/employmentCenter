@@ -7,3 +7,5 @@ export * from './dateUtils';
 export * from './errorUtils';
 export * from './validationPlan';
 export * from './workPlanConverters';
+export * from './scheduleValidationSchema';
+

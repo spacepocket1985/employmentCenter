@@ -1,61 +1,61 @@
-import { useState, useCallback, useRef, useMemo } from 'react';
-import {
-  ScheduleFormData,
+import { useForm, useFieldArray, UseFormReturn, FieldArrayWithId } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useCallback, useMemo } from 'react';
+import { 
   ScheduleEntryForm,
-  MonthOption,
-  ScheduleValidationErrors,
-  DateValidationResult,
+  MonthOption, 
+  ScheduleFormValues
 } from 'src/types/schedule.types';
 import { EmployeeType } from 'src/types/types';
+import { scheduleFormSchema } from '@utils/scheduleValidationSchema';
 
-export const useScheduleForm = () => {
-  const [formData, setFormData] = useState<ScheduleFormData>({
-    month: '',
-    scheduleType: 'responsibleOnWeekends',
-    entries: [],
+
+// Создаем адаптированный тип для entries, который соответствует схеме валидации
+type ScheduleFormEntry = {
+  id: string;
+  employeeId?: string;
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
+  isFromTemplate: boolean;
+};
+
+interface UseScheduleFormReturn {
+  formMethods: UseFormReturn<ScheduleFormValues>;
+  monthOptions: MonthOption[];
+  fields: FieldArrayWithId<ScheduleFormValues, 'entries', 'id'>[];
+  appendEntry: (entry: Omit<ScheduleEntryForm, 'id'>) => void;
+  removeEntry: (index: number) => void;
+  autoFillFromEmployees: (employees: EmployeeType[]) => void;
+  resetForm: () => void;
+}
+
+/**
+ * Хук для управления формой создания графика с использованием react-hook-form
+ * Исправление: Корректная типизация для работы со схемой валидации
+ */
+export const useScheduleForm = (): UseScheduleFormReturn => {
+  // Используем ScheduleFormValues для типизации формы
+  const formMethods = useForm<ScheduleFormValues>({
+    resolver: yupResolver(scheduleFormSchema),
+    defaultValues: {
+      month: '',
+      scheduleType: 'responsibleOnWeekends',
+      entries: [],
+    },
+    mode: 'onBlur',
   });
 
-  const [validationErrors, setValidationErrors] = useState<ScheduleValidationErrors>({});
-  const dateInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-
-  /**
-   * Функция валидации даты с использованием useMemo для мемоизации
-   */
-  const validateDate = useCallback((date: string): DateValidationResult => {
-    // Проверка формата ГГГГ-ММ-ДД
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(date)) {
-      return {
-        isValid: false,
-        error: 'Неверный формат даты. Используйте ГГГГ-ММ-ДД',
-      };
-    }
-
-    // Проверка, что дата принадлежит выбранному месяцу
-    if (formData.month) {
-      const dateMonth = date.substring(0, 7);
-      if (dateMonth !== formData.month) {
-        return {
-          isValid: false,
-          error: `Дата должна принадлежать выбранному месяцу (${formData.month})`,
-        };
-      }
-    }
-
-    // Проверка, что дата не в прошлом (можно дежурить только на будущее)
-    const selectedDate = new Date(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (selectedDate < today) {
-      return {
-        isValid: false,
-        error: 'Нельзя выбирать прошедшие даты',
-      };
-    }
-
-    return { isValid: true };
-  }, [formData.month]); // Теперь правильно указана зависимость
+  const { 
+    fields, 
+    append, 
+    remove, 
+    replace 
+  } = useFieldArray({
+    control: formMethods.control,
+    name: 'entries',
+  });
 
   /**
    * Генерация списка месяцев на текущий и следующий год
@@ -63,14 +63,14 @@ export const useScheduleForm = () => {
   const generateMonthOptions = useMemo((): MonthOption[] => {
     const options: MonthOption[] = [];
     const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear: number = currentDate.getFullYear();
+    const currentMonth: number = currentDate.getMonth() + 1;
 
-    // Добавляем месяцы на текущий год, начиная с текущего
     for (let month = currentMonth; month <= 12; month++) {
+      const date = new Date(currentYear, month - 1);
       options.push({
         value: `${currentYear}-${month.toString().padStart(2, '0')}`,
-        label: new Date(currentYear, month - 1).toLocaleDateString('ru-RU', {
+        label: date.toLocaleDateString('ru-RU', {
           month: 'long',
           year: 'numeric',
         }),
@@ -79,12 +79,12 @@ export const useScheduleForm = () => {
       });
     }
 
-    // Добавляем все месяцы на следующий год
-    const nextYear = currentYear + 1;
+    const nextYear: number = currentYear + 1;
     for (let month = 1; month <= 12; month++) {
+      const date = new Date(nextYear, month - 1);
       options.push({
         value: `${nextYear}-${month.toString().padStart(2, '0')}`,
-        label: new Date(nextYear, month - 1).toLocaleDateString('ru-RU', {
+        label: date.toLocaleDateString('ru-RU', {
           month: 'long',
           year: 'numeric',
         }),
@@ -97,244 +97,70 @@ export const useScheduleForm = () => {
   }, []);
 
   /**
-   * Обновление выбранного месяца
+   * Добавление новой записи в график
    */
-  const updateMonth = useCallback((month: string) => {
-    setFormData((prev) => ({ ...prev, month }));
-    setValidationErrors((prev) => ({ ...prev, month: undefined }));
-  }, []);
-
-  /**
-   * Обновление типа графика
-   */
-  const updateScheduleType = useCallback((scheduleType: 'responsibleOnWeekends' | 'safetyOfficers') => {
-    setFormData((prev) => ({ ...prev, scheduleType }));
-    setValidationErrors((prev) => ({ ...prev, scheduleType: undefined }));
-  }, []);
-
-  /**
-   * Автозаполнение графика из списка сотрудников
-   */
-  const autoFillFromEmployees = useCallback((employees: EmployeeType[]) => {
-    const entries: ScheduleEntryForm[] = employees.map((employee, index) => ({
-      id: `template-${employee._id!.toString()}`,
-      employeeId: employee._id!.toString(),
-      customName: employee.name,
-      customJob: employee.job,
-      dates: [],
-      orderIndex: index,
-      isFromTemplate: true,
-    }));
-
-    setFormData((prev) => ({ ...prev, entries }));
-    setValidationErrors((prev) => ({ ...prev, entries: undefined }));
-  }, []);
-
-  /**
-   * Добавление пустой строки для ручного ввода
-   */
-  const addEmptyEntry = useCallback(() => {
-    const newEntry: ScheduleEntryForm = {
-      id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      customName: '',
-      customJob: '',
-      dates: [],
-      orderIndex: formData.entries.length,
-      isFromTemplate: false,
+  const appendEntry = useCallback((entry: Omit<ScheduleEntryForm, 'id'>): void => {
+    const newEntry: ScheduleFormEntry = {
+      ...entry,
+      id: `manual-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     };
-
-    setFormData((prev) => ({
-      ...prev,
-      entries: [...prev.entries, newEntry],
-    }));
-  }, [formData.entries.length]);
-
-  /**
-   * Обновление данных конкретной строки
-   */
-  const updateEntry = useCallback((entryId: string, updates: Partial<ScheduleEntryForm>) => {
-    setFormData((prev) => ({
-      ...prev,
-      entries: prev.entries.map((entry) =>
-        entry.id === entryId ? { ...entry, ...updates } : entry
-      ),
-    }));
-
-    // Очищаем ошибки для этой записи при редактировании
-    setValidationErrors((prev) => {
-      const newEntries = { ...prev.entries };
-      delete newEntries[entryId];
-      return { ...prev, entries: newEntries };
-    });
-  }, []);
-
-  /**
-   * Удаление строки из графика
-   */
-  const removeEntry = useCallback((entryId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      entries: prev.entries
-        .filter((entry) => entry.id !== entryId)
-        .map((entry, index) => ({ ...entry, orderIndex: index })),
-    }));
-  }, []);
-
-  /**
-   * Добавление даты дежурства к строке
-   */
-  const addDateToEntry = useCallback((entryId: string, date: string) => {
-    // Валидация даты
-    const validation = validateDate(date);
-    if (!validation.isValid) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        entries: {
-          ...prev.entries,
-          [entryId]: [...(prev.entries?.[entryId] || []), validation.error || ''],
-        },
-      }));
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      entries: prev.entries.map((entry) => {
-        if (entry.id === entryId) {
-          // Проверяем, нет ли уже такой даты
-          if (entry.dates.includes(date)) {
-            return entry;
-          }
-          return {
-            ...entry,
-            dates: [...entry.dates, date].sort(),
-          };
-        }
-        return entry;
-      }),
-    }));
-
-    // Очищаем поле ввода даты
-    if (dateInputRefs.current[entryId]) {
-      dateInputRefs.current[entryId]!.value = '';
-    }
-
-    // Очищаем ошибки для этой записи
-    setValidationErrors((prev) => {
-      const newEntries = { ...prev.entries };
-      delete newEntries[entryId];
-      return { ...prev, entries: newEntries };
-    });
-  }, [validateDate]); // Используем validateDate из зависимостей
-
-  /**
-   * Удаление даты дежурства из строки
-   */
-  const removeDateFromEntry = useCallback((entryId: string, dateToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      entries: prev.entries.map((entry) => {
-        if (entry.id === entryId) {
-          return {
-            ...entry,
-            dates: entry.dates.filter((date) => date !== dateToRemove),
-          };
-        }
-        return entry;
-      }),
-    }));
-  }, []);
-
-  /**
-   * Валидация всей формы перед сохранением
-   */
-  const validateForm = useCallback((): boolean => {
-    const errors: ScheduleValidationErrors = {};
-
-    // Проверка месяца
-    if (!formData.month) {
-      errors.month = 'Выберите месяц для графика';
-    }
-
-    // Проверка типа графика
-    if (!formData.scheduleType) {
-      errors.scheduleType = 'Выберите тип графика';
-    }
-
-    // Проверка записей
-    const entryErrors: Record<string, string[]> = {};
     
-    formData.entries.forEach((entry) => {
-      const entryErrorsList: string[] = [];
+    append(newEntry);
+  }, [append]);
 
-      // Проверка ФИО
-      if (!entry.customName.trim()) {
-        entryErrorsList.push('Укажите ФИО сотрудника');
-      }
+  /**
+   * Удаление записи по индексу
+   */
+  const removeEntry = useCallback((index: number): void => {
+    remove(index);
+    
+    const currentEntries: ScheduleFormEntry[] = formMethods.getValues('entries') as ScheduleFormEntry[];
+    const updatedEntries: ScheduleFormEntry[] = currentEntries.map((entry: ScheduleFormEntry, idx: number) => ({
+      ...entry,
+      orderIndex: idx,
+    }));
+    
+    formMethods.setValue('entries', updatedEntries);
+  }, [remove, formMethods]);
 
-      // Проверка должности
-      if (!entry.customJob.trim()) {
-        entryErrorsList.push('Укажите должность сотрудника');
-      }
-
-      // Проверка дат дежурств
-      if (entry.dates.length === 0) {
-        entryErrorsList.push('Добавьте хотя бы одну дату дежурства');
-      }
-
-      // Проверка уникальности дат в пределах строки
-      const uniqueDates = new Set(entry.dates);
-      if (uniqueDates.size !== entry.dates.length) {
-        entryErrorsList.push('Удалите дублирующиеся даты');
-      }
-
-      if (entryErrorsList.length > 0) {
-        entryErrors[entry.id] = entryErrorsList;
-      }
+  /**
+   * Автоматическое заполнение графика из списка сотрудников
+   */
+  const autoFillFromEmployees = useCallback((employees: EmployeeType[]): void => {
+    const entries: ScheduleFormEntry[] = employees.map((employee: EmployeeType, index: number) => {
+      const employeeId: string = employee._id?.toString() || '';
+      return {
+        id: `template-${employeeId || `emp-${index}`}`,
+        employeeId: employeeId || undefined,
+        customName: employee.name || '',
+        customJob: employee.job || '',
+        dates: [],
+        orderIndex: index,
+        isFromTemplate: true,
+      };
     });
 
-    if (Object.keys(entryErrors).length > 0) {
-      errors.entries = entryErrors;
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  }, [formData.month, formData.scheduleType, formData.entries]);
+    replace(entries);
+  }, [replace]);
 
   /**
    * Сброс формы к начальному состоянию
    */
-  const resetForm = useCallback(() => {
-    setFormData({
+  const resetForm = useCallback((): void => {
+    formMethods.reset({
       month: '',
       scheduleType: 'responsibleOnWeekends',
       entries: [],
     });
-    setValidationErrors({});
-    dateInputRefs.current = {};
-  }, []);
-
-  /**
-   * Регистрация ref для поля ввода даты
-   */
-  const registerDateInputRef = useCallback((entryId: string, element: HTMLInputElement | null) => {
-    dateInputRefs.current[entryId] = element;
-  }, []);
+  }, [formMethods]);
 
   return {
-    formData,
-    validationErrors,
+    formMethods,
     monthOptions: generateMonthOptions,
-    updateMonth,
-    updateScheduleType,
-    autoFillFromEmployees,
-    addEmptyEntry,
-    updateEntry,
+    fields,
+    appendEntry,
     removeEntry,
-    addDateToEntry,
-    removeDateFromEntry,
-    validateForm,
+    autoFillFromEmployees,
     resetForm,
-    registerDateInputRef,
   };
 };

@@ -1,51 +1,48 @@
 import React from 'react';
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  Box,
-  Typography,
-} from '@mui/material';
-import { MonthOption } from 'src/types/schedule.types';
+import { Box } from '@mui/material';
 
-type MonthSelectorProps = {
-  month: string;
+import { MonthOption } from 'src/types/schedule.types';
+import { useFormContext } from 'react-hook-form';
+import { UIFormSelect, UITitle } from '@components/ui';
+
+interface MonthSelectorProps {
+  /** Список доступных месяцев */
   monthOptions: MonthOption[];
-  onChange: (month: string) => void;
-  error?: string;
+  /** Отключенное состояние */
   disabled?: boolean;
 }
 
+/**
+ * Компонент для выбора месяца с использованием UIFormSelect
+ */
 const MonthSelector: React.FC<MonthSelectorProps> = ({
-  month,
   monthOptions,
-  onChange,
-  error,
-  disabled,
-}) => {
+  disabled = false,
+}): JSX.Element => {
+  const { control } = useFormContext();
+
+  const selectOptions = monthOptions.map((option: MonthOption) => ({
+    value: option.value,
+    label: option.label,
+  }));
+
   return (
     <Box sx={{ mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Выберите месяц
-      </Typography>
-      <FormControl fullWidth error={!!error} disabled={disabled}>
-        <InputLabel id="month-select-label">Месяц</InputLabel>
-        <Select
-          labelId="month-select-label"
-          value={month}
-          label="Месяц"
-          onChange={(e) => onChange(e.target.value)}
-        >
-          {monthOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-        {error && <FormHelperText>{error}</FormHelperText>}
-      </FormControl>
+      <UITitle>Выберите месяц</UITitle>
+
+      <UIFormSelect
+        name="month"
+        control={control}
+        label="Месяц"
+        options={selectOptions}
+        disabled={disabled}
+        gridSize={12}
+        variant="outlined"
+        selectProps={{
+          size: 'small',
+          fullWidth: true,
+        }}
+      />
     </Box>
   );
 };

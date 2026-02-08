@@ -20,7 +20,7 @@ type UserAuthPropsType = {
 
 export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isValid },
@@ -59,16 +59,18 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
         <UIFormInput
           type="text"
           name="name"
-          about="Имя"
-          register={register}
-          error={errors.name?.message ? errors.name.message : null}
+          label="Имя"
+          control={control}
+          
+          error={errors.name?.message}
         />
         <UIFormInput
-          type="text"
+          type="password"
           name="password"
-          about="Пароль"
-          register={register}
-          error={errors.password?.message ? errors.password.message : null}
+          label="Пароль"
+          control={control}
+          
+          error={errors.password?.message}
         />
         <Button
           style={{ marginLeft: '15px', marginTop: '10px' }}
@@ -76,7 +78,6 @@ export const UserAuth = (props: UserAuthPropsType): JSX.Element => {
           color={'primary'}
           type="submit"
           disabled={!isValid}
-          size="small"
         >
           Войти
         </Button>

@@ -2,14 +2,16 @@ import { Typography } from '@mui/material';
 import { ReactNode } from 'react';
 import { TypographyProps } from '@mui/material/Typography';
 
-type UITitleProps = {
+type UITitleProps = TypographyProps & {
   children: ReactNode;
   variant?: TypographyProps['variant'];
 };
 
 export const UITitle: React.FC<UITitleProps> = ({
   children,
-  variant = 'caption',
+  variant = 'body1',
+  sx,
+  ...rest
 }) => {
   return (
     <Typography
@@ -23,7 +25,9 @@ export const UITitle: React.FC<UITitleProps> = ({
         display: 'flex',
         justifyContent: 'flex-start',
         mb: 1,
+        ...sx,
       }}
+      {...rest}
     >
       {children}
     </Typography>
