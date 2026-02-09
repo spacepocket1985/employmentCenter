@@ -1,7 +1,5 @@
-// store/slices/scheduleApiSlice.ts
-
 import { api } from '@store/config';
-import { ScheduleCreateModel, ScheduleType, ScheduleUpdateModel } from 'src/types/schedule.types';
+import { ScheduleCreateModel, ScheduleType, ScheduleUpdateModel} from 'src/types/schedule.types';
 import { EmployeeType, EmployeeViewModel } from 'src/types/types';
 
 

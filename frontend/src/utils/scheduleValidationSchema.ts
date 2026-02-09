@@ -54,7 +54,6 @@ export const scheduleEntrySchema = yup.object().shape({
     .default([]),
   
   orderIndex: yup.number().required('Порядковый индекс обязателен'),
-  isFromTemplate: yup.boolean().default(false),
 });
 
 /**

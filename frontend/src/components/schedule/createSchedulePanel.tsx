@@ -69,10 +69,13 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
   const [month, scheduleType] = watch(['month', 'scheduleType']);
 
   // Используем мемоизацию для параметров запроса существующего графика
-  const scheduleQueryParams = useMemo(() => ({
-    month,
-    scheduleType,
-  }), [month, scheduleType]);
+  const scheduleQueryParams = useMemo(
+    () => ({
+      month,
+      scheduleType,
+    }),
+    [month, scheduleType]
+  );
 
   // Проверка существования графика на выбранный месяц
   const {
@@ -87,7 +90,6 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
   const {
     data: responsibleData,
     isLoading: isLoadingResponsible,
-    isFetching: isFetchingResponsible,
     refetch: refetchResponsible,
   } = useGetResponsibleOnWeekendsQuery(undefined, {
     skip: scheduleType !== 'responsibleOnWeekends',
@@ -99,7 +101,6 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
   const {
     data: safetyData,
     isLoading: isLoadingSafety,
-    isFetching: isFetchingSafety,
     refetch: refetchSafety,
   } = useGetSafetyOfficersQuery(undefined, {
     skip: scheduleType !== 'safetyOfficers',
@@ -126,7 +127,13 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
         autoFillFromEmployees(safetyData.data);
       }
     }
-  }, [scheduleType, responsibleData, safetyData, autoFillFromEmployees, fields.length]);
+  }, [
+    scheduleType,
+    responsibleData,
+    safetyData,
+    autoFillFromEmployees,
+    fields.length,
+  ]);
 
   /**
    * Проверка, можно ли сохранять форму
@@ -134,27 +141,27 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
   const canSaveForm = (): boolean => {
     // Форма должна быть валидной
     if (!isValid) return false;
-    
+
     // Должны быть заполнены основные поля
     if (!month || !scheduleType) return false;
-    
+
     // Должны быть записи
     if (fields.length === 0) return false;
-    
+
     // Не должно быть существующего графика
     if (existingSchedule?.data) return false;
-    
+
     // Все записи должны иметь хотя бы одну дату
     const entries = formMethods.getValues('entries');
-    const allEntriesHaveDates = entries.every((entry) => 
-      entry.dates && entry.dates.length > 0
+    const allEntriesHaveDates = entries.every(
+      (entry) => entry.dates && entry.dates.length > 0
     );
-    
+
     // Все записи должны иметь заполненные ФИО и должность
-    const allEntriesHaveNamesAndJobs = entries.every((entry) => 
-      entry.customName?.trim() && entry.customJob?.trim()
+    const allEntriesHaveNamesAndJobs = entries.every(
+      (entry) => entry.customName?.trim() && entry.customJob?.trim()
     );
-    
+
     return allEntriesHaveDates && allEntriesHaveNamesAndJobs;
   };
 
@@ -220,22 +227,11 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
       customJob: '',
       dates: [],
       orderIndex: fields.length,
-      isFromTemplate: false,
     });
   };
 
   const isLoading: boolean =
     isLoadingExisting || isLoadingResponsible || isLoadingSafety || isCreating;
-
-  // Отладка: проверяем состояние валидации
-  console.log('Current form state:', { 
-    isValid, 
-    isDirty, 
-    month, 
-    scheduleType, 
-    fieldsCount: fields.length,
-    canSave: canSaveForm()
-  });
 
   return (
     <FormProvider {...formMethods}>
@@ -261,31 +257,54 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
               <Box sx={{ flex: 1 }}>
                 <ScheduleTypeSelector disabled={isLoading} />
               </Box>
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                }}
+              >
                 {existingSchedule?.data && (
                   <Alert severity="warning" sx={{ mb: 1 }}>
                     Внимание: график на {month} уже существует
                   </Alert>
                 )}
-                
-              {/* Информационный блок */}
-              <Box sx={{ bgcolor: 'grey.50', borderRadius: 1 }}>
-                <UITitle>Информация:</UITitle>
-                <Typography variant="body2" color="text.secondary" align="left">
-                  • Выберите месяц
-                </Typography>
-                <Typography variant="body2" color="text.secondary" align="left">
-                  • При выборе типа графика форма автоматически заполнится
-                  сотрудниками
-                </Typography>
-                <Typography variant="body2" color="text.secondary" align="left">
-                  • Для добавления дат используйте календарь
-                </Typography>
-                <Typography variant="body2" color="text.secondary" align="left">
-                  • Вы можете добавлять новые строки или редактировать
-                  существующие
-                </Typography>
-              </Box>
+
+                {/* Информационный блок */}
+                <Box sx={{ bgcolor: 'grey.50', borderRadius: 1 }}>
+                  <UITitle>Информация:</UITitle>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="left"
+                  >
+                    • Выберите месяц
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="left"
+                  >
+                    • При выборе типа графика форма автоматически заполнится
+                    сотрудниками
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="left"
+                  >
+                    • Для добавления дат используйте календарь
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="left"
+                  >
+                    • Вы можете добавлять новые строки или редактировать
+                    существующие
+                  </Typography>
+                </Box>
               </Box>
             </Box>
           </Paper>
@@ -326,7 +345,8 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
 
               {fields.length === 0 ? (
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Выберите тип графика для автоматического заполнения сотрудниками
+                  Выберите тип графика для автоматического заполнения
+                  сотрудниками
                 </Alert>
               ) : (
                 <>

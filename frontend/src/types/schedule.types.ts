@@ -32,8 +32,9 @@ export type ScheduleEntryForm = {
   customJob: string; // Должность
   dates: string[]; // Массив дат в формате "2024-01-15"
   orderIndex: number; // Порядковый номер строки
-  isFromTemplate: boolean; // Флаг, что строка создана из шаблона сотрудников
 };
+
+
 
 /**
  * Основная форма создания графика
@@ -108,4 +109,18 @@ export type ScheduleFormValues = {
   month: string;
   scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
   entries: ScheduleEntryForm[];
+};
+
+
+export type ScheduleCreateModel = {
+  month: string;
+  scheduleType: ScheduleType;
+  entries: Omit<ScheduleEntryForm, 'id'>[];
+  notes?: string;
+};
+
+export type ScheduleUpdateModel = {
+  entries?: Omit<ScheduleEntryForm, 'id'>[];
+  isPublished?: boolean;
+  notes?: string;
 };

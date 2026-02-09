@@ -22,7 +22,7 @@ export const Header = (): JSX.Element => {
       const token = localStorage.getItem('token');
 
       if (token) {
-        const response = await fetch(`${BaseUrl}auth/findUser`, {
+        const response = await fetch(`${BaseUrl}/auth/findUser`, {
           headers: { Authorization: token },
         });
         const data = await response.json();
