@@ -89,11 +89,7 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
           <Typography variant="body2" sx={{ mr: 1 }}>
             {index + 1}
           </Typography>
-          {entry.isFromTemplate && (
-            <Tooltip title="Строка создана из базы сотрудников">
-              <PersonIcon color="primary" fontSize="small" />
-            </Tooltip>
-          )}
+
         </Box>
       </TableCell>
 
@@ -103,7 +99,7 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
           name={`entries.${index}.customName` as const}
           control={control}
           label="ФИО сотрудника"
-          disabled={disabled || entry.isFromTemplate}
+          disabled={disabled}
           gridSize={12}
           textFieldProps={{
             size: 'small',
@@ -119,7 +115,7 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
           name={`entries.${index}.customJob` as const}
           control={control}
           label="Должность"
-          disabled={disabled || entry.isFromTemplate}
+          disabled={disabled}
           gridSize={12}
           textFieldProps={{
             size: 'small',

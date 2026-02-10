@@ -18,7 +18,7 @@ type ScheduleFormEntry = {
   customJob: string;
   dates: string[];
   orderIndex: number;
-  isFromTemplate: boolean;
+
 };
 
 interface UseScheduleFormReturn {

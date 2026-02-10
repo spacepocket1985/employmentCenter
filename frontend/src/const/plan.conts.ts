@@ -5,3 +5,13 @@ export const planStylesForCreate = {
   color: 'white',
   fontWeight: 600,
 };
+
+export const planListCellTitles = [
+  'Месяц и год',
+  'Дней',
+  'Мероприятий',
+  'Анонсов',
+  'Специальных дней',
+  'Субботы',
+  'Действия',
+];

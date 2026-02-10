@@ -57,7 +57,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
   const {
     handleSubmit,
     watch,
-    formState: { isValid, isDirty },
+    formState: { isValid },
   } = formMethods;
 
   const [snackbar, setSnackbar] = useState<SnackbarState>({

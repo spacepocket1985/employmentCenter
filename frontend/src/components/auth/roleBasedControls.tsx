@@ -8,6 +8,8 @@ import WorkIcon from '@mui/icons-material/Work';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 import {
   IconButton,
@@ -52,9 +54,15 @@ export const controlsConfig: ControlItem[] = [
     roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
   {
-    text: 'Создать график дежурств',
-    icon: EditCalendarIcon,
+    text: 'Создать график дежурств/проверок',
+    icon: EditNoteIcon,
     link: RoutePaths.CREATE_SCHEDULE,
+    roles: [UserRole.ADMIN, UserRole.ONIOT],
+  },
+  {
+    text: 'Графики дежурств/проверок',
+    icon: FormatListBulletedIcon,
+    link: RoutePaths.SCHEDULES,
     roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
 ];

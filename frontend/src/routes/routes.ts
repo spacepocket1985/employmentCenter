@@ -7,6 +7,7 @@ import {
   PagePlanCreate,
   PagePlans,
   PageScheduleCreate,
+  PageSchedules,
   PageVacancies,
   PageVacancy,
 } from '@pages/index';
@@ -57,5 +58,9 @@ export const privateRoutes = [
   {
     path: RoutePaths.CREATE_SCHEDULE,
     Page: PageScheduleCreate,
+  },
+  {
+    path: RoutePaths.SCHEDULES,
+    Page: PageSchedules,
   },
 ];
