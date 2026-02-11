@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Box,
   Typography,
   Paper,
   Table,
@@ -9,9 +8,6 @@ import {
   TableContainer,
   TableRow,
   Chip,
-  Button,
-  Alert,
-  CircularProgress,
 } from '@mui/material';
 
 import { MONTHS } from '@utils/dateUtils';
@@ -22,13 +18,14 @@ import {
 } from '@store/slices/workPlanApiSlice';
 import WorkPlanView from './workPlanView';
 
-import { UITableHead } from '@components/ui';
+import { UICollectionInfo, UITableHead } from '@components/ui';
 import { planListCellTitles } from 'src/const';
 import {
   UIITableItemsActions,
   createDeleteHandler,
 } from '@components/ui/UIITableItemsActions';
 import { WorkPlan } from 'src/types/workPlan.types';
+import { LoadingErrorWrapper } from '@components/layout';
 
 const WorkPlanList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllWorkPlansQuery();
@@ -41,44 +38,15 @@ const WorkPlanList: React.FC = () => {
 
   const handleDeletePlan = createDeleteHandler(deleteWorkPlanMutation);
 
-  if (isLoading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ mt: 2 }}>
-        {getErrorMessage(error)}
-      </Alert>
-    );
-  }
-
   const plans: WorkPlan[] = data?.data || [];
 
-  if (plans.length === 0) {
-    return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          Планы не найдены
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Создайте первый план мероприятий
-        </Typography>
-      </Paper>
-    );
-  }
-
   return (
-    <>
+    <LoadingErrorWrapper
+      isLoading={isLoading}
+      error={getErrorMessage(error)}
+      collectionLength={plans.length}
+      collectionTitle="планы мероприятий"
+    >
       <Paper sx={{ p: 3 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
           Список планов мероприятий
@@ -183,25 +151,14 @@ const WorkPlanList: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <UICollectionInfo
+          collectionTitle="Планы работ"
+          collectionLength={plans.length}
+          onRefetch={refetch}
+        />
 
-        <Box
-          sx={{
-            mt: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            Всего планов: {plans.length}
-          </Typography>
-
-          <Button variant="outlined" onClick={() => refetch()} size="small">
-            Обновить список
-          </Button>
-        </Box>
       </Paper>
-    </>
+    </LoadingErrorWrapper>
   );
 };
 

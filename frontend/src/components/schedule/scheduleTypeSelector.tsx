@@ -15,7 +15,8 @@ interface ScheduleTypeSelectorProps {
 const ScheduleTypeSelector: React.FC<ScheduleTypeSelectorProps> = ({
   disabled = false,
 }): JSX.Element => {
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext();
+  const currentScheduleType = watch('scheduleType');
 
   const scheduleTypeOptions = [
     { value: 'responsibleOnWeekends', label: 'Дежурства на выходных' },
@@ -33,6 +34,13 @@ const ScheduleTypeSelector: React.FC<ScheduleTypeSelectorProps> = ({
         disabled={disabled}
         gridSize={12}
       />
+      {currentScheduleType && (
+        <Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.875rem' }}>
+          Выбран тип:{' '}
+          {scheduleTypeOptions.find((opt) => opt.value === currentScheduleType)
+            ?.label || currentScheduleType}
+        </Box>
+      )}
     </Box>
   );
 };

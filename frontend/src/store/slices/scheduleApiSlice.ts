@@ -1,7 +1,11 @@
 import { api } from '@store/config';
-import { ScheduleCreateModel, ScheduleType, ScheduleUpdateModel} from 'src/types/schedule.types';
+import {
+  ScheduleCreateModel,
+  ScheduleModel,
+  ScheduleType,
+  ScheduleUpdateModel,
+} from 'src/types/schedule.types';
 import { EmployeeType, EmployeeViewModel } from 'src/types/types';
-
 
 export const scheduleApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -28,13 +32,21 @@ export const scheduleApi = api.injectEndpoints({
 
     // Получить графики с фильтрацией
     getSchedules: builder.query<
-      EmployeeViewModel<ScheduleType[]>,
+      EmployeeViewModel<ScheduleModel[]>,
       { month?: string; scheduleType?: string }
     >({
       query: (params) => ({
         url: '/schedules',
         method: 'GET',
         params,
+      }),
+      providesTags: ['Schedule'],
+    }),
+    // Получить график по id
+    getSchedule: builder.query<EmployeeViewModel<ScheduleModel>, string>({
+      query: (id) => ({
+        url: `/schedules/${id}`,
+        method: 'GET',
       }),
       providesTags: ['Schedule'],
     }),
@@ -126,4 +138,5 @@ export const {
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
   useToggleSchedulePublishMutation,
+  useGetScheduleQuery,
 } = scheduleApi;

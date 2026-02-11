@@ -15,3 +15,11 @@ export const planListCellTitles = [
   'Субботы',
   'Действия',
 ];
+
+export const scheduleListCellTitles = [
+  'Месяц и год',
+  'Вид графика',
+  'Число отвественных',
+  'Кол-во дней',
+  'Действия',
+];

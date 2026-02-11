@@ -34,8 +34,6 @@ export type ScheduleEntryForm = {
   orderIndex: number; // Порядковый номер строки
 };
 
-
-
 /**
  * Основная форма создания графика
  */
@@ -95,22 +93,11 @@ export type ScheduleTypeSelectorProps = {
   disabled?: boolean;
 };
 
-/**
- * Пропсы для компонента обертки загрузки/ошибок
- */
-export type LoadingErrorWrapperProps = {
-  isLoading: boolean;
-  error?: unknown;
-  children: React.ReactNode;
-  onRetry?: () => void;
-};
-
 export type ScheduleFormValues = {
   month: string;
   scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
   entries: ScheduleEntryForm[];
 };
-
 
 export type ScheduleCreateModel = {
   month: string;
@@ -123,4 +110,13 @@ export type ScheduleUpdateModel = {
   entries?: Omit<ScheduleEntryForm, 'id'>[];
   isPublished?: boolean;
   notes?: string;
+};
+
+export type ScheduleModel = {
+  _id: string;
+  month: string;
+  scheduleType: ScheduleType;
+  entries: ScheduleEntryForm[];
+  notes?: string;
+  createdAt: 'string';
 };

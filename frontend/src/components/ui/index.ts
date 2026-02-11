@@ -4,3 +4,4 @@ export * from './UIModal';
 export * from './UITitle';
 export * from './UIFormRadio';
 export * from './UITableHead';
+export * from './UICollectionInfo';

@@ -1,14 +1,19 @@
-import { useForm, useFieldArray, UseFormReturn, FieldArrayWithId } from 'react-hook-form';
+import {
+  useForm,
+  useFieldArray,
+  UseFormReturn,
+  FieldArrayWithId,
+} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useMemo } from 'react';
-import { 
+import {
   ScheduleEntryForm,
-  MonthOption, 
-  ScheduleFormValues
+  MonthOption,
+  ScheduleFormValues,
+  ScheduleType,
 } from 'src/types/schedule.types';
 import { EmployeeType } from 'src/types/types';
 import { scheduleFormSchema } from '@utils/scheduleValidationSchema';
-
 
 // Создаем адаптированный тип для entries, который соответствует схеме валидации
 type ScheduleFormEntry = {
@@ -18,7 +23,6 @@ type ScheduleFormEntry = {
   customJob: string;
   dates: string[];
   orderIndex: number;
-
 };
 
 interface UseScheduleFormReturn {
@@ -41,18 +45,12 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
     resolver: yupResolver(scheduleFormSchema),
     defaultValues: {
       month: '',
-      scheduleType: 'responsibleOnWeekends',
+      scheduleType: '' as ScheduleType,
       entries: [],
     },
-    mode: 'onBlur',
   });
 
-  const { 
-    fields, 
-    append, 
-    remove, 
-    replace 
-  } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: formMethods.control,
     name: 'entries',
   });
@@ -99,49 +97,66 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   /**
    * Добавление новой записи в график
    */
-  const appendEntry = useCallback((entry: Omit<ScheduleEntryForm, 'id'>): void => {
-    const newEntry: ScheduleFormEntry = {
-      ...entry,
-      id: `manual-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-    };
-    
-    append(newEntry);
-  }, [append]);
+  const appendEntry = useCallback(
+    (entry: Omit<ScheduleEntryForm, 'id'>): void => {
+      const newEntry: ScheduleFormEntry = {
+        ...entry,
+        id: `manual-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 11)}`,
+      };
+
+      append(newEntry);
+    },
+    [append]
+  );
 
   /**
    * Удаление записи по индексу
    */
-  const removeEntry = useCallback((index: number): void => {
-    remove(index);
-    
-    const currentEntries: ScheduleFormEntry[] = formMethods.getValues('entries') as ScheduleFormEntry[];
-    const updatedEntries: ScheduleFormEntry[] = currentEntries.map((entry: ScheduleFormEntry, idx: number) => ({
-      ...entry,
-      orderIndex: idx,
-    }));
-    
-    formMethods.setValue('entries', updatedEntries);
-  }, [remove, formMethods]);
+  const removeEntry = useCallback(
+    (index: number): void => {
+      remove(index);
+
+      const currentEntries: ScheduleFormEntry[] = formMethods.getValues(
+        'entries'
+      ) as ScheduleFormEntry[];
+      const updatedEntries: ScheduleFormEntry[] = currentEntries.map(
+        (entry: ScheduleFormEntry, idx: number) => ({
+          ...entry,
+          orderIndex: idx,
+        })
+      );
+
+      formMethods.setValue('entries', updatedEntries);
+    },
+    [remove, formMethods]
+  );
 
   /**
    * Автоматическое заполнение графика из списка сотрудников
    */
-  const autoFillFromEmployees = useCallback((employees: EmployeeType[]): void => {
-    const entries: ScheduleFormEntry[] = employees.map((employee: EmployeeType, index: number) => {
-      const employeeId: string = employee._id?.toString() || '';
-      return {
-        id: `template-${employeeId || `emp-${index}`}`,
-        employeeId: employeeId || undefined,
-        customName: employee.name || '',
-        customJob: employee.job || '',
-        dates: [],
-        orderIndex: index,
-        isFromTemplate: true,
-      };
-    });
+  const autoFillFromEmployees = useCallback(
+    (employees: EmployeeType[]): void => {
+      const entries: ScheduleFormEntry[] = employees.map(
+        (employee: EmployeeType, index: number) => {
+          const employeeId: string = employee._id?.toString() || '';
+          return {
+            id: `template-${employeeId || `emp-${index}`}`,
+            employeeId: employeeId || undefined,
+            customName: employee.name || '',
+            customJob: employee.job || '',
+            dates: [],
+            orderIndex: index,
+            isFromTemplate: true,
+          };
+        }
+      );
 
-    replace(entries);
-  }, [replace]);
+      replace(entries);
+    },
+    [replace]
+  );
 
   /**
    * Сброс формы к начальному состоянию
@@ -149,7 +164,7 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   const resetForm = useCallback((): void => {
     formMethods.reset({
       month: '',
-      scheduleType: 'responsibleOnWeekends',
+      scheduleType: '' as ScheduleType,
       entries: [],
     });
   }, [formMethods]);
