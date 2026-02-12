@@ -182,9 +182,9 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
         message: 'Не выбран тип графика',
         severity: 'warning',
       });
-      return;
-    }
-
+        return;
+      }
+  
     if (scheduleExists.exists) {
       setSnackbar({
         open: true,
@@ -193,30 +193,45 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
       });
       return;
     }
-
+  
     try {
+      // ВАЖНО: При создании НЕ отправляем _id!
       const scheduleData = {
         month: formData.month,
         scheduleType: formData.scheduleType,
-        entries: formData.entries.map((entry, index) => ({
-          customName: entry.customName,
-          customJob: entry.customJob,
-          dates: [...entry.dates].sort(),
-          orderIndex: index,
-          employeeId: entry.employeeId,
-        })),
+        entries: formData.entries.map((entry, index) => {
+          const entryData: {
+            customName: string;
+            customJob: string;
+            dates: string[];
+            orderIndex: number;
+            employeeId?: string;
+          } = {
+            customName: entry.customName,
+            customJob: entry.customJob,
+            dates: [...entry.dates].sort(),
+            orderIndex: index,
+          };
+          
+          // Добавляем employeeId ТОЛЬКО если он есть и это сотрудник из базы
+          if (entry.employeeId) {
+            entryData.employeeId = entry.employeeId;
+          }
+          
+          return entryData;
+        }),
       };
-
+  
       await createSchedule(scheduleData).unwrap();
-
+  
       setSnackbar({
         open: true,
         message: 'График успешно создан',
         severity: 'success',
       });
-
+  
       resetForm();
-
+      
       setTimeout(() => {
         navigate('/staff/schedules');
       }, 1500);

@@ -1,4 +1,3 @@
-
 import React, {
   useState,
   useCallback,
@@ -54,6 +53,9 @@ import {
   ScheduleModel,
   SnackbarState,
   EditSchedulePanelProps,
+  ScheduleEntryUpdateExisting,
+  ScheduleEntryUpdateNew,
+  ScheduleUpdateModel,
 } from 'src/types/schedule.types';
 
 /**
@@ -209,69 +211,89 @@ const EditSchedulePanel: React.FC<EditSchedulePanelProps> = ({
     return allEntriesValid;
   }, [isValid, month, scheduleType, fields.length, getValues, errors]);
 
-  /**
-   * Обработчик сохранения изменений
-   */
-  const handleSave = async (formData: ScheduleFormValues): Promise<void> => {
-    if (!scheduleId) {
-      setSnackbar({
-        open: true,
-        message: 'Ошибка: ID графика не найден',
-        severity: 'error',
-      });
-      return;
+// В handleSave, при обновлении графика
+const handleSave = async (formData: ScheduleFormValues): Promise<void> => {
+  if (!scheduleId) {
+    setSnackbar({
+      open: true,
+      message: 'Ошибка: ID графика не найден',
+      severity: 'error',
+    });
+    return;
+  }
+
+  try {
+    // Разделяем существующие и новые записи
+    const existingEntries = formData.entries.filter(entry => 
+      !entry.id.startsWith('manual-') && !entry.id.startsWith('template-')
+    );
+    
+    const newEntries = formData.entries.filter(entry => 
+      entry.id.startsWith('manual-') || entry.id.startsWith('template-')
+    );
+
+    // Создаем массив записей для обновления с правильными типами
+    const entriesToUpdate: (ScheduleEntryUpdateExisting | ScheduleEntryUpdateNew)[] = [
+      // Существующие записи - с _id
+      ...existingEntries.map((entry, index) => ({
+        _id: entry.id,
+        customName: entry.customName,
+        customJob: entry.customJob,
+        dates: [...entry.dates].sort(),
+        orderIndex: index,
+        ...(entry.employeeId && { employeeId: entry.employeeId }),
+      })),
+      // Новые записи - без _id
+      ...newEntries.map((entry, index) => ({
+        customName: entry.customName,
+        customJob: entry.customJob,
+        dates: [...entry.dates].sort(),
+        orderIndex: existingEntries.length + index,
+        ...(entry.employeeId && { employeeId: entry.employeeId }),
+      })),
+    ];
+
+    const updateData: ScheduleUpdateModel = {
+      entries: entriesToUpdate,
+      notes: scheduleData?.notes || '',
+    };
+
+    console.log('📤 Отправка обновленных данных:', updateData);
+
+    await updateSchedule({
+      id: scheduleId,
+      data: updateData,
+    }).unwrap();
+
+    setSnackbar({
+      open: true,
+      message: 'График успешно обновлен',
+      severity: 'success',
+    });
+
+    if (onSuccess) {
+      onSuccess();
     }
 
-    try {
-      // Подготавливаем данные для отправки на бэкенд
-      const updateData = {
-        entries: formData.entries.map((entry, index) => ({
-          _id: entry.id,
-          customName: entry.customName,
-          customJob: entry.customJob,
-          dates: [...entry.dates].sort(),
-          orderIndex: index,
-          ...(entry.employeeId && { employeeId: entry.employeeId }),
-        })),
-        notes: scheduleData?.notes || '',
-      };
+    setTimeout(() => {
+      navigate('/staff/schedules/');
+    }, 1500);
+  } catch (error: unknown) {
+    console.error('❌ Ошибка при обновлении графика:', error);
 
-      console.log('📤 Отправка обновленных данных:', updateData);
-
-      await updateSchedule({
-        id: scheduleId,
-        data: updateData,
-      }).unwrap();
-
-      setSnackbar({
-        open: true,
-        message: 'График успешно обновлен',
-        severity: 'success',
-      });
-
-      if (onSuccess) {
-        onSuccess();
-      }
-
-      setTimeout(() => {
-        navigate('/staff/schedules/');
-      }, 1500);
-    } catch (error: unknown) {
-      console.error('❌ Ошибка при обновлении графика:', error);
-
-      let errorMessage = 'Ошибка при обновлении графика';
-      if (error && typeof error === 'object' && 'data' in error) {
-        const apiError = error as { data?: { message?: string } };
-        errorMessage = apiError.data?.message || errorMessage;
-      }
-
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error',
-      });
+    let errorMessage = 'Ошибка при обновлении графика';
+    if (error && typeof error === 'object' && 'data' in error) {
+      const apiError = error as { data?: { message?: string } };
+      errorMessage = apiError.data?.message || errorMessage;
     }
-  };
+
+    setSnackbar({
+      open: true,
+      message: errorMessage,
+      severity: 'error',
+    });
+  }
+};
 
   /**
    * Обработчик отмены

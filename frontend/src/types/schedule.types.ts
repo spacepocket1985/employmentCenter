@@ -12,19 +12,19 @@ export const ScheduleTypeEnum: Record<ScheduleType, ScheduleType> = {
  * Опция месяца для выпадающего списка
  */
 export type MonthOption = {
-  value: string; // Формат: "2024-01"
-  label: string; // "Январь 2024"
+  value: string;
+  label: string;
   year: number;
   month: number;
 };
 
 /**
- * Запись в графике для ФОРМЫ (react-hook-form)
- * Использует id (без подчеркивания) для работы с формой
+ * ЗАПИСЬ В ФОРМЕ (react-hook-form)
+ * Используется ТОЛЬКО на клиенте
  */
 export type ScheduleEntryForm = {
-  id: string; // Уникальный идентификатор строки (будет маппиться с _id из API)
-  employeeId?: string; // Только ID сотрудника, не объект!
+  id: string; // Клиентский ID для key в React
+  employeeId?: string;
   customName: string;
   customJob: string;
   dates: string[];
@@ -32,10 +32,58 @@ export type ScheduleEntryForm = {
 };
 
 /**
- * Запись в графике из API (как приходит с бэкенда)
- * Сохраняем оригинальную структуру с _id и объектом employeeId
+ * ЗАПИСЬ ДЛЯ СОЗДАНИЯ (POST /schedules)
  */
-export type ScheduleEntryApi = {
+export type ScheduleEntryCreate = {
+  employeeId?: string;
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
+  notes?: string;
+};
+
+/**
+ * ЗАПИСЬ ДЛЯ ОБНОВЛЕНИЯ СУЩЕСТВУЮЩЕЙ (PATCH /schedules/:id)
+ * _id - обязателен, это ObjectId из MongoDB
+ */
+export type ScheduleEntryUpdateExisting = {
+  _id: string; // Обязателен! ObjectId из MongoDB
+  employeeId?: string;
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
+  notes?: string;
+};
+
+/**
+ * ЗАПИСЬ ДЛЯ ДОБАВЛЕНИЯ НОВОЙ ПРИ ОБНОВЛЕНИИ (PATCH /schedules/:id)
+ * Без _id, потому что это новая запись
+ */
+export type ScheduleEntryUpdateNew = {
+  employeeId?: string;
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
+  notes?: string;
+};
+
+/**
+ * Модель для обновления графика (PATCH)
+ * entries может содержать mix существующих и новых записей
+ */
+export type ScheduleUpdateModel = {
+  entries?: (ScheduleEntryUpdateExisting | ScheduleEntryUpdateNew)[];
+  isPublished?: boolean;
+  notes?: string;
+};
+
+/**
+ * ЗАПИСЬ ИЗ БД (как приходит с бэкенда)
+ */
+export type ScheduleEntryDb = {
   _id: string;
   employeeId?:
     | {
@@ -53,7 +101,7 @@ export type ScheduleEntryApi = {
 };
 
 /**
- * Основная форма создания графика (для формы)
+ * Основная форма создания графика
  */
 export type ScheduleFormValues = {
   month: string;
@@ -62,59 +110,39 @@ export type ScheduleFormValues = {
 };
 
 /**
- * Модель графика из API (полная структура)
+ * Модель графика из БД
  */
 export type ScheduleModel = {
   _id: string;
   month: string;
   scheduleType: ScheduleType;
-  entries: ScheduleEntryApi[];
+  entries: ScheduleEntryDb[];
   notes?: string;
   createdBy?: string | null;
-  isPublished?: boolean;
+  isPublished: boolean;
   createdAt: string;
   updatedAt: string;
   __v?: number;
 };
 
 /**
- * Модель для создания графика (отправка на бэкенд)
+ * Модель для создания графика (POST)
  */
 export type ScheduleCreateModel = {
   month: string;
   scheduleType: ScheduleType;
-  entries: Omit<ScheduleEntryForm, 'id'>[];
+  entries: ScheduleEntryCreate[];
   notes?: string;
 };
 
 /**
- * Модель для обновления графика (отправка на бэкенд)
- */
-export type ScheduleUpdateModel = {
-  entries?: Array<{
-    _id: string; // ID записи из БД
-    customName: string;
-    customJob: string;
-    dates: string[];
-    orderIndex: number;
-    employeeId?: string;
-  }>;
-  isPublished?: boolean;
-  notes?: string;
-};
-
-/**
- * Ответ API при получении одного графика
+ * Ответ API
  */
 export type ScheduleApiResponse = {
   data: ScheduleModel;
   msg: string;
-  success?: boolean;
 };
 
-/**
- * Ответ API при получении списка графиков
- */
 export type SchedulesApiResponse = {
   data: ScheduleModel[];
   msg: string;
@@ -122,7 +150,7 @@ export type SchedulesApiResponse = {
 };
 
 /**
- * Состояние снекбара (уведомления)
+ * Состояние снекбара
  */
 export type SnackbarState = {
   open: boolean;
@@ -131,7 +159,7 @@ export type SnackbarState = {
 };
 
 /**
- * Пропсы для компонента строки графика
+ * Пропсы компонентов
  */
 export type ScheduleEntryRowProps = {
   index: number;
@@ -139,25 +167,16 @@ export type ScheduleEntryRowProps = {
   disabled?: boolean;
 };
 
-/**
- * Пропсы для компонента выбора типа графика
- */
 export type ScheduleTypeSelectorProps = {
   disabled?: boolean;
 };
 
-/**
- * Пропсы для компонента редактирования графика
- */
 export type EditSchedulePanelProps = {
   scheduleId: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
 
-/**
- * Пропсы для компонента просмотра графика
- */
 export type ScheduleProps = {
   id: string;
 };

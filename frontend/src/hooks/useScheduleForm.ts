@@ -28,12 +28,10 @@ interface UseScheduleFormReturn {
 
 /**
  * Хук для управления формой создания/редактирования графика
- * С подключенной схемой валидации yup
  */
 export const useScheduleForm = (): UseScheduleFormReturn => {
-  // Подключаем yupResolver для валидации с явным приведением типа
   const formMethods = useForm<ScheduleFormValues>({
-    resolver: yupResolver(scheduleFormSchema) as never, // Временное решение
+    resolver: yupResolver(scheduleFormSchema) as never,
     defaultValues: {
       month: '',
       scheduleType: '' as ScheduleType,
@@ -49,13 +47,13 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   });
 
   /**
-   * Генерация списка месяцев на текущий и следующий год
+   * Генерация списка месяцев
    */
   const generateMonthOptions = useMemo((): MonthOption[] => {
     const options: MonthOption[] = [];
     const currentDate = new Date();
-    const currentYear: number = currentDate.getFullYear();
-    const currentMonth: number = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
 
     for (let month = currentMonth; month <= 12; month++) {
       const date = new Date(currentYear, month - 1);
@@ -70,7 +68,7 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
       });
     }
 
-    const nextYear: number = currentYear + 1;
+    const nextYear = currentYear + 1;
     for (let month = 1; month <= 12; month++) {
       const date = new Date(nextYear, month - 1);
       options.push({
@@ -88,16 +86,16 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   }, []);
 
   /**
-   * Добавление новой записи в график
+   * Добавление новой пустой строки
+   * БЕЗ employeeId - это ручной ввод
    */
   const appendEntry = useCallback(
     (entry: Omit<ScheduleEntryForm, 'id'>): void => {
       const newEntry: ScheduleEntryForm = {
         ...entry,
-        id: `manual-${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 11)}`,
+        id: `manual-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       };
+      delete newEntry.employeeId; // У ручного ввода нет employeeId
       append(newEntry);
       
       setTimeout(() => {
@@ -108,7 +106,7 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   );
 
   /**
-   * Удаление записи по индексу
+   * Удаление записи
    */
   const removeEntry = useCallback(
     (index: number): void => {
@@ -128,32 +126,33 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
     [remove, formMethods]
   );
 
-  /**
-   * Автоматическое заполнение графика из списка сотрудников
-   */
-  const autoFillFromEmployees = useCallback(
-    (employees: EmployeeType[]): void => {
-      const entries: ScheduleEntryForm[] = employees.map(
-        (employee, index) => ({
-          id: `template-${employee._id || `emp-${index}`}-${Date.now()}`,
-          employeeId: employee._id,
-          customName: employee.name || '',
-          customJob: employee.job || '',
-          dates: [],
-          orderIndex: index,
-        })
-      );
-      replace(entries);
-      
-      setTimeout(() => {
-        formMethods.trigger('entries');
-      }, 0);
-    },
-    [replace, formMethods]
-  );
+ /**
+ * Автоматическое заполнение из сотрудников
+ * ID с префиксом 'template-' - запись из шаблона, но еще не сохранена в БД
+ */
+const autoFillFromEmployees = useCallback(
+  (employees: EmployeeType[]): void => {
+    const entries: ScheduleEntryForm[] = employees.map(
+      (employee, index) => ({
+        id: `template-${employee._id || `emp-${index}`}-${Date.now()}`,
+        employeeId: employee._id,
+        customName: employee.name || '',
+        customJob: employee.job || '',
+        dates: [],
+        orderIndex: index,
+      })
+    );
+    replace(entries);
+    
+    setTimeout(() => {
+      formMethods.trigger('entries');
+    }, 0);
+  },
+  [replace, formMethods]
+);
 
   /**
-   * Сброс формы к начальному состоянию
+   * Сброс формы
    */
   const resetForm = useCallback((): void => {
     formMethods.reset({
@@ -164,7 +163,7 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   }, [formMethods]);
 
   /**
-   * Загрузка данных в форму (для редактирования)
+   * Загрузка данных для редактирования
    */
   const loadFormData = useCallback(
     (data: ScheduleFormValues): void => {
