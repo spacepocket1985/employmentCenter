@@ -1,8 +1,13 @@
+import { MONTHS } from './dateUtils';
+
 /**
  * Получение количества дней в месяце
  * Исправленная версия: правильно работает с граничными условиями
  */
-export const getDaysInMonthForSchedule = (year: number, month: number): number => {
+export const getDaysInMonthForSchedule = (
+  year: number,
+  month: number
+): number => {
   // month: 1-12 (январь-декабрь)
   // Date(year, month, 0) возвращает последний день предыдущего месяца
   return new Date(year, month, 0).getDate();
@@ -51,4 +56,28 @@ export const parseMonthYear = (
   if (month < 1 || month > 12) return null;
 
   return { year, month };
+};
+
+export const parseScheduleDate = (
+  date: string
+): {
+  year: string;
+  month:
+    | 'январь'
+    | 'февраль'
+    | 'март'
+    | 'апрель'
+    | 'май'
+    | 'июнь'
+    | 'июль'
+    | 'август'
+    | 'сентябрь'
+    | 'октябрь'
+    | 'ноябрь'
+    | 'декабрь';
+} => {
+  const [year, month] = date.split('-');
+  const monthName = MONTHS[Number(month) - 1];
+
+  return { year, month: monthName };
 };

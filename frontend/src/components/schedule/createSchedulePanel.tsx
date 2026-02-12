@@ -201,7 +201,6 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
         month: formData.month,
         scheduleType: formData.scheduleType,
         entries: formData.entries.map((entry, index) => ({
-          employeeId: entry.employeeId,
           customName: entry.customName,
           customJob: entry.customJob,
           dates: entry.dates,

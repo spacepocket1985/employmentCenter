@@ -15,6 +15,7 @@ interface LoadingErrorWrapperProps {
   error?: unknown;
   children: React.ReactNode;
   onRetry?: () => void;
+  isCollectionObject?: boolean;
   collectionLength?: number;
   collectionTitle?: string;
 }
@@ -24,8 +25,9 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
   error,
   children,
   onRetry,
+  isCollectionObject = false,
   collectionLength,
-  collectionTitle
+  collectionTitle = ' ничего',
 }) => {
   if (isLoading) {
     return (
@@ -63,11 +65,11 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
     );
   }
 
-  if (collectionLength === 0) {
+  if (!isCollectionObject! && (collectionLength || collectionLength) === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="h6" color="text.secondary" gutterBottom>
-           К сожалению,{collectionTitle} не найдены!
+          К сожалению,{collectionTitle} не найдены!
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Перейдите к этапу создания.

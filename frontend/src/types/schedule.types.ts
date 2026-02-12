@@ -1,16 +1,14 @@
+import { EmployeeType } from './types';
+
 /**
  * Тип графика дежурств
  */
 export type ScheduleType = 'responsibleOnWeekends' | 'safetyOfficers';
 
-/**
- * Модель для отображения типа графика
- */
-export type ScheduleTypeDisplay = {
-  value: ScheduleType;
-  label: string;
-  description: string;
-};
+export const ScheduleTypeEnum: Record<ScheduleType, ScheduleType> = {
+  responsibleOnWeekends: 'responsibleOnWeekends',
+  safetyOfficers: 'safetyOfficers',
+} as const;
 
 /**
  * Опция месяца для выпадающего списка
@@ -27,7 +25,7 @@ export type MonthOption = {
  */
 export type ScheduleEntryForm = {
   id: string; // Уникальный идентификатор строки
-  employeeId?: string; // ID сотрудника (если из базы)
+  employeeId?: Omit<EmployeeType, 'birthday'>;
   customName: string; // ФИО (может быть из базы или ручной ввод)
   customJob: string; // Должность
   dates: string[]; // Массив дат в формате "2024-01-15"
@@ -118,5 +116,5 @@ export type ScheduleModel = {
   scheduleType: ScheduleType;
   entries: ScheduleEntryForm[];
   notes?: string;
-  createdAt: 'string';
+  createdAt: string;
 };

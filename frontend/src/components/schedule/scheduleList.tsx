@@ -12,12 +12,14 @@ import {
 } from '@mui/material';
 import { LoadingErrorWrapper } from '@components/layout';
 import { UICollectionInfo, UITableHead } from '@components/ui';
-import { scheduleListCellTitles } from 'src/const';
+import { SCHEDULE_TITLES, scheduleListCellTitles } from 'src/const';
 import {
   createDeleteHandler,
   UIITableItemsActions,
 } from '@components/ui/UIITableItemsActions';
-import { MONTHS } from '@utils/dateUtils';
+import { parseScheduleDate } from '@utils/scheduleDateUtils';
+import { Schedule } from './schedule';
+
 
 export const ScheduleList: React.FC = () => {
   const {
@@ -60,20 +62,16 @@ export const ScheduleList: React.FC = () => {
             <UITableHead cellTitels={scheduleListCellTitles} />
             <TableBody>
               {schedules.map((schedule) => {
-                 
-                 const totalDays = schedule.entries.reduce(
-                   (total, day) => total + day.dates.length,
-                   0
-                 );
-                // const monthName = MONTHS[plan.monthNumber - 1];
-                // const planTitle = `${monthName} ${plan.year}`;
+                const totalDays = schedule.entries.reduce(
+                  (total, day) => total + day.dates.length,
+                  0
+                );
+
                 const scheduleTitle =
-                  schedule.scheduleType === 'responsibleOnWeekends'
-                    ? `ГРАФИК дежурств ответственных в выходные дни`
-                    : `ГРАФИК проведения проверок`;
-                const [year, month] = schedule.month.split('-');
-                const monthName = MONTHS[Number(month)];
-                
+                  SCHEDULE_TITLES[schedule.scheduleType].shortTitle;
+                const { year, month: monthName } = parseScheduleDate(
+                  schedule.month
+                );
 
                 return (
                   <TableRow
@@ -85,12 +83,9 @@ export const ScheduleList: React.FC = () => {
                       <Typography variant="body1" fontWeight="medium">
                         {`${monthName} ${year}`}
                       </Typography>
-
                     </TableCell>
 
-                    <TableCell align="center">
-                     {scheduleTitle}
-                    </TableCell>
+                    <TableCell align="center">{scheduleTitle}</TableCell>
 
                     <TableCell align="center">
                       <Chip
@@ -120,7 +115,8 @@ export const ScheduleList: React.FC = () => {
                       onRefetch={refetch}
                       onExport={handleExportPlan}
                       deleteConfirmText={`Вы уверены, что хотите удалить "${scheduleTitle}"? Это действие нельзя отменить.`}
-                      viewDialogTitle={`Просмотр ${scheduleTitle}`}
+                      viewDialogTitle={`Просмотр графика`}
+                      customViewComponent={<Schedule id={schedule._id} />}
                     />
                   </TableRow>
                 );
