@@ -36,11 +36,13 @@ export const Schedule: React.FC<ScheduleProps> = ({ id }) => {
   const schedule: ScheduleModel = {
     _id: scheduleData?._id || '',
     month: scheduleData?.month || '',
-    scheduleType:
-      scheduleData?.scheduleType || ScheduleTypeEnum.responsibleOnWeekends,
+    scheduleType: scheduleData?.scheduleType || ScheduleTypeEnum.responsibleOnWeekends ,
     entries: scheduleData?.entries || [],
     notes: scheduleData?.notes || '',
     createdAt: scheduleData?.createdAt || '',
+    updatedAt: scheduleData?.updatedAt || '',
+    isPublished: scheduleData?.isPublished || false,
+    createdBy: scheduleData?.createdBy || null,
   };
 
   const scheduleTitle =
@@ -51,7 +53,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ id }) => {
    * Обработчик перехода к редактированию
    */
   const handleEdit = (): void => {
-    navigate(`/schedule/edit/${id}`);
+    navigate(`./${id}`);
   };
 
   return (
@@ -101,7 +103,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ id }) => {
             <TableBody>
               {schedule.entries.map((item) => (
                 <TableRow
-                  key={item.id}
+                  key={item._id}
                   hover
                   sx={{ '&:hover': { bgcolor: 'action.hover' } }}
                 >
@@ -116,7 +118,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ id }) => {
                   <TableCell align="left">{item.customJob}</TableCell>
 
                   <TableCell align="left">
-                    {item.employeeId?.department || '-'}
+                  {typeof item.employeeId === 'object' && item.employeeId?.department || '-'}
                   </TableCell>
 
                   <TableCell align="center">

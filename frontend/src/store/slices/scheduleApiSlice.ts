@@ -2,14 +2,15 @@ import { api } from '@store/config';
 import {
   ScheduleCreateModel,
   ScheduleModel,
-  ScheduleType,
   ScheduleUpdateModel,
+  ScheduleApiResponse,
+  SchedulesApiResponse,
 } from 'src/types/schedule.types';
-import { EmployeeType, EmployeeViewModel } from 'src/types/types';
+import { EmployeeViewModel, EmployeeType } from 'src/types/types';
 
 export const scheduleApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    // Получить всех ответственных на выходных (с сортировкой)
+    // Получить всех ответственных на выходных
     getResponsibleOnWeekends: builder.query<
       EmployeeViewModel<EmployeeType[]>,
       void
@@ -21,7 +22,7 @@ export const scheduleApi = api.injectEndpoints({
       providesTags: ['Schedule'],
     }),
 
-    // Получить всех safety officers (с сортировкой)
+    // Получить всех safety officers
     getSafetyOfficers: builder.query<EmployeeViewModel<EmployeeType[]>, void>({
       query: () => ({
         url: '/employees/safetyOfficers',
@@ -30,9 +31,9 @@ export const scheduleApi = api.injectEndpoints({
       providesTags: ['Schedule'],
     }),
 
-    // Получить графики с фильтрацией
+    // Получить все графики
     getSchedules: builder.query<
-      EmployeeViewModel<ScheduleModel[]>,
+      SchedulesApiResponse,
       { month?: string; scheduleType?: string }
     >({
       query: (params) => ({
@@ -42,8 +43,9 @@ export const scheduleApi = api.injectEndpoints({
       }),
       providesTags: ['Schedule'],
     }),
-    // Получить график по id
-    getSchedule: builder.query<EmployeeViewModel<ScheduleModel>, string>({
+
+    // Получить график по ID
+    getSchedule: builder.query<ScheduleApiResponse, string>({
       query: (id) => ({
         url: `/schedules/${id}`,
         method: 'GET',
@@ -53,7 +55,7 @@ export const scheduleApi = api.injectEndpoints({
 
     // Получить график по месяцу и типу
     getScheduleByMonthAndType: builder.query<
-      EmployeeViewModel<ScheduleType>,
+      EmployeeViewModel<ScheduleModel | null>,
       { month: string; scheduleType: string }
     >({
       query: ({ month, scheduleType }) => ({
@@ -65,7 +67,7 @@ export const scheduleApi = api.injectEndpoints({
 
     // Создать график
     createSchedule: builder.mutation<
-      EmployeeViewModel<ScheduleType>,
+      EmployeeViewModel<ScheduleModel>,
       ScheduleCreateModel
     >({
       query: (scheduleData) => ({
@@ -76,25 +78,9 @@ export const scheduleApi = api.injectEndpoints({
       invalidatesTags: ['Schedule'],
     }),
 
-    // Создать график из шаблона (автозаполнение)
-    createScheduleFromTemplate: builder.mutation<
-      EmployeeViewModel<ScheduleType>,
-      {
-        month: string;
-        scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
-      }
-    >({
-      query: (templateData) => ({
-        url: '/schedules/template',
-        method: 'POST',
-        body: templateData,
-      }),
-      invalidatesTags: ['Schedule'],
-    }),
-
     // Обновить график
     updateSchedule: builder.mutation<
-      EmployeeViewModel<ScheduleType>,
+      EmployeeViewModel<ScheduleModel>,
       { id: string; data: ScheduleUpdateModel }
     >({
       query: ({ id, data }) => ({
@@ -106,7 +92,7 @@ export const scheduleApi = api.injectEndpoints({
     }),
 
     // Удалить график
-    deleteSchedule: builder.mutation<EmployeeViewModel<ScheduleType>, string>({
+    deleteSchedule: builder.mutation<EmployeeViewModel<null>, string>({
       query: (id) => ({
         url: `/schedules/${id}`,
         method: 'DELETE',
@@ -116,7 +102,7 @@ export const scheduleApi = api.injectEndpoints({
 
     // Публикация графика
     toggleSchedulePublish: builder.mutation<
-      EmployeeViewModel<ScheduleType>,
+      EmployeeViewModel<ScheduleModel>,
       string
     >({
       query: (id) => ({
@@ -134,7 +120,6 @@ export const {
   useGetSchedulesQuery,
   useGetScheduleByMonthAndTypeQuery,
   useCreateScheduleMutation,
-  useCreateScheduleFromTemplateMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
   useToggleSchedulePublishMutation,

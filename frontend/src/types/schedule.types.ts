@@ -1,5 +1,3 @@
-import { EmployeeType } from './types';
-
 /**
  * Тип графика дежурств
  */
@@ -21,41 +19,106 @@ export type MonthOption = {
 };
 
 /**
- * Запись в графике (строка таблицы)
+ * Запись в графике для ФОРМЫ (react-hook-form)
+ * Использует id (без подчеркивания) для работы с формой
  */
 export type ScheduleEntryForm = {
-  id: string; // Уникальный идентификатор строки
-  employeeId?: Omit<EmployeeType, 'birthday'>;
-  customName: string; // ФИО (может быть из базы или ручной ввод)
-  customJob: string; // Должность
-  dates: string[]; // Массив дат в формате "2024-01-15"
-  orderIndex: number; // Порядковый номер строки
+  id: string; // Уникальный идентификатор строки (будет маппиться с _id из API)
+  employeeId?: string; // Только ID сотрудника, не объект!
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
 };
 
 /**
- * Основная форма создания графика
+ * Запись в графике из API (как приходит с бэкенда)
+ * Сохраняем оригинальную структуру с _id и объектом employeeId
  */
-export type ScheduleFormData = {
-  month: string; // Выбранный месяц в формате "2024-01"
-  scheduleType: ScheduleType; // Тип графика
-  entries: ScheduleEntryForm[]; // Список записей
+export type ScheduleEntryApi = {
+  _id: string;
+  employeeId?:
+    | {
+        _id: string;
+        name: string;
+        job: string;
+        department: string;
+      }
+    | string;
+  customName: string;
+  customJob: string;
+  dates: string[];
+  orderIndex: number;
+  notes?: string;
 };
 
 /**
- * Результат валидации даты
+ * Основная форма создания графика (для формы)
  */
-export type DateValidationResult = {
-  isValid: boolean;
-  error?: string;
+export type ScheduleFormValues = {
+  month: string;
+  scheduleType: ScheduleType;
+  entries: ScheduleEntryForm[];
 };
 
 /**
- * Ошибки валидации формы графика
+ * Модель графика из API (полная структура)
  */
-export type ScheduleValidationErrors = {
-  month?: string;
-  scheduleType?: string;
-  entries?: Record<string, string[]>; // key: ID записи, value: массив ошибок
+export type ScheduleModel = {
+  _id: string;
+  month: string;
+  scheduleType: ScheduleType;
+  entries: ScheduleEntryApi[];
+  notes?: string;
+  createdBy?: string | null;
+  isPublished?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+};
+
+/**
+ * Модель для создания графика (отправка на бэкенд)
+ */
+export type ScheduleCreateModel = {
+  month: string;
+  scheduleType: ScheduleType;
+  entries: Omit<ScheduleEntryForm, 'id'>[];
+  notes?: string;
+};
+
+/**
+ * Модель для обновления графика (отправка на бэкенд)
+ */
+export type ScheduleUpdateModel = {
+  entries?: Array<{
+    _id: string; // ID записи из БД
+    customName: string;
+    customJob: string;
+    dates: string[];
+    orderIndex: number;
+    employeeId?: string;
+  }>;
+  isPublished?: boolean;
+  notes?: string;
+};
+
+/**
+ * Ответ API при получении одного графика
+ */
+export type ScheduleApiResponse = {
+  data: ScheduleModel;
+  msg: string;
+  success?: boolean;
+};
+
+/**
+ * Ответ API при получении списка графиков
+ */
+export type SchedulesApiResponse = {
+  data: ScheduleModel[];
+  msg: string;
+  total?: number;
 };
 
 /**
@@ -71,13 +134,8 @@ export type SnackbarState = {
  * Пропсы для компонента строки графика
  */
 export type ScheduleEntryRowProps = {
-  entry: ScheduleEntryForm;
   index: number;
-  onUpdate: (updates: Partial<ScheduleEntryForm>) => void;
   onRemove: () => void;
-  onAddDate: (date: string) => void;
-  onRemoveDate: (date: string) => void;
-  errors?: string[];
   disabled?: boolean;
 };
 
@@ -85,36 +143,21 @@ export type ScheduleEntryRowProps = {
  * Пропсы для компонента выбора типа графика
  */
 export type ScheduleTypeSelectorProps = {
-  scheduleType: ScheduleType;
-  onChange: (type: ScheduleType) => void;
-  error?: string;
   disabled?: boolean;
 };
 
-export type ScheduleFormValues = {
-  month: string;
-  scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
-  entries: ScheduleEntryForm[];
+/**
+ * Пропсы для компонента редактирования графика
+ */
+export type EditSchedulePanelProps = {
+  scheduleId: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 };
 
-export type ScheduleCreateModel = {
-  month: string;
-  scheduleType: ScheduleType;
-  entries: Omit<ScheduleEntryForm, 'id'>[];
-  notes?: string;
-};
-
-export type ScheduleUpdateModel = {
-  entries?: Omit<ScheduleEntryForm, 'id'>[];
-  isPublished?: boolean;
-  notes?: string;
-};
-
-export type ScheduleModel = {
-  _id: string;
-  month: string;
-  scheduleType: ScheduleType;
-  entries: ScheduleEntryForm[];
-  notes?: string;
-  createdAt: string;
+/**
+ * Пропсы для компонента просмотра графика
+ */
+export type ScheduleProps = {
+  id: string;
 };

@@ -1,14 +1,11 @@
 import React from 'react';
 import { Box } from '@mui/material';
-
 import { MonthOption } from 'src/types/schedule.types';
 import { useFormContext } from 'react-hook-form';
 import { UIFormSelect, UITitle } from '@components/ui';
 
 interface MonthSelectorProps {
-  /** Список доступных месяцев */
   monthOptions: MonthOption[];
-  /** Отключенное состояние */
   disabled?: boolean;
 }
 
@@ -29,7 +26,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
   return (
     <Box sx={{ mb: 3 }}>
       <UITitle>Выберите месяц</UITitle>
-
       <UIFormSelect
         name="month"
         control={control}

@@ -1,7 +1,10 @@
 import React from 'react';
+import EditSchedulePanel from '@components/schedule/editSchedulePanel';
+import { useParams } from 'react-router-dom';
 
 const ScheduleEditPage: React.FC = () => {
-  return <h2>ScheduleEditPage</h2>;
+  const { id } = useParams();
+  return <EditSchedulePanel scheduleId={id!} />;
 };
 
 export default ScheduleEditPage;

@@ -15,16 +15,6 @@ import {
 import { EmployeeType } from 'src/types/types';
 import { scheduleFormSchema } from '@utils/scheduleValidationSchema';
 
-// Создаем адаптированный тип для entries, который соответствует схеме валидации
-type ScheduleFormEntry = {
-  id: string;
-  employeeId?: string;
-  customName: string;
-  customJob: string;
-  dates: string[];
-  orderIndex: number;
-};
-
 interface UseScheduleFormReturn {
   formMethods: UseFormReturn<ScheduleFormValues>;
   monthOptions: MonthOption[];
@@ -33,21 +23,24 @@ interface UseScheduleFormReturn {
   removeEntry: (index: number) => void;
   autoFillFromEmployees: (employees: EmployeeType[]) => void;
   resetForm: () => void;
+  loadFormData: (data: ScheduleFormValues) => void;
 }
 
 /**
- * Хук для управления формой создания графика с использованием react-hook-form
- * Исправление: Корректная типизация для работы со схемой валидации
+ * Хук для управления формой создания/редактирования графика
+ * С подключенной схемой валидации yup
  */
 export const useScheduleForm = (): UseScheduleFormReturn => {
-  // Используем ScheduleFormValues для типизации формы
+  // Подключаем yupResolver для валидации с явным приведением типа
   const formMethods = useForm<ScheduleFormValues>({
-    resolver: yupResolver(scheduleFormSchema),
+    resolver: yupResolver(scheduleFormSchema) as never, // Временное решение
     defaultValues: {
       month: '',
       scheduleType: '' as ScheduleType,
       entries: [],
     },
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   const { fields, append, remove, replace } = useFieldArray({
@@ -99,16 +92,19 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
    */
   const appendEntry = useCallback(
     (entry: Omit<ScheduleEntryForm, 'id'>): void => {
-      const newEntry: ScheduleFormEntry = {
+      const newEntry: ScheduleEntryForm = {
         ...entry,
         id: `manual-${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 11)}`,
       };
-
       append(newEntry);
+      
+      setTimeout(() => {
+        formMethods.trigger('entries');
+      }, 0);
     },
-    [append]
+    [append, formMethods]
   );
 
   /**
@@ -117,18 +113,17 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
   const removeEntry = useCallback(
     (index: number): void => {
       remove(index);
-
-      const currentEntries: ScheduleFormEntry[] = formMethods.getValues(
-        'entries'
-      ) as ScheduleFormEntry[];
-      const updatedEntries: ScheduleFormEntry[] = currentEntries.map(
-        (entry: ScheduleFormEntry, idx: number) => ({
-          ...entry,
-          orderIndex: idx,
-        })
-      );
-
-      formMethods.setValue('entries', updatedEntries);
+      
+      const currentEntries = formMethods.getValues('entries');
+      const updatedEntries = currentEntries.map((entry, idx) => ({
+        ...entry,
+        orderIndex: idx,
+      }));
+      
+      formMethods.setValue('entries', updatedEntries, { 
+        shouldValidate: true,
+        shouldDirty: true 
+      });
     },
     [remove, formMethods]
   );
@@ -138,24 +133,23 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
    */
   const autoFillFromEmployees = useCallback(
     (employees: EmployeeType[]): void => {
-      const entries: ScheduleFormEntry[] = employees.map(
-        (employee: EmployeeType, index: number) => {
-          const employeeId: string = employee._id?.toString() || '';
-          return {
-            id: `template-${employeeId || `emp-${index}`}`,
-            employeeId: employeeId || undefined,
-            customName: employee.name || '',
-            customJob: employee.job || '',
-            dates: [],
-            orderIndex: index,
-            isFromTemplate: true,
-          };
-        }
+      const entries: ScheduleEntryForm[] = employees.map(
+        (employee, index) => ({
+          id: `template-${employee._id || `emp-${index}`}-${Date.now()}`,
+          employeeId: employee._id,
+          customName: employee.name || '',
+          customJob: employee.job || '',
+          dates: [],
+          orderIndex: index,
+        })
       );
-
       replace(entries);
+      
+      setTimeout(() => {
+        formMethods.trigger('entries');
+      }, 0);
     },
-    [replace]
+    [replace, formMethods]
   );
 
   /**
@@ -169,6 +163,29 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
     });
   }, [formMethods]);
 
+  /**
+   * Загрузка данных в форму (для редактирования)
+   */
+  const loadFormData = useCallback(
+    (data: ScheduleFormValues): void => {
+      formMethods.reset(data, {
+        keepDirty: false,
+        keepValues: false,
+        keepDefaultValues: false,
+        keepErrors: false,
+        keepIsSubmitted: false,
+        keepTouched: false,
+        keepIsValid: false,
+        keepSubmitCount: false,
+      });
+      
+      setTimeout(() => {
+        formMethods.trigger();
+      }, 0);
+    },
+    [formMethods]
+  );
+
   return {
     formMethods,
     monthOptions: generateMonthOptions,
@@ -177,5 +194,6 @@ export const useScheduleForm = (): UseScheduleFormReturn => {
     removeEntry,
     autoFillFromEmployees,
     resetForm,
+    loadFormData,
   };
 };

@@ -1,11 +1,9 @@
 import React from 'react';
 import { Box } from '@mui/material';
-
 import { useFormContext } from 'react-hook-form';
 import { UIFormRadio, UITitle } from '@components/ui';
 
 interface ScheduleTypeSelectorProps {
-  /** Отключенное состояние */
   disabled?: boolean;
 }
 
@@ -26,7 +24,6 @@ const ScheduleTypeSelector: React.FC<ScheduleTypeSelectorProps> = ({
   return (
     <Box sx={{ mb: 3 }}>
       <UITitle>Тип графика</UITitle>
-
       <UIFormRadio
         name="scheduleType"
         control={control}

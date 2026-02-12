@@ -1,3 +1,4 @@
+// file name: scheduleEntryRow.tsx
 import React from 'react';
 import {
   TableRow,
@@ -8,53 +9,54 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  Person as PersonIcon,
-} from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { ScheduleEntryForm, ScheduleFormValues } from 'src/types/schedule.types';
+import {
+  ScheduleEntryForm,
+  ScheduleFormValues,
+  ScheduleEntryRowProps,
+} from 'src/types/schedule.types';
 import { formatDateForDisplay } from 'src/utils/dateUtils';
 import DatePickerPopup from './datePickerPopup';
 import { UIFormInput } from '@components/ui';
 
-
-interface ScheduleEntryRowProps {
-  /** Индекс записи в массиве */
-  index: number;
-  /** Функция удаления записи */
-  onRemove: () => void;
-  /** Отключенное состояние */
-  disabled?: boolean;
-}
-
 /**
- * Компонент строки графика дежурств с использованием react-hook-form и UIFormInput
+ * Компонент строки графика дежурств
  */
 const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
   index,
   onRemove,
   disabled = false,
 }): JSX.Element => {
-  const { control, setValue, trigger } = useFormContext<ScheduleFormValues>();
-  
-  const entry: ScheduleEntryForm = useWatch({
+  const {
     control,
-    name: `entries.${index}` as const,
-  });
+    setValue,
+    trigger,
+    formState: { errors },
+  } = useFormContext<ScheduleFormValues>();
 
-  const month: string = useWatch({
+  const entry = useWatch({
     control,
-    name: 'month' as const,
-  });
+    name: `entries.${index}`,
+  }) as ScheduleEntryForm | undefined;
+
+  const month = useWatch({
+    control,
+    name: 'month',
+  }) as string;
+
+  // Ошибки валидации для этой строки
+  const entryErrors = errors.entries?.[index];
 
   /**
-   * Обработчик добавления даты к записи
+   * Обработчик добавления даты
    */
   const handleAddDate = (date: string): void => {
-    const currentDates: string[] = entry?.dates || [];
+    if (!entry) return;
+
+    const currentDates = entry.dates || [];
     if (!currentDates.includes(date)) {
-      const newDates: string[] = [...currentDates, date].sort();
+      const newDates = [...currentDates, date].sort();
       setValue(`entries.${index}.dates`, newDates, {
         shouldValidate: true,
         shouldDirty: true,
@@ -64,12 +66,16 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
   };
 
   /**
-   * Обработчик удаления даты из записи
+   * Обработчик удаления даты
    */
   const handleRemoveDate = (dateToRemove: string): void => {
-    const currentDates: string[] = entry?.dates || [];
-    const newDates: string[] = currentDates.filter((date: string) => date !== dateToRemove);
-    
+    if (!entry) return;
+
+    const currentDates = entry.dates || [];
+    const newDates = currentDates.filter(
+      (date: string) => date !== dateToRemove
+    );
+
     setValue(`entries.${index}.dates`, newDates, {
       shouldValidate: true,
       shouldDirty: true,
@@ -78,25 +84,22 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
   };
 
   if (!entry) {
-    return <div>no entry</div>;
+    return <h6>no entry</h6>;
   }
 
   return (
     <TableRow>
       {/* Номер строки */}
       <TableCell>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="body2" sx={{ mr: 1 }}>
-            {index + 1}
-          </Typography>
-
-        </Box>
+        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+          {index + 1}
+        </Typography>
       </TableCell>
 
-      {/* Поле ФИО */}
+      {/* ФИО */}
       <TableCell>
         <UIFormInput
-          name={`entries.${index}.customName` as const}
+          name={`entries.${index}.customName`}
           control={control}
           label="ФИО сотрудника"
           disabled={disabled}
@@ -105,14 +108,17 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
             size: 'small',
             placeholder: 'Введите ФИО',
             variant: 'outlined',
+            error: !!entryErrors?.customName,
+            helperText: entryErrors?.customName?.message,
+            fullWidth: true,
           }}
         />
       </TableCell>
 
-      {/* Поле должности */}
+      {/* Должность */}
       <TableCell>
         <UIFormInput
-          name={`entries.${index}.customJob` as const}
+          name={`entries.${index}.customJob`}
           control={control}
           label="Должность"
           disabled={disabled}
@@ -121,14 +127,16 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
             size: 'small',
             placeholder: 'Введите должность',
             variant: 'outlined',
+            error: !!entryErrors?.customJob,
+            helperText: entryErrors?.customJob?.message,
+            fullWidth: true,
           }}
         />
       </TableCell>
 
-      {/* Поле для выбора дат */}
+      {/* Даты */}
       <TableCell>
         <Box>
-          {/* Календарь для выбора дат */}
           <Box sx={{ mb: 1 }}>
             <DatePickerPopup
               selectedDates={entry.dates || []}
@@ -139,15 +147,14 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
             />
           </Box>
 
-          {/* Отображение добавленных дат */}
-          {(entry.dates || []).length > 0 ? (
+          {entry.dates && entry.dates.length > 0 ? (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
               {entry.dates.map((date: string) => (
                 <Chip
                   key={date}
                   label={formatDateForDisplay(date)}
                   size="small"
-                  onDelete={(): void => handleRemoveDate(date)}
+                  onDelete={() => handleRemoveDate(date)}
                   disabled={disabled}
                   color="primary"
                   variant="outlined"
@@ -155,14 +162,18 @@ const ScheduleEntryRow: React.FC<ScheduleEntryRowProps> = ({
               ))}
             </Box>
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Даты не добавлены. Нажмите на иконку календаря для выбора.
+            <Typography
+              variant="caption"
+              color="error"
+              sx={{ mt: 1, display: 'block' }}
+            >
+              {entryErrors?.dates?.message || 'Добавьте хотя бы одну дату'}
             </Typography>
           )}
         </Box>
       </TableCell>
 
-      {/* Кнопка удаления строки */}
+      {/* Удаление */}
       <TableCell align="center">
         <Tooltip title="Удалить строку">
           <IconButton

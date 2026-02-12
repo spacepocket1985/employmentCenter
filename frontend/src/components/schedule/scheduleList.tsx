@@ -1,4 +1,5 @@
 import { useDeleteScheduleMutation, useGetSchedulesQuery } from '@store/slices';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Chip,
@@ -9,7 +10,10 @@ import {
   TableContainer,
   TableRow,
   Typography,
+  Button,
+  Box,
 } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import { LoadingErrorWrapper } from '@components/layout';
 import { UICollectionInfo, UITableHead } from '@components/ui';
 import { SCHEDULE_TITLES, scheduleListCellTitles } from 'src/const';
@@ -20,8 +24,9 @@ import {
 import { parseScheduleDate } from '@utils/scheduleDateUtils';
 import { Schedule } from './schedule';
 
-
 export const ScheduleList: React.FC = () => {
+  const navigate = useNavigate();
+
   const {
     data,
     isLoading: isLoadingSchedules,
@@ -32,30 +37,43 @@ export const ScheduleList: React.FC = () => {
   const [deleteScheduleMutation] = useDeleteScheduleMutation();
 
   const isLoading = isLoadingSchedules;
-  const eroor = schedulesError;
-
+  const error = schedulesError;
   const schedules = data?.data || [];
 
-  console.log(schedules);
-
-  const handleExportPlan = (planId: string): void => {
-    // TODO: Реализовать экспорт в PDF/Excel
-    console.log('Export plan:', planId);
-  };
-
   const handleDeletePlan = createDeleteHandler(deleteScheduleMutation);
+
+  const handleCreate = (): void => {
+    navigate('./create');
+  };
 
   return (
     <LoadingErrorWrapper
       isLoading={isLoading}
-      error={eroor}
+      error={error}
       collectionLength={schedules.length}
       collectionTitle="графики дежурств/проверок"
     >
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Список графиков дежурств/проведения проверок
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            Список графиков дежурств/проведения проверок
+          </Typography>
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreate}
+          >
+            Создать график
+          </Button>
+        </Box>
 
         <TableContainer>
           <Table>
@@ -63,12 +81,13 @@ export const ScheduleList: React.FC = () => {
             <TableBody>
               {schedules.map((schedule) => {
                 const totalDays = schedule.entries.reduce(
-                  (total, day) => total + day.dates.length,
+                  (total, entry) => total + entry.dates.length,
                   0
                 );
 
                 const scheduleTitle =
-                  SCHEDULE_TITLES[schedule.scheduleType].shortTitle;
+                  SCHEDULE_TITLES[schedule.scheduleType]?.shortTitle ||
+                  'График';
                 const { year, month: monthName } = parseScheduleDate(
                   schedule.month
                 );
@@ -105,17 +124,15 @@ export const ScheduleList: React.FC = () => {
                       />
                     </TableCell>
 
-                    {/* Используем универсальный компонент действий */}
                     <UIITableItemsActions
-                      itemId={schedule._id!}
-                      itemTitle={scheduleTitle}
+                      itemId={schedule._id}
+                      itemTitle={`${scheduleTitle} на ${monthName} ${year}`}
                       viewOption={true}
                       editPath={`./${schedule._id}`}
                       onDelete={handleDeletePlan}
                       onRefetch={refetch}
-                      onExport={handleExportPlan}
-                      deleteConfirmText={`Вы уверены, что хотите удалить "${scheduleTitle}"? Это действие нельзя отменить.`}
-                      viewDialogTitle={`Просмотр графика`}
+                      deleteConfirmText={`Вы уверены, что хотите удалить график "${scheduleTitle} на ${monthName} ${year}"?`}
+                      viewDialogTitle={`Просмотр графика: ${scheduleTitle} на ${monthName} ${year}`}
                       customViewComponent={<Schedule id={schedule._id} />}
                     />
                   </TableRow>
@@ -124,6 +141,7 @@ export const ScheduleList: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
         <UICollectionInfo
           collectionTitle="Графики"
           collectionLength={schedules.length}

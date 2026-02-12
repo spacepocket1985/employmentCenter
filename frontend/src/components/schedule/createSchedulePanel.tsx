@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { FormProvider } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { useScheduleForm } from '@hooks/useScheduleForm';
 import {
   useGetResponsibleOnWeekendsQuery,
@@ -22,25 +23,18 @@ import {
   useGetScheduleByMonthAndTypeQuery,
   useCreateScheduleMutation,
 } from '@store/slices/scheduleApiSlice';
-
 import MonthSelector from './monthSelector';
 import ScheduleEntryRow from './scheduleEntryRow';
 import ScheduleTypeSelector from './scheduleTypeSelector';
-
 import { UITitle } from '@components/ui';
-import { ScheduleFormValues } from '@utils/scheduleValidationSchema';
+import { ScheduleFormValues, SnackbarState } from 'src/types/schedule.types';
 import { LoadingErrorWrapper } from '@components/layout';
-
-interface SnackbarState {
-  open: boolean;
-  message: string;
-  severity: 'success' | 'error' | 'warning' | 'info';
-}
 
 /**
  * Компонент создания графика дежурств
  */
 const CreateSchedulePanel: React.FC = (): JSX.Element => {
+  const navigate = useNavigate();
   const {
     formMethods,
     monthOptions,
@@ -64,102 +58,109 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
     severity: 'success',
   });
 
-  // Получаем значения полей формы
   const [month, scheduleType] = watch(['month', 'scheduleType']);
 
-  console.log('Current scheduleType:', scheduleType); // Для отладки
-
-  // Используем мемоизацию для параметров запроса существующего графика
-  const scheduleQueryParams = useMemo(
-    () => ({
-      month,
-      scheduleType,
-    }),
-    [month, scheduleType]
-  );
-
-  // Проверка существования графика на выбранный месяц - только если выбран и месяц, и тип
-  const {
-    data: existingSchedule,
-    isLoading: isLoadingExisting,
-    refetch: refetchExisting,
-  } = useGetScheduleByMonthAndTypeQuery(scheduleQueryParams, {
-    skip: !month || !scheduleType, // Пропускаем запрос, если не выбран месяц или тип
+  // Состояние для отслеживания существования графика
+  const [scheduleExists, setScheduleExists] = useState<{
+    exists: boolean;
+    month: string;
+    scheduleType: string;
+  }>({
+    exists: false,
+    month: '',
+    scheduleType: '',
   });
 
-  // Получение списка ответственных на выходных - только при активном типе
+  // Сбрасываем состояние при изменении месяца или типа
+  useEffect(() => {
+    setScheduleExists({
+      exists: false,
+      month: '',
+      scheduleType: '',
+    });
+  }, [month, scheduleType]);
+
+  const shouldSkipQuery = !month || !scheduleType;
+
+  const {
+    isLoading: isLoadingExisting,
+    refetch: refetchExisting,
+    isFetching,
+    isSuccess,
+    currentData, // Используем currentData вместо data для получения актуальных данных
+  } = useGetScheduleByMonthAndTypeQuery(
+    { month, scheduleType },
+    {
+      skip: shouldSkipQuery,
+      // Не используем кэш для этого запроса
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  // Обновляем состояние существования графика только когда получаем актуальные данные
+  useEffect(() => {
+    if (!shouldSkipQuery && !isFetching && isSuccess) {
+      const exists = !!currentData?.data;
+      setScheduleExists({
+        exists,
+        month,
+        scheduleType,
+      });
+    }
+  }, [
+    currentData,
+    isFetching,
+    isSuccess,
+    shouldSkipQuery,
+    month,
+    scheduleType,
+  ]);
+
   const {
     data: responsibleData,
     isLoading: isLoadingResponsible,
     refetch: refetchResponsible,
   } = useGetResponsibleOnWeekendsQuery(undefined, {
-    skip: scheduleType !== 'responsibleOnWeekends', // Пропускаем, если не выбран соответствующий тип
-    refetchOnMountOrArgChange: false,
+    skip: scheduleType !== 'responsibleOnWeekends',
   });
 
-  // Получение списка сотрудников охраны труда - только при активном типе
   const {
     data: safetyData,
     isLoading: isLoadingSafety,
     refetch: refetchSafety,
   } = useGetSafetyOfficersQuery(undefined, {
-    skip: scheduleType !== 'safetyOfficers', // Пропускаем, если не выбран соответствующий тип
-    refetchOnMountOrArgChange: false,
+    skip: scheduleType !== 'safetyOfficers',
   });
 
-  // Мутация для создания графика
   const [createSchedule, { isLoading: isCreating, error: createError }] =
     useCreateScheduleMutation();
 
-  /**
-   * Сброс записей при изменении типа графика
-   * Очищаем форму перед автоматическим заполнением
-   */
-  useEffect((): void => {
+  // Сброс записей при изменении типа графика
+  useEffect(() => {
     if (scheduleType) {
-      console.log('Schedule type changed to:', scheduleType);
-      // Очищаем записи при смене типа
       setValue('entries', [], { shouldValidate: true });
     }
   }, [scheduleType, setValue]);
 
-  /**
-   * Автоматическое заполнение формы при изменении типа графика
-   */
-  useEffect((): void => {
-    // Заполняем только если выбран тип и есть данные
+  // Автоматическое заполнение формы
+  useEffect(() => {
     if (scheduleType === 'responsibleOnWeekends' && responsibleData?.data) {
-      console.log('Auto-filling with responsible data');
       autoFillFromEmployees(responsibleData.data);
     } else if (scheduleType === 'safetyOfficers' && safetyData?.data) {
-      console.log('Auto-filling with safety data');
       autoFillFromEmployees(safetyData.data);
     }
   }, [scheduleType, responsibleData, safetyData, autoFillFromEmployees]);
 
-  /**
-   * Проверка, можно ли сохранять форму
-   */
   const canSaveForm = useCallback((): boolean => {
-    // Форма должна быть валидной
     if (!isValid) return false;
-
-    // Должны быть заполнены основные поля
     if (!month || !scheduleType) return false;
-
-    // Должны быть записи
     if (fields.length === 0) return false;
+    if (scheduleExists.exists) return false;
 
-    // Не должно быть существующего графика
-    if (existingSchedule?.data) return false;
-
-    // Все записи должны иметь хотя бы одну дату
     const entries = formMethods.getValues('entries');
     const allEntriesHaveDates = entries.every(
       (entry) => entry.dates && entry.dates.length > 0
     );
-
-    // Все записи должны иметь заполненные ФИО и должность
     const allEntriesHaveNamesAndJobs = entries.every(
       (entry) => entry.customName?.trim() && entry.customJob?.trim()
     );
@@ -170,13 +171,10 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
     month,
     scheduleType,
     fields.length,
-    existingSchedule?.data,
+    scheduleExists.exists,
     formMethods,
   ]);
 
-  /**
-   * Обработчик сохранения графика
-   */
   const handleSave = async (formData: ScheduleFormValues): Promise<void> => {
     if (!formData.scheduleType) {
       setSnackbar({
@@ -187,7 +185,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
       return;
     }
 
-    if (existingSchedule?.data) {
+    if (scheduleExists.exists) {
       setSnackbar({
         open: true,
         message: `График на ${month} (${formData.scheduleType}) уже существует`,
@@ -203,12 +201,11 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
         entries: formData.entries.map((entry, index) => ({
           customName: entry.customName,
           customJob: entry.customJob,
-          dates: entry.dates,
+          dates: [...entry.dates].sort(),
           orderIndex: index,
+          employeeId: entry.employeeId,
         })),
       };
-
-      console.log('Sending schedule data:', scheduleData);
 
       await createSchedule(scheduleData).unwrap();
 
@@ -219,8 +216,11 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
       });
 
       resetForm();
-    } catch (error: unknown) {
-      console.error('Ошибка при сохранении графика:', error);
+
+      setTimeout(() => {
+        navigate('/staff/schedules');
+      }, 1500);
+    } catch {
       setSnackbar({
         open: true,
         message: 'Ошибка при сохранении графика',
@@ -229,16 +229,10 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
     }
   };
 
-  /**
-   * Обработчик закрытия снекбара
-   */
   const handleCloseSnackbar = (): void => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  /**
-   * Обработчик добавления пустой строки
-   */
   const handleAddEmptyEntry = (): void => {
     appendEntry({
       customName: '',
@@ -248,8 +242,34 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
     });
   };
 
-  const isLoading: boolean =
-    isLoadingExisting || isLoadingResponsible || isLoadingSafety || isCreating;
+  const handleCancel = (): void => {
+    resetForm();
+    navigate('/schedule/list');
+  };
+
+  const handleRetry = (): void => {
+    refetchExisting();
+    if (scheduleType === 'responsibleOnWeekends') {
+      refetchResponsible();
+    } else if (scheduleType === 'safetyOfficers') {
+      refetchSafety();
+    }
+  };
+
+  const isLoading =
+    isLoadingExisting ||
+    isLoadingResponsible ||
+    isLoadingSafety ||
+    isCreating ||
+    isFetching;
+  const isFormDisabled =
+    isLoading || !month || !scheduleType || scheduleExists.exists;
+
+  // Определяем нужно ли показывать предупреждение
+  const showWarning =
+    scheduleExists.exists &&
+    scheduleExists.month === month &&
+    scheduleExists.scheduleType === scheduleType;
 
   return (
     <FormProvider {...formMethods}>
@@ -257,6 +277,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
         <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
           Создание графика дежурств
         </Typography>
+
         <form onSubmit={handleSubmit(handleSave)}>
           <Paper sx={{ p: 3, mb: 0.5 }}>
             <Box
@@ -272,24 +293,30 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
                   disabled={isLoading}
                 />
               </Box>
+
               <Box sx={{ flex: 1 }}>
                 <ScheduleTypeSelector disabled={isLoading} />
               </Box>
-              <Box
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                }}
-              >
-                {existingSchedule?.data && (
-                  <Alert severity="warning" sx={{ mb: 1 }}>
-                    Внимание: график на {month} ({scheduleType}) уже существует
+
+              <Box sx={{ flex: 1 }}>
+                {showWarning && (
+                  <Alert
+                    severity="warning"
+                    sx={{ mb: 1 }}
+                    onClose={() =>
+                      setScheduleExists((prev) => ({ ...prev, exists: false }))
+                    }
+                  >
+                    <Typography variant="body2">
+                      <strong>Внимание!</strong> График на {month} (
+                      {scheduleType === 'responsibleOnWeekends'
+                        ? 'Дежурства на выходных'
+                        : 'Проверки охраны труда'}
+                      ) уже существует.
+                    </Typography>
                   </Alert>
                 )}
 
-                {/* Информационный блок */}
                 <Box sx={{ bgcolor: 'grey.50', borderRadius: 1, p: 1.5 }}>
                   <UITitle>Информация:</UITitle>
                   <Typography
@@ -297,15 +324,14 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
                     color="text.secondary"
                     align="left"
                   >
-                    • Выберите месяц
+                    • Выберите месяц и тип графика
                   </Typography>
                   <Typography
                     variant="body2"
                     color="text.secondary"
                     align="left"
                   >
-                    • При выборе типа графика форма автоматически заполнится
-                    сотрудниками
+                    • При выборе типа форма заполнится сотрудниками
                   </Typography>
                   <Typography
                     variant="body2"
@@ -314,48 +340,36 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
                   >
                     • Для добавления дат используйте календарь
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    align="left"
-                  >
-                    • Вы можете добавлять новые строки или редактировать
-                    существующие
-                  </Typography>
                 </Box>
               </Box>
             </Box>
           </Paper>
 
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: 3, mt: 0.5 }}>
             <LoadingErrorWrapper
               isLoading={isLoading}
               error={createError}
-              onRetry={(): void => {
-                refetchExisting();
-                if (scheduleType === 'responsibleOnWeekends') {
-                  refetchResponsible();
-                } else if (scheduleType === 'safetyOfficers') {
-                  refetchSafety();
-                }
-              }}
+              onRetry={handleRetry}
             >
               <Box
                 sx={{
                   display: 'flex',
                   justifyContent: 'space-between',
+                  alignItems: 'center',
                   mb: 3,
                 }}
               >
                 <Typography variant="h6">
                   Список дежурств ({fields.length} строк)
                 </Typography>
+
                 <Button
                   variant="outlined"
                   startIcon={<AddIcon />}
                   onClick={handleAddEmptyEntry}
-                  disabled={isLoading || !month || !scheduleType}
+                  disabled={isFormDisabled}
                   type="button"
+                  size="small"
                 >
                   Добавить строку
                 </Button>
@@ -364,7 +378,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
               {fields.length === 0 ? (
                 <Alert severity="info" sx={{ mb: 3 }}>
                   {!scheduleType
-                    ? 'Выберите тип графика для автоматического заполнения сотрудниками'
+                    ? 'Выберите тип графика для автоматического заполнения'
                     : 'Загрузка данных...'}
                 </Alert>
               ) : (
@@ -374,7 +388,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
                       <TableHead>
                         <TableRow>
                           <TableCell width="50">№</TableCell>
-                          <TableCell width="35%">Ф.И.О.</TableCell>
+                          <TableCell width="30%">Ф.И.О.</TableCell>
                           <TableCell width="25%">Должность</TableCell>
                           <TableCell>Даты дежурств</TableCell>
                           <TableCell width="80">Действия</TableCell>
@@ -385,41 +399,44 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
                           <ScheduleEntryRow
                             key={field.id}
                             index={index}
-                            onRemove={(): void => removeEntry(index)}
-                            disabled={isLoading || !month}
+                            onRemove={() => removeEntry(index)}
+                            disabled={isFormDisabled}
                           />
                         ))}
                       </TableBody>
                     </Table>
                   </TableContainer>
 
-                  {fields.length > 0 && (
-                    <Box
-                      sx={{
-                        mt: 3,
-                        display: 'flex',
-                        gap: 2,
-                        justifyContent: 'flex-end',
-                      }}
+                  <Box
+                    sx={{
+                      mt: 4,
+                      display: 'flex',
+                      gap: 2,
+                      justifyContent: 'flex-end',
+                      borderTop: 1,
+                      borderColor: 'divider',
+                      pt: 3,
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={handleCancel}
+                      disabled={isLoading}
+                      type="button"
                     >
-                      <Button
-                        variant="outlined"
-                        onClick={resetForm}
-                        disabled={isLoading}
-                        type="button"
-                      >
-                        Отмена
-                      </Button>
-                      <Button
-                        variant="contained"
-                        startIcon={<SaveIcon />}
-                        type="submit"
-                        disabled={isLoading || !canSaveForm()}
-                      >
-                        Сохранить график
-                      </Button>
-                    </Box>
-                  )}
+                      Отмена
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      startIcon={<SaveIcon />}
+                      type="submit"
+                      disabled={isLoading || !canSaveForm()}
+                    >
+                      Сохранить график
+                    </Button>
+                  </Box>
                 </>
               )}
             </LoadingErrorWrapper>
@@ -435,6 +452,7 @@ const CreateSchedulePanel: React.FC = (): JSX.Element => {
           <Alert
             onClose={handleCloseSnackbar}
             severity={snackbar.severity}
+            variant="filled"
             sx={{ width: '100%' }}
           >
             {snackbar.message}
