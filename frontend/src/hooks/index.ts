@@ -7,4 +7,3 @@ export * from './useWorkPlanEvents';
 export * from './useWorkPlanValidation';
 export * from './useWorkPlanStateChecks';
 export * from './useWorkPlanBase';
-export * from './useScheduleEditForm';

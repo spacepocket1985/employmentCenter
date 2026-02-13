@@ -117,10 +117,10 @@ const DatePickerPopup: React.FC<DatePickerPopupProps> = ({
   /**
    * Проверка, можно ли выбрать дату
    */
-  const canSelectDate = (dateStr: string): boolean => {
-    const date = new Date(dateStr);
-    return date >= today;
-  };
+  // const canSelectDate = (dateStr: string): boolean => {
+  //   const date = new Date(dateStr);
+  //   return date >= today;
+  // };
 
   const monthName: string = new Date(year, monthNumber - 1).toLocaleDateString(
     'ru-RU',
@@ -218,7 +218,7 @@ const DatePickerPopup: React.FC<DatePickerPopupProps> = ({
                         ? 'error'
                         : 'inherit'
                     }
-                    disabled={!canSelectDate(day.dateStr)}
+                    
                     onClick={(): void => {
                       if (selectedDates.includes(day.dateStr)) {
                         onDateRemove(day.dateStr);
