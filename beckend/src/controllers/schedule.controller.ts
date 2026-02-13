@@ -1,17 +1,15 @@
 // Controller Layer для графиков
 
-import {  Response } from 'express';
+import { Response, Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { ScheduleCreateModel } from '../models/scheduleCreateModel';
 import { ScheduleUpdateModel } from '../models/scheduleUpdateModel';
-
 
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-
 } from '../types/types';
 import { ScheduleType } from '../types/schedule.types';
 import { ScheduleViewModel } from '../models/scheduleViewModel';
@@ -32,8 +30,9 @@ class ScheduleController {
         msg: 'Schedule successfully created!',
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
       if (errorMessage.includes('duplicate key')) {
         res.status(StatusCodes.CONFLICT).json({
           msg: 'Schedule for this month and type already exists!',
@@ -60,8 +59,11 @@ class ScheduleController {
       filters.month = month;
     }
 
-    if (type && typeof type === 'string' && 
-        (type === 'responsibleOnWeekends' || type === 'safetyOfficers')) {
+    if (
+      type &&
+      typeof type === 'string' &&
+      (type === 'responsibleOnWeekends' || type === 'safetyOfficers')
+    ) {
       filters.scheduleType = type;
     }
 
@@ -203,7 +205,9 @@ class ScheduleController {
 
     res.status(StatusCodes.OK).json({
       data: updatedSchedule,
-      msg: `Schedule ${updatedSchedule.isPublished ? 'published' : 'unpublished'} successfully!`,
+      msg: `Schedule ${
+        updatedSchedule.isPublished ? 'published' : 'unpublished'
+      } successfully!`,
     });
   }
 
@@ -211,20 +215,27 @@ class ScheduleController {
    * Создать график на основе шаблона (автозаполнение из сотрудников)
    */
   async createScheduleFromTemplate(
-    req: RequestWithBody<{ month: string; scheduleType: 'responsibleOnWeekends' | 'safetyOfficers' }>,
+    req: RequestWithBody<{
+      month: string;
+      scheduleType: 'responsibleOnWeekends' | 'safetyOfficers';
+    }>,
     res: Response<ScheduleViewModel<ScheduleType>>
   ): Promise<void> {
     try {
       const { month, scheduleType } = req.body;
-      const newSchedule = await scheduleService.createScheduleFromTemplate(month, scheduleType);
+      const newSchedule = await scheduleService.createScheduleFromTemplate(
+        month,
+        scheduleType
+      );
 
       res.status(StatusCodes.CREATED).json({
         data: newSchedule,
         msg: 'Schedule created from template successfully!',
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
       if (errorMessage.includes('already exists')) {
         res.status(StatusCodes.CONFLICT).json({
           msg: errorMessage,
@@ -234,6 +245,39 @@ class ScheduleController {
           msg: errorMessage,
         });
       }
+    }
+  }
+
+  /**
+   * Получить графики за текущий месяц
+   */
+  /**
+   * Получить графики за текущий месяц
+   */
+  async getCurrentMonthSchedules(
+    req: Request,
+    res: Response<ScheduleViewModel<ScheduleType[]>>
+  ): Promise<void> {
+    try {
+      const schedules = await scheduleService.getCurrentMonthSchedules();
+
+      if (!schedules || schedules.length === 0) {
+        res.status(StatusCodes.NOT_FOUND).json({
+          msg: 'No schedules found for current month',
+        });
+        return;
+      }
+
+      res.status(StatusCodes.OK).json({
+        data: schedules,
+        msg: 'Current month schedules fetched successfully!',
+      });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        msg: `Failed to fetch current month schedules: ${errorMessage}`,
+      });
     }
   }
 }

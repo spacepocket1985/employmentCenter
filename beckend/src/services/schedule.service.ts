@@ -165,6 +165,46 @@ class ScheduleService {
       .populate('entries.employeeId', 'name job department')
       .exec();
   }
+
+  /**
+ * Получить графики за текущий месяц
+ */
+/**
+ * Получить графики за указанный месяц
+ */
+async getMonthSchedules(
+  month?: string,
+  includeUnpublished: boolean = true
+): Promise<ScheduleType[]> {
+  let targetMonth = month;
+  
+  if (!targetMonth) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+    targetMonth = `${year}-${monthStr}`;
+  }
+
+  const query: { month: string; isPublished?: boolean } = { 
+    month: targetMonth 
+  };
+
+  if (!includeUnpublished) {
+    query.isPublished = true;
+  }
+
+  return await Schedule.find(query)
+    .sort({ scheduleType: 1 })
+    .populate('entries.employeeId', 'name job department')
+    .exec();
+}
+
+/**
+ * Получить графики за текущий месяц
+ */
+async getCurrentMonthSchedules(): Promise<ScheduleType[]> {
+  return this.getMonthSchedules();
+}
 }
 
 export const scheduleService = new ScheduleService();

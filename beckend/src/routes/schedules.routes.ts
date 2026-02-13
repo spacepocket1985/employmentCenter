@@ -19,6 +19,9 @@ router
   .patch(scheduleController.updateSchedule) // PATCH /api/schedules/:id - обновить график
   .delete(scheduleController.deleteSchedule); // DELETE /api/schedules/:id - удалить график
 
+  // Получить графики за текущий месяц
+  router.get('/current/month', scheduleController.getCurrentMonthSchedules);
+  
 // Публикация/снятие с публикации графика
 router.patch('/:id/publish', scheduleController.toggleSchedulePublish); // PATCH /api/schedules/:id/publish
 
@@ -30,5 +33,6 @@ router.get(
 
 // Альтернативный маршрут для получения по месяцу и типу (более короткий)
 router.get('/:month/:type', scheduleController.getScheduleByMonthAndType); // GET /api/schedules/2024-01/responsibleOnWeekends
+
 
 export default router;
