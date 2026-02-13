@@ -11,7 +11,6 @@ import {
   TableCell,
   Typography,
   Chip,
-  CircularProgress,
   Alert,
   Button,
 } from '@mui/material';
@@ -31,14 +30,10 @@ import { NoteForPlan } from './noteForPlan';
 
 type WorkPlanViewProps = {
   plan?: WorkPlan;
-  isLoading: boolean;
-  error: string | null;
 };
 
 const WorkPlanView: React.FC<WorkPlanViewProps> = ({
   plan,
-  isLoading,
-  error,
 }) => {
   const [weekFilterType, setWeekFilterType] = React.useState<'all' | 'week'>(
     'week'
@@ -122,27 +117,6 @@ const WorkPlanView: React.FC<WorkPlanViewProps> = ({
     if (!plan?.days) return 0;
     return plan.days.reduce((total, day) => total + day.events.length, 0);
   }, [plan?.days]);
-
-  if (isLoading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ mt: 2 }}>
-        {error}
-      </Alert>
-    );
-  }
 
   if (!plan) {
     return (

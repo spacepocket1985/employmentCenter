@@ -24,6 +24,7 @@
       "@shared/*": ["src/shared/*"],
       "@utils/*": ["src/utils/*"],
       "@const/*": ["src/const/*"],
+      "@types/*": ["src/types/*"]
     }
   },
   "include": ["src"],

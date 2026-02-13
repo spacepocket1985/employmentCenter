@@ -1,16 +1,23 @@
 import React from 'react';
 
-import WorkPlanView from './components/workPlanView';
-import { usePlanDisplay } from '@hooks/usePlanDisplay';
-import TodayEventsWithPlan from '@components/todayEventsWithPlan';
+import TodayEventsWithPlan from '@components/plan/todayEventsWithPlan';
+import WorkPlanView from '@components/plan/workPlanView';
+import { LoadingErrorWrapper } from '@components/layout/loadingErrorWrapper';
+import { usePlanData } from '@hooks/usePlanData';
 
 const App: React.FC = () => {
-  const { plan, isLoading, error } = usePlanDisplay();
+  const {
+    data: plan,
+    isLoading: isLoadingPlan,
+    error: errorPlan,
+  } = usePlanData();
 
   return (
     <>
-      <WorkPlanView plan={plan} isLoading={isLoading} error={error} />
-      {/* {<TodayEventsWithPlan plan={plan!} compact={true}/>} */}
+      <LoadingErrorWrapper isLoading={isLoadingPlan} error={errorPlan}>
+        <WorkPlanView plan={plan} />
+      </LoadingErrorWrapper>
+      {/* <TodayEventsWithPlan plan={plan!}/> */}
     </>
   );
 };
