@@ -13,9 +13,10 @@ import {
 import { ScheduleModel } from 'src/types/schedule.types';
 import { SCHEDULE_TITLES, scheduleCellTitles } from '@const/schedule.consts';
 import { parseScheduleDate } from '@utils/scheduleDateUtils';
-import { UITableHead } from '@components/ui/UITableHead';
+
 import { ScheduleTitle } from './scheduleTitle';
 import { CHIP_STYLES } from '@const/printStyles';
+import { UITableHead } from '@components/ui/UITableHead';
 
 type ScheduleProps = { schedule: ScheduleModel };
 
