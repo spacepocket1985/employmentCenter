@@ -1,23 +1,32 @@
 import { LoadingErrorWrapper } from '@components/layout/loadingErrorWrapper';
-import { useSchedulesData } from '@hooks/useSchedulesData';
 import { Schedule } from './schedule';
 import { Stack } from '@mui/material';
+import { useApi } from '@hooks/useApi';
+import { SchedulesEndpoint } from '@api/endPoints';
+import { SchedulesFromApi } from 'src/types/schedule.types';
 
 interface SchedulesProps {
   showPrintButton?: boolean;
   printTitle?: string;
+  compactMode?: boolean;
 }
 
 export const Schedules: React.FC<SchedulesProps> = ({
   showPrintButton = true,
   printTitle = 'Графики дежурств и проведения проверок Гродненской ТЭЦ-2',
+  compactMode = false, // по умолчанию выключен
 }) => {
-  const { data, isLoading, error, refetch } = useSchedulesData();
-  const schedules = data || [];
+  const { data, loading, error, refetch } = useApi<SchedulesFromApi>(
+    SchedulesEndpoint,
+    { method: 'GET' },
+    { autoLoad: true }
+  );
+
+  const schedules = data?.data || [];
 
   return (
     <LoadingErrorWrapper
-      isLoading={isLoading}
+      isLoading={loading}
       error={error}
       onRetry={refetch}
       collectionLength={schedules.length}
@@ -25,9 +34,12 @@ export const Schedules: React.FC<SchedulesProps> = ({
       showPrintButton={showPrintButton}
       printDocumentTitle={printTitle}
     >
-      <Stack spacing={3}>
+      <Stack
+        spacing={compactMode ? 1 : 3}
+        direction={compactMode ? 'row' : 'column'}
+      >
         {schedules.map((item) => (
-          <Schedule key={item._id} schedule={item} />
+          <Schedule key={item._id} schedule={item} compactMode={compactMode} />
         ))}
       </Stack>
     </LoadingErrorWrapper>

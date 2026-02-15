@@ -1,1 +1,1 @@
-export * from './useSchedulesData';
+export * from './useApi';

@@ -44,6 +44,11 @@ export type ScheduleModel = {
   __v?: number;
 };
 
+export type SchedulesFromApi = {
+  data: ScheduleModel[];
+  msg: string;
+};
+
 /**
  * Состояние снекбара
  */

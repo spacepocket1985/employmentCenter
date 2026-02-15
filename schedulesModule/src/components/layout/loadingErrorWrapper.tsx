@@ -9,7 +9,10 @@ import {
   Typography,
   Stack,
 } from '@mui/material';
-import { Refresh as RefreshIcon, Print as PrintIcon } from '@mui/icons-material';
+import {
+  Refresh as RefreshIcon,
+  Print as PrintIcon,
+} from '@mui/icons-material';
 import { useReactToPrint } from 'react-to-print';
 import { PRINT_GLOBAL_STYLES } from '@const/printStyles';
 
@@ -107,8 +110,9 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
   }
 
   // Проверка на пустую коллекцию
-  const isEmptyCollection = !isCollectionObject && 
-    collectionLength !== undefined && 
+  const isEmptyCollection =
+    !isCollectionObject &&
+    collectionLength !== undefined &&
     collectionLength === 0;
 
   // Если коллекция пуста - показываем сообщение
@@ -127,10 +131,17 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
     <Box sx={{ width: '100%' }}>
       {/* Шапка с кнопкой печати */}
       {showPrintButton && (
-        <Stack 
-          direction="row" 
-          justifyContent="flex-end" 
-          sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 100, bgcolor: 'background.paper', p: 1 }}
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          sx={{
+            mb: 2,
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            bgcolor: 'background.paper',
+            p: 1,
+          }}
         >
           <Button
             variant="contained"
@@ -141,6 +152,7 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
               '&:hover': {
                 backgroundColor: '#0a2c70',
               },
+              mr: 2,
               // Скрываем кнопку при печати
               '@media print': {
                 display: 'none !important',
@@ -153,9 +165,7 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
       )}
 
       {/* Контент для печати */}
-      <div ref={contentRef}>
-        {children}
-      </div>
+      <div ref={contentRef}>{children}</div>
     </Box>
   );
 };
