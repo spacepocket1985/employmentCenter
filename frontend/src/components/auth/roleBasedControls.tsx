@@ -10,6 +10,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import AirportShuttleIcon from '@mui/icons-material/AirportShuttle';
 
 import {
   IconButton,
@@ -64,6 +65,12 @@ export const controlsConfig: ControlItem[] = [
     icon: FormatListBulletedIcon,
     link: RoutePaths.SCHEDULES,
     roles: [UserRole.ADMIN, UserRole.ONIOT],
+  },
+  {
+    text: 'Создать маршрут движения',
+    icon: AirportShuttleIcon,
+    link: RoutePaths.CREATE_BUS_ROUTE,
+    roles: [UserRole.ADMIN, UserRole.SMIT],
   },
 ];
 

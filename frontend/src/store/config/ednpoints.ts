@@ -13,3 +13,5 @@ export const foodMenuUploadUrl = '/foodMenu/upload';
 export const foodMenuClearUrl = '/foodMenu/clear';
 
 export const planUrl = '/workPlans';
+
+export const busRouteUrl = '/busRoutes';

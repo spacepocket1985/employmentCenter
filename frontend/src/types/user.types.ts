@@ -13,6 +13,7 @@ export enum UserRole {
   OKIPR = 'okipr',
   COP = 'cop',
   ONIOT = 'oniot',
+  SMIT = 'smit',
 }
 
 export interface ControlItem {

@@ -6,6 +6,13 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQuery,
 
-  tagTypes: ['Vacancies', 'Employees', 'Menu', 'WorkPlan', 'Schedule'],
+  tagTypes: [
+    'Vacancies',
+    'Employees',
+    'Menu',
+    'WorkPlan',
+    'Schedule',
+    'BusRoute',
+  ],
   endpoints: () => ({}),
 });
