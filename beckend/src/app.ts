@@ -10,6 +10,7 @@ import { MyPassport } from './middleware/passport';
 import { menuRoutes } from './routes/menu.routes';
 import workPlanRoutes from './routes/workPlan.routes';
 import scheduleRoutes from './routes/schedules.routes';
+import busRoutes from './routes/bus.routes';
 
 export const app = express();
 
@@ -32,3 +33,4 @@ app.use('/employees', employeeRoutes);
 app.use('/foodMenu', menuRoutes);
 app.use('/workPlans', workPlanRoutes);
 app.use('/schedules', scheduleRoutes);
+app.use('/busRoutes', busRoutes);
