@@ -1,10 +1,9 @@
-
+// hooks/useBusRouteForm.ts
 import { useForm, useFieldArray, UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { v4 as uuidv4 } from 'uuid';
 import { BusRouteFormValues } from 'src/types/busRoute.types';
-import { busRoutesValidationSchema} from '@utils/busRoutesValidationSchema';
-
+import { busRoutesValidationSchema } from '@utils/busRoutesValidationSchema';
 
 interface UseBusRouteFormReturn {
   formMethods: UseFormReturn<BusRouteFormValues>;
@@ -37,6 +36,7 @@ export const useBusRouteForm = (
         ...defaultValues,
       },
       mode: 'onChange',
+      reValidateMode: 'onChange',
     });
 
   const { control, reset, formState } = formMethods;
@@ -63,6 +63,13 @@ export const useBusRouteForm = (
   };
 
   /**
+   * Удалить расписание
+   */
+  const handleRemoveSchedule = (index: number): void => {
+    removeSchedule(index);
+  };
+
+  /**
    * Добавить транспортное средство в расписание
    */
   const addVehicle = (scheduleIndex: number): void => {
@@ -71,7 +78,7 @@ export const useBusRouteForm = (
     formMethods.setValue(`schedules.${scheduleIndex}.vehicles`, [
       ...currentVehicles,
       { id: uuidv4(), model: '', capacity: undefined }
-    ]);
+    ], { shouldValidate: true, shouldDirty: true });
   };
 
   /**
@@ -82,7 +89,8 @@ export const useBusRouteForm = (
     
     formMethods.setValue(
       `schedules.${scheduleIndex}.vehicles`,
-      currentVehicles.filter((_, index) => index !== vehicleIndex)
+      currentVehicles.filter((_, index) => index !== vehicleIndex),
+      { shouldValidate: true, shouldDirty: true }
     );
   };
 
@@ -103,7 +111,7 @@ export const useBusRouteForm = (
         time: { type: 'simple', simpleTime: '' },
         isSpecialNote: false,
       }
-    ]);
+    ], { shouldValidate: true, shouldDirty: true });
   };
 
   /**
@@ -119,7 +127,10 @@ export const useBusRouteForm = (
         orderNumber: index + 1
       }));
     
-    formMethods.setValue(`schedules.${scheduleIndex}.busStops`, updatedStops);
+    formMethods.setValue(`schedules.${scheduleIndex}.busStops`, updatedStops, {
+      shouldValidate: true,
+      shouldDirty: true
+    });
   };
 
   /**
@@ -139,7 +150,7 @@ export const useBusRouteForm = (
     formMethods,
     schedulesFields,
     addSchedule,
-    removeSchedule,
+    removeSchedule: handleRemoveSchedule,
     addVehicle,
     removeVehicle,
     addBusStop,

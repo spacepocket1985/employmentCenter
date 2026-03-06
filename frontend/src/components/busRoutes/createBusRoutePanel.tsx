@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+// components/busRoute/createBusRoutePanel.tsx
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -23,15 +24,9 @@ import { FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useBusRouteForm } from '@hooks/useBusRouteForm';
 import { useCreateBusRouteMutation } from '@store/slices/busRouteApiSlice';
-
 import { UIFormInput } from '@components/ui';
 import { LoadingErrorWrapper } from '@components/layout';
-
-import {
-  BusRouteFormValues,
-  CreateBusRouteDTO,
-  SnackbarState,
-} from 'src/types/busRoute.types';
+import { BusRouteFormValues, CreateBusRouteDTO, SnackbarState } from 'src/types/busRoute.types';
 import { BusSchedulePanel } from './busSchedulePanel';
 
 interface TabPanelProps {
@@ -52,14 +47,13 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
 export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
-
+  
   const {
     formMethods,
     schedulesFields,
     addSchedule,
     removeSchedule,
     resetForm,
-    isFormValid,
   } = useBusRouteForm();
 
   const {
@@ -78,26 +72,9 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
   const [createBusRoute, { isLoading: isCreating, error: createError }] =
     useCreateBusRouteMutation();
 
-  /**
-   * Проверка возможности сохранения формы
-   */
-  const canSaveForm = useCallback((): boolean => {
-    if (!isFormValid) return false;
-
-    const formValues = formMethods.getValues();
-
-    // Проверяем наличие хотя бы одного расписания
-    if (formValues.schedules.length === 0) return false;
-
-    // Проверяем каждое расписание
-    return formValues.schedules.every((schedule) => {
-      const hasVehicles = schedule.vehicles.length > 0;
-      const hasStops = schedule.busStops.length > 0;
-      const hasDayTypes = schedule.dayTypes.length > 0;
-
-      return hasVehicles && hasStops && hasDayTypes;
-    });
-  }, [isFormValid, formMethods]);
+  const isFormDisabled = isCreating || isSubmitting;
+  const routeNumber = watch('routeNumber');
+  const isActive = watch('isActive');
 
   /**
    * Обработчик сохранения формы
@@ -107,8 +84,8 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
       // Преобразуем данные для отправки на бэкенд
       const routeData: CreateBusRouteDTO = {
         routeNumber: formData.routeNumber,
-        routeName: formData.routeName,
-        description: formData.description,
+        routeName: formData.routeName || undefined,
+        description: formData.description || undefined,
         isActive: formData.isActive,
         schedules: formData.schedules.map((schedule) => ({
           period: schedule.period,
@@ -124,7 +101,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
             time: stop.time,
             isSpecialNote: stop.isSpecialNote,
           })),
-          notes: schedule.notes,
+          notes: schedule.notes || undefined,
         })),
       };
 
@@ -151,17 +128,46 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
     }
   };
 
+  /**
+   * Обработчик отмены
+   */
   const handleCancel = (): void => {
     resetForm();
     navigate('/bus-routes');
   };
 
+  /**
+   * Закрыть уведомление
+   */
   const handleCloseSnackbar = (): void => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const isFormDisabled = isCreating || isSubmitting;
-  const routeNumber = watch('routeNumber');
+  /**
+   * Добавить новое расписание
+   */
+  const handleAddSchedule = (): void => {
+    addSchedule('morning');
+    // Переключаемся на новую вкладку после добавления
+    setTimeout(() => {
+      setActiveTab(schedulesFields.length);
+    }, 0);
+  };
+
+  /**
+   * Удалить расписание
+   */
+  const handleRemoveSchedule = (index: number): void => {
+    removeSchedule(index);
+    // Переключаемся на предыдущую вкладку если удалили последнюю
+    setTimeout(() => {
+      if (index === schedulesFields.length - 1 && index > 0) {
+        setActiveTab(index - 1);
+      } else if (index === 0 && schedulesFields.length > 1) {
+        setActiveTab(0);
+      }
+    }, 0);
+  };
 
   return (
     <FormProvider {...formMethods}>
@@ -173,8 +179,8 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
             Создание маршрута {routeNumber && `№${routeNumber}`}
           </Typography>
           <Chip
-            label={watch('isActive') ? 'Активный' : 'Неактивный'}
-            color={watch('isActive') ? 'success' : 'default'}
+            label={isActive ? 'Активный' : 'Неактивный'}
+            color={isActive ? 'success' : 'default'}
             size="small"
             sx={{ ml: 'auto' }}
           />
@@ -231,7 +237,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={watch('isActive')}
+                      checked={isActive}
                       onChange={(e) => setValue('isActive', e.target.checked)}
                       disabled={isFormDisabled}
                     />
@@ -255,22 +261,42 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                   onChange={(_, newValue) => setActiveTab(newValue)}
                   variant="scrollable"
                   scrollButtons="auto"
+                  sx={{ minHeight: 48 }}
                 >
                   {schedulesFields.map((schedule, index) => (
                     <Tab
                       key={schedule.id}
-                      label={`${
-                        schedule.period === 'morning' ? '🌅 Утро' : '🌙 Вечер'
-                      } ${index + 1}`}
+                      label={
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
+                          {schedule.period === 'morning' ? '🌅' : '🌙'}
+                          <span>Расписание {index + 1}</span>
+                          {schedule.dayTypes.length > 0 && (
+                            <Chip
+                              size="small"
+                              label={schedule.dayTypes.length}
+                              color="primary"
+                              variant="outlined"
+                              sx={{ ml: 0.5, height: 20, '& .MuiChip-label': { px: 0.5 } }}
+                            />
+                          )}
+                        </Box>
+                      }
                       icon={<ScheduleIcon />}
                       iconPosition="start"
+                      sx={{ minHeight: 48 }}
                     />
                   ))}
                   <Button
                     variant="outlined"
                     size="small"
                     startIcon={<AddIcon />}
-                    onClick={() => addSchedule('morning')}
+                    onClick={handleAddSchedule}
                     disabled={isFormDisabled}
                     sx={{ ml: 2, my: 1 }}
                   >
@@ -287,7 +313,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                     <Button
                       color="inherit"
                       size="small"
-                      onClick={() => addSchedule('morning')}
+                      onClick={handleAddSchedule}
                     >
                       Добавить расписание
                     </Button>
@@ -303,7 +329,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                   <TabPanel key={schedule.id} value={activeTab} index={index}>
                     <BusSchedulePanel
                       scheduleIndex={index}
-                      onRemove={() => removeSchedule(index)}
+                      onRemove={() => handleRemoveSchedule(index)}
                       disabled={isFormDisabled}
                     />
                   </TabPanel>
@@ -336,7 +362,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                   variant="contained"
                   startIcon={<SaveIcon />}
                   type="submit"
-                  disabled={isFormDisabled || !canSaveForm()}
+                  disabled={isFormDisabled}
                 >
                   Создать маршрут
                 </Button>
