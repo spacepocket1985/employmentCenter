@@ -1,6 +1,7 @@
 import {
   PageAbout,
   PageBusRouteCreate,
+  PageBusRoutes,
   PageEmployees,
   PageMenu,
   PageNotFound,
@@ -72,5 +73,9 @@ export const privateRoutes = [
   {
     path: RoutePaths.CREATE_BUS_ROUTE,
     Page: PageBusRouteCreate,
+  },
+  {
+    path: RoutePaths.BUS_ROUTES,
+    Page: PageBusRoutes,
   },
 ];

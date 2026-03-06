@@ -11,6 +11,7 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import AirportShuttleIcon from '@mui/icons-material/AirportShuttle';
+import DirectionsBusFilledIcon from '@mui/icons-material/DirectionsBusFilled';
 
 import {
   IconButton,
@@ -55,16 +56,22 @@ export const controlsConfig: ControlItem[] = [
     roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
   {
+    text: 'Графики дежурств/проверок',
+    icon: FormatListBulletedIcon,
+    link: RoutePaths.SCHEDULES,
+    roles: [UserRole.ADMIN, UserRole.ONIOT],
+  },
+  {
     text: 'Создать график дежурств/проверок',
     icon: EditNoteIcon,
     link: RoutePaths.CREATE_SCHEDULE,
     roles: [UserRole.ADMIN, UserRole.ONIOT],
   },
   {
-    text: 'Графики дежурств/проверок',
-    icon: FormatListBulletedIcon,
-    link: RoutePaths.SCHEDULES,
-    roles: [UserRole.ADMIN, UserRole.ONIOT],
+    text: 'Маршруты движения',
+    icon: DirectionsBusFilledIcon,
+    link: RoutePaths.BUS_ROUTES,
+    roles: [UserRole.ADMIN, UserRole.SMIT],
   },
   {
     text: 'Создать маршрут движения',

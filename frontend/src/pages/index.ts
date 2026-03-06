@@ -16,3 +16,5 @@ export const PageSchedules = lazy(() => import('./SchedulesPage'));
 export const PageScheduleEdit = lazy(() => import('./ScheduleEditPage'));
 
 export const PageBusRouteCreate = lazy(() => import('./BusRouteCreatePage'));
+export const PageBusRoutes = lazy(() => import('./BusRoutesPage'));
+export const PageBusRouteEdit = lazy(() => import('./BusRouteEditPage'));

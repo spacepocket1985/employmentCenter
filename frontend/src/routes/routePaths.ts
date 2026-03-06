@@ -12,5 +12,7 @@ export enum RoutePaths {
   CREATE_SCHEDULE = 'schedules/create',
   EDIT_SCHEDULE = 'schedules/:id',
   SCHEDULES = 'schedules',
-  CREATE_BUS_ROUTE = 'busRoute/create'
+  CREATE_BUS_ROUTE = 'busRoutes/create',
+  BUS_ROUTES = 'busRoutes',
+  EDIT_BUS_ROUTE = 'busRoutes/:id',
 }
