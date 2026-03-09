@@ -108,6 +108,44 @@ export const isContinuedTime = (value: TimeValue): value is ContinuedTime =>
 export const isDaySpecificTime = (value: TimeValue): value is DaySpecificTime =>
   value.type === 'daySpecific';
 
+
+export function extractTime(value: TimeValue): string | null {
+  if (isSimpleTime(value)) {
+    return value.simpleTime;
+  }
+  if (isRangeTime(value)) {
+    return value.dayRange.time;
+  }
+  if (isTextTime(value)) {
+    return value.text;
+  }
+  if (isContinuedTime(value)) {
+    return null;
+  }
+  if (isDaySpecificTime(value)) {
+    const ds = value.daySpecific;
+    const order = [
+      'monday_thursday',
+      'friday',
+      'saturday',
+      'sunday',
+      'working',
+      'weekend',
+      'holiday',
+    ] as const;
+
+    for (const key of order) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = (ds as any)[key];
+      if (typeof v === 'string' && v.trim() !== '') {
+        return v;
+      }
+    }
+    return null;
+  }
+  return null;
+}
+
 // ============================================
 // ТИПЫ ДЛЯ ФОРМ
 // ============================================

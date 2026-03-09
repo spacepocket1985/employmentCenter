@@ -1,4 +1,3 @@
-// components/busRoute/BusSchedulePanel.tsx
 import React from 'react';
 import {
   Box,
@@ -31,28 +30,9 @@ import {
 import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
 import { BusRouteFormValues, DayType } from 'src/types/busRoute.types';
 import { BusStopRow } from './busStopRow';
+import { DAY_TYPE_LABELS, DAY_TYPES } from 'src/const';
 
-// Метки для типов дней
-const DAY_TYPE_LABELS: Record<DayType, string> = {
-  working: 'Рабочие дни',
-  weekend: 'Выходные дни',
-  holiday: 'Праздничные дни',
-  monday_thursday: 'Пн-Чт',
-  friday: 'Пт',
-  saturday: 'Сб',
-  sunday: 'Вс',
-};
 
-// Все доступные типы дней
-const DAY_TYPES: DayType[] = [
-  'working',
-  'weekend',
-  'holiday',
-  'monday_thursday',
-  'friday',
-  'saturday',
-  'sunday',
-];
 
 interface BusSchedulePanelProps {
   scheduleIndex: number;

@@ -13,14 +13,18 @@ import {
 import { getErrorMessage } from '@utils/errorUtils';
 
 import { UICollectionInfo, UITableHead } from '@components/ui';
-import { planListCellTitles } from 'src/const';
+import { busRouteListCellTitles } from 'src/const';
 import {
   UIITableItemsActions,
   createDeleteHandler,
 } from '@components/ui/UIITableItemsActions';
 import { LoadingErrorWrapper } from '@components/layout';
-import { useDeleteBusRouteMutation, useGetActiveBusRoutesQuery } from '@store/slices';
+import {
+  useDeleteBusRouteMutation,
+  useGetActiveBusRoutesQuery,
+} from '@store/slices';
 import { BusRouteModel } from 'src/types/busRoute.types';
+import { BusRoute } from './busRoute';
 
 export const BusRouteList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetActiveBusRoutesQuery();
@@ -49,17 +53,9 @@ export const BusRouteList: React.FC = () => {
 
         <TableContainer>
           <Table>
-            <UITableHead cellTitels={planListCellTitles} />
+            <UITableHead cellTitels={busRouteListCellTitles} />
             <TableBody>
               {busRoutes.map((busRoute: BusRouteModel) => {
-                // const totalEvents = plan.days.reduce(
-                //   (total, day) => total + day.events.length,
-                //   0
-                // );
-                // const totalAnnouncements = plan.announcements?.length || 0;
-                // const monthName = MONTHS[plan.monthNumber - 1];
-                // const planTitle = `${monthName} ${plan.year}`;
-
                 return (
                   <TableRow
                     key={busRoute._id}
@@ -67,26 +63,19 @@ export const BusRouteList: React.FC = () => {
                     sx={{ '&:hover': { bgcolor: 'action.hover' } }}
                   >
                     <TableCell>
-                      <Typography variant="body1" fontWeight="medium">
-                        {'planTitle'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Гродненская ТЭЦ-2
-                      </Typography>
-                    </TableCell>
-
-                    <TableCell align="center">
                       <Chip
-                        label={busRoute.schedules.length}
+                        label={busRoute.routeNumber}
                         size="small"
-                        color="primary"
+                        color="secondary"
                         variant="outlined"
                       />
                     </TableCell>
 
+                    <TableCell align="center">{busRoute.routeName}</TableCell>
+
                     <TableCell align="center">
                       <Chip
-                        label={busRoute.routeName}
+                        label={busRoute.isActive ? 'активный' : 'архивный'}
                         size="small"
                         color="secondary"
                         variant="outlined"
@@ -95,34 +84,7 @@ export const BusRouteList: React.FC = () => {
 
                     <TableCell align="center">
                       <Chip
-                        label={busRoute.description}
-                        size="small"
-                        color="info"
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Chip
-                        // label={plan.days.reduce(
-                        //   (acc, day) => (day.isSpecialDay ? acc + 1 : acc),
-                        //   0
-                        // )}
-                        label={'temp'}
-                        size="small"
-                        color="info"
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Chip
-                        // label={
-                        //   plan.workingSaturdays
-                        //     ? plan.workingSaturdays.length
-                        //     : 0
-                        // }
-                        label={'temp'}
+                        label={busRoute.schedules.length}
                         size="small"
                         color="info"
                         variant="outlined"
@@ -138,9 +100,9 @@ export const BusRouteList: React.FC = () => {
                       onDelete={handleDeletePlan}
                       onRefetch={refetch}
                       onExport={handleExportBusRoute}
-                      // customViewComponent={<WorkPlanView planId={plan._id!} />}
+                      customViewComponent={<BusRoute id={busRoute._id!}  />}
                       deleteConfirmText={`Вы уверены, что хотите удалить маршрут "${busRoute.routeNumber}"? Это действие нельзя отменить.`}
-                      viewDialogTitle={`Просмотр маршрута ${busRoute.routeNumber}`}
+                      viewDialogTitle={`Просмотр маршрута №${busRoute.routeNumber}`}
                     />
                   </TableRow>
                 );
@@ -157,5 +119,3 @@ export const BusRouteList: React.FC = () => {
     </LoadingErrorWrapper>
   );
 };
-
-

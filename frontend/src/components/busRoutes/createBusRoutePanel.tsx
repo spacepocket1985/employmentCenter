@@ -1,4 +1,3 @@
-// components/busRoute/createBusRoutePanel.tsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -117,7 +116,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
 
       // Через 1.5 секунды переходим назад
       setTimeout(() => {
-        navigate('/bus-routes');
+        navigate(-1);
       }, 1500);
     } catch (error) {
       setSnackbar({
