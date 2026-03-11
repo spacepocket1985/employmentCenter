@@ -65,7 +65,7 @@ export const LoadingErrorWrapper: React.FC<LoadingErrorWrapperProps> = ({
     );
   }
 
-  if (!isCollectionObject! && (collectionLength || collectionLength) === 0) {
+  if (!isCollectionObject && collectionLength === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="h6" color="text.secondary" gutterBottom>

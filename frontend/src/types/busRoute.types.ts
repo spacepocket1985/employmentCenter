@@ -108,44 +108,6 @@ export const isContinuedTime = (value: TimeValue): value is ContinuedTime =>
 export const isDaySpecificTime = (value: TimeValue): value is DaySpecificTime =>
   value.type === 'daySpecific';
 
-
-export function extractTime(value: TimeValue): string | null {
-  if (isSimpleTime(value)) {
-    return value.simpleTime;
-  }
-  if (isRangeTime(value)) {
-    return value.dayRange.time;
-  }
-  if (isTextTime(value)) {
-    return value.text;
-  }
-  if (isContinuedTime(value)) {
-    return null;
-  }
-  if (isDaySpecificTime(value)) {
-    const ds = value.daySpecific;
-    const order = [
-      'monday_thursday',
-      'friday',
-      'saturday',
-      'sunday',
-      'working',
-      'weekend',
-      'holiday',
-    ] as const;
-
-    for (const key of order) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const v = (ds as any)[key];
-      if (typeof v === 'string' && v.trim() !== '') {
-        return v;
-      }
-    }
-    return null;
-  }
-  return null;
-}
-
 // ============================================
 // ТИПЫ ДЛЯ ФОРМ
 // ============================================
@@ -189,7 +151,6 @@ export type ScheduleEntryForm = {
 export type BusRouteFormValues = {
   routeNumber: string; // Номер маршрута
   routeName?: string; // Название маршрута (опционально)
-  description?: string; // Описание
   schedules: ScheduleEntryForm[]; // Расписания
   isActive: boolean; // Активен/неактивен
 };
@@ -204,7 +165,7 @@ export type BusRouteFormValues = {
 export type CreateBusRouteDTO = {
   routeNumber: string;
   routeName?: string;
-  description?: string;
+  description?: string | null;
   schedules: {
     period: 'morning' | 'evening';
     dayTypes: DayType[];

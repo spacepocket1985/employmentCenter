@@ -26,6 +26,7 @@ import {
 import { BusRouteModel } from 'src/types/busRoute.types';
 import { BusRoute } from './busRoute';
 
+
 export const BusRouteList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetActiveBusRoutesQuery();
   const [deleteBusRouteMutation] = useDeleteBusRouteMutation();

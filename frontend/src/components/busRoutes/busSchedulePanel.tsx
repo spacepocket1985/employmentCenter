@@ -32,8 +32,6 @@ import { BusRouteFormValues, DayType } from 'src/types/busRoute.types';
 import { BusStopRow } from './busStopRow';
 import { DAY_TYPE_LABELS, DAY_TYPES } from 'src/const';
 
-
-
 interface BusSchedulePanelProps {
   scheduleIndex: number;
   onRemove: () => void;
@@ -89,7 +87,9 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
 
   // Ошибки для этого расписания
   const scheduleErrors = errors.schedules?.[scheduleIndex];
-  const hasDayTypesError = Boolean(scheduleErrors?.dayTypes && dayTypes.length === 0);
+  const hasDayTypesError = Boolean(
+    scheduleErrors?.dayTypes && dayTypes.length === 0
+  );
 
   /**
    * Обработчик изменения типа дня
@@ -143,21 +143,55 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
       }}
     >
       {/* Заголовок и управление */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h6" color={period === 'morning' ? 'warning.main' : 'primary.main'}>
-            {period === 'morning' ? '🌅 УТРЕННЕЕ РАСПИСАНИЕ' : '🌙 ВЕЧЕРНЕЕ РАСПИСАНИЕ'}
+          <Typography
+            variant="h6"
+            color={period === 'morning' ? 'warning.main' : 'primary.main'}
+          >
+            {period === 'morning'
+              ? '🌅 УТРЕННЕЕ РАСПИСАНИЕ'
+              : '🌙 ВЕЧЕРНЕЕ РАСПИСАНИЕ'}
           </Typography>
 
           {/* Статистика */}
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Chip size="small" icon={<BusIcon />} label={`${vehicleFields.length} ТС`} variant="outlined" />
-            <Chip size="small" icon={<TimeIcon />} label={`${stopFields.length} ост.`} variant="outlined" />
-            <Chip size="small" label={`${dayTypes.length} дней`} variant="outlined" color={dayTypes.length > 0 ? 'success' : 'default'} />
+            <Chip
+              size="small"
+              icon={<BusIcon />}
+              label={`${vehicleFields.length} ТС`}
+              variant="outlined"
+            />
+            <Chip
+              size="small"
+              icon={<TimeIcon />}
+              label={`${stopFields.length} ост.`}
+              variant="outlined"
+            />
+            <Chip
+              size="small"
+              label={`${dayTypes.length} дней`}
+              variant="outlined"
+              color={dayTypes.length > 0 ? 'success' : 'default'}
+            />
           </Box>
         </Box>
 
-        <Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={onRemove} disabled={disabled}>
+        <Button
+          variant='contained'
+          color="error"
+          size="small"
+          startIcon={<DeleteIcon />}
+          onClick={onRemove}
+          disabled={disabled}
+        >
           Удалить
         </Button>
       </Box>
@@ -172,7 +206,13 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
             <Select
               value={period}
               label="Период"
-              onChange={(e) => setValue(`schedules.${scheduleIndex}.period`, e.target.value as 'morning' | 'evening', { shouldValidate: true })}
+              onChange={(e) =>
+                setValue(
+                  `schedules.${scheduleIndex}.period`,
+                  e.target.value as 'morning' | 'evening',
+                  { shouldValidate: true }
+                )
+              }
               disabled={disabled}
             >
               <MenuItem value="morning">🌅 Утро</MenuItem>
@@ -193,7 +233,13 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {selected.map((value) => (
-                    <Chip key={value} label={DAY_TYPE_LABELS[value]} size="small" color="primary" variant="outlined" />
+                    <Chip
+                      key={value}
+                      label={DAY_TYPE_LABELS[value]}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
                   ))}
                 </Box>
               )}
@@ -206,7 +252,10 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
               ))}
             </Select>
             {hasDayTypesError && (
-              <FormHelperText error>{scheduleErrors?.dayTypes?.message || 'Выберите хотя бы один тип дня'}</FormHelperText>
+              <FormHelperText error>
+                {scheduleErrors?.dayTypes?.message ||
+                  'Выберите хотя бы один тип дня'}
+              </FormHelperText>
             )}
           </FormControl>
         </Grid>
@@ -217,40 +266,62 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <BusIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="subtitle1">Транспортные средства</Typography>
-              <Button size="small" startIcon={<AddIcon />} onClick={handleAddVehicle} disabled={disabled} sx={{ ml: 'auto' }}>
+              <Button
+                size="small"
+                variant='contained'
+                startIcon={<AddIcon />}
+                onClick={handleAddVehicle}
+                disabled={disabled}
+                sx={{ ml: 'auto' }}
+              >
                 Добавить ТС
               </Button>
             </Box>
 
             {vehicleFields.length === 0 ? (
-              <Alert severity="info">Добавьте хотя бы одно транспортное средство</Alert>
+              <Alert severity="info">
+                Добавьте хотя бы одно транспортное средство
+              </Alert>
             ) : (
               <Grid container spacing={2}>
                 {vehicleFields.map((field, index) => (
                   <Grid item xs={12} key={field.id}>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                       <TextField
-                        {...register(`schedules.${scheduleIndex}.vehicles.${index}.model`)}
+                        {...register(
+                          `schedules.${scheduleIndex}.vehicles.${index}.model`
+                        )}
                         size="small"
                         placeholder="Модель ТС"
                         label="Модель"
                         error={!!scheduleErrors?.vehicles?.[index]?.model}
-                        helperText={scheduleErrors?.vehicles?.[index]?.model?.message}
+                        helperText={
+                          scheduleErrors?.vehicles?.[index]?.model?.message
+                        }
                         disabled={disabled}
                         sx={{ flex: 2 }}
                       />
                       <TextField
-                        {...register(`schedules.${scheduleIndex}.vehicles.${index}.capacity`)}
+                        {...register(
+                          `schedules.${scheduleIndex}.vehicles.${index}.capacity`
+                        )}
                         size="small"
                         type="number"
                         placeholder="Вместимость"
                         label="Вместимость (опц.)"
                         error={!!scheduleErrors?.vehicles?.[index]?.capacity}
-                        helperText={scheduleErrors?.vehicles?.[index]?.capacity?.message}
+                        helperText={
+                          scheduleErrors?.vehicles?.[index]?.capacity?.message
+                        }
                         disabled={disabled}
                         sx={{ flex: 1 }}
                       />
-                      <IconButton size="small" onClick={() => removeVehicle(index)} disabled={disabled || vehicleFields.length <= 1} color="error">
+                      <IconButton
+                        size="small"
+                        onClick={() => removeVehicle(index)}
+                        disabled={disabled || vehicleFields.length <= 1}
+                        color="error"
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </Box>
@@ -265,8 +336,17 @@ export const BusSchedulePanel: React.FC<BusSchedulePanelProps> = ({
         <Grid item xs={12}>
           <Paper variant="outlined" sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Typography variant="subtitle1">Остановки маршрута <strong>({stopFields.length})</strong></Typography>
-              <Button size="small" startIcon={<AddIcon />} onClick={handleAddBusStop} disabled={disabled} sx={{ ml: 'auto' }}>
+              <Typography variant="subtitle1">
+                Остановки маршрута <strong>({stopFields.length})</strong>
+              </Typography>
+              <Button
+                size="small"
+                variant='contained'
+                startIcon={<AddIcon />}
+                onClick={handleAddBusStop}
+                disabled={disabled}
+                sx={{ ml: 'auto' }}
+              >
                 Добавить остановку
               </Button>
             </Box>

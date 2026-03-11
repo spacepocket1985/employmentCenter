@@ -9,4 +9,5 @@ export * from './validationPlan';
 export * from './workPlanConverters';
 export * from './scheduleValidationSchema';
 export * from './busRoutesValidationSchema';
+export * from './busRouteUtils';
 

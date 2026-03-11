@@ -1,4 +1,3 @@
-// hooks/useBusRouteForm.ts
 import { useForm, useFieldArray, UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,7 +29,6 @@ export const useBusRouteForm = (
       defaultValues: {
         routeNumber: '',
         routeName: '',
-        description: '',
         schedules: [],
         isActive: true,
         ...defaultValues,
@@ -42,11 +40,14 @@ export const useBusRouteForm = (
   const { control, reset, formState } = formMethods;
 
   // Массив расписаний
-  const { fields: schedulesFields, append: appendSchedule, remove: removeSchedule } = 
-    useFieldArray({
-      control,
-      name: 'schedules',
-    });
+  const {
+    fields: schedulesFields,
+    append: appendSchedule,
+    remove: removeSchedule,
+  } = useFieldArray({
+    control,
+    name: 'schedules',
+  });
 
   /**
    * Добавить новое расписание
@@ -73,20 +74,23 @@ export const useBusRouteForm = (
    * Добавить транспортное средство в расписание
    */
   const addVehicle = (scheduleIndex: number): void => {
-    const currentVehicles = formMethods.getValues(`schedules.${scheduleIndex}.vehicles`) || [];
-    
-    formMethods.setValue(`schedules.${scheduleIndex}.vehicles`, [
-      ...currentVehicles,
-      { id: uuidv4(), model: '', capacity: undefined }
-    ], { shouldValidate: true, shouldDirty: true });
+    const currentVehicles =
+      formMethods.getValues(`schedules.${scheduleIndex}.vehicles`) || [];
+
+    formMethods.setValue(
+      `schedules.${scheduleIndex}.vehicles`,
+      [...currentVehicles, { id: uuidv4(), model: '', capacity: undefined }],
+      { shouldValidate: true, shouldDirty: true }
+    );
   };
 
   /**
    * Удалить транспортное средство из расписания
    */
   const removeVehicle = (scheduleIndex: number, vehicleIndex: number): void => {
-    const currentVehicles = formMethods.getValues(`schedules.${scheduleIndex}.vehicles`) || [];
-    
+    const currentVehicles =
+      formMethods.getValues(`schedules.${scheduleIndex}.vehicles`) || [];
+
     formMethods.setValue(
       `schedules.${scheduleIndex}.vehicles`,
       currentVehicles.filter((_, index) => index !== vehicleIndex),
@@ -98,38 +102,44 @@ export const useBusRouteForm = (
    * Добавить остановку в расписание
    */
   const addBusStop = (scheduleIndex: number): void => {
-    const currentStops = formMethods.getValues(`schedules.${scheduleIndex}.busStops`) || [];
+    const currentStops =
+      formMethods.getValues(`schedules.${scheduleIndex}.busStops`) || [];
     const nextOrderNumber = currentStops.length + 1;
-    
-    formMethods.setValue(`schedules.${scheduleIndex}.busStops`, [
-      ...currentStops,
-      {
-        id: uuidv4(),
-        orderNumber: nextOrderNumber,
-        name: '',
-        address: '',
-        time: { type: 'simple', simpleTime: '' },
-        isSpecialNote: false,
-      }
-    ], { shouldValidate: true, shouldDirty: true });
+
+    formMethods.setValue(
+      `schedules.${scheduleIndex}.busStops`,
+      [
+        ...currentStops,
+        {
+          id: uuidv4(),
+          orderNumber: nextOrderNumber,
+          name: '',
+          address: '',
+          time: { type: 'simple', simpleTime: '' },
+          isSpecialNote: false,
+        },
+      ],
+      { shouldValidate: true, shouldDirty: true }
+    );
   };
 
   /**
    * Удалить остановку из расписания
    */
   const removeBusStop = (scheduleIndex: number, stopIndex: number): void => {
-    const currentStops = formMethods.getValues(`schedules.${scheduleIndex}.busStops`) || [];
-    
+    const currentStops =
+      formMethods.getValues(`schedules.${scheduleIndex}.busStops`) || [];
+
     const updatedStops = currentStops
       .filter((_, index) => index !== stopIndex)
       .map((stop, index) => ({
         ...stop,
-        orderNumber: index + 1
+        orderNumber: index + 1,
       }));
-    
+
     formMethods.setValue(`schedules.${scheduleIndex}.busStops`, updatedStops, {
       shouldValidate: true,
-      shouldDirty: true
+      shouldDirty: true,
     });
   };
 
@@ -140,7 +150,6 @@ export const useBusRouteForm = (
     reset({
       routeNumber: '',
       routeName: '',
-      description: '',
       schedules: [],
       isActive: true,
     });

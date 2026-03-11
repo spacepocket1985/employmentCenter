@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Chip } from '@mui/material';
+import { Box, Button, Chip } from '@mui/material';
 
 type UICollectionInfoProps = {
   collectionLength: number;
@@ -20,15 +20,17 @@ export const UICollectionInfo: React.FC<UICollectionInfoProps> = ({
         alignItems: 'center',
       }}
     >
-      <Typography variant="body2">
-        {collectionTitle}, общее колличество:{' '}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box component="span" sx={{ typography: 'body2' }}>
+          {collectionTitle}, общее количество:
+        </Box>
         <Chip
           label={collectionLength}
-          
           color="primary"
           variant="outlined"
+          size="small"
         />
-      </Typography>
+      </Box>
 
       <Button variant="outlined" onClick={() => onRefetch()} size="small">
         Обновить список

@@ -1,5 +1,9 @@
+import { useParams } from 'react-router-dom';
+import { EditBusRoutePanel } from "@components/busRoutes/editBusRoutePanel";
+
 const BusRouteEditPage: React.FC = () => {
-  return <h2>BusRouteEditPage</h2>;
+  const { id } = useParams();
+  return <EditBusRoutePanel id={id!}/>;
 };
 
 export default BusRouteEditPage;

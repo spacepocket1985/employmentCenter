@@ -1,6 +1,7 @@
 import {
   PageAbout,
   PageBusRouteCreate,
+  PageBusRouteEdit,
   PageBusRoutes,
   PageEmployees,
   PageMenu,
@@ -77,5 +78,9 @@ export const privateRoutes = [
   {
     path: RoutePaths.BUS_ROUTES,
     Page: PageBusRoutes,
+  },
+  {
+    path: RoutePaths.EDIT_BUS_ROUTE,
+    Page: PageBusRouteEdit,
   },
 ];

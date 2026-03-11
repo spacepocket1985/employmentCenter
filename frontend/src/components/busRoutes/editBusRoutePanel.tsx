@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -14,23 +15,27 @@ import {
   Switch,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Save as SaveIcon,
   DirectionsBus as BusIcon,
   Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { FormProvider } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+
 import { useBusRouteForm } from '@hooks/useBusRouteForm';
-import { useCreateBusRouteMutation } from '@store/slices/busRouteApiSlice';
+import {
+  useGetBusRouteQuery,
+  useUpdateBusRouteMutation,
+} from '@store/slices/busRouteApiSlice';
 import { UIFormInput } from '@components/ui';
 import { LoadingErrorWrapper } from '@components/layout';
+import { BusSchedulePanel } from './busSchedulePanel';
+
 import {
   BusRouteFormValues,
   CreateBusRouteDTO,
   SnackbarState,
+  BusRouteModel,
 } from 'src/types/busRoute.types';
-import { BusSchedulePanel } from './busSchedulePanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -44,13 +49,42 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
   </div>
 );
 
-/**
- * Компонент создания маршрута автобуса
- */
-export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
+export type EditBusRoutePanelProps = {
+  id: string;
+};
 
+/**
+ * Компонент редактирования маршрута автобуса
+ * Использует те же хуки и компоненты что и создание
+ */
+export const EditBusRoutePanel: React.FC<EditBusRoutePanelProps> = ({
+  id,
+}): JSX.Element => {
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = React.useState(0);
+  const [snackbar, setSnackbar] = React.useState<SnackbarState>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  // Загрузка данных маршрута
+  const {
+    data,
+    isLoading: isLoadingRoute,
+    error: routeError,
+  } = useGetBusRouteQuery(id!, {
+    skip: !id,
+  });
+
+  // Мутация для обновления
+  const [updateBusRoute, { isLoading: isUpdating }] =
+    useUpdateBusRouteMutation();
+
+  const busRouteData = data?.data;
+
+  // Инициализация формы с данными из API
   const {
     formMethods,
     schedulesFields,
@@ -63,68 +97,107 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { isSubmitting },
   } = formMethods;
 
-  const [snackbar, setSnackbar] = useState<SnackbarState>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
-
-  const [createBusRoute, { isLoading: isCreating, error: createError }] =
-    useCreateBusRouteMutation();
-
-  const isFormDisabled = isCreating || isSubmitting;
+  const isFormDisabled = isUpdating || isSubmitting;
   const routeNumber = watch('routeNumber');
   const isActive = watch('isActive');
 
   /**
-   * Обработчик сохранения формы
+   * Преобразует данные из API в формат формы
+   */
+  const transformApiDataToForm = (
+    apiData: BusRouteModel
+  ): BusRouteFormValues => {
+    return {
+      routeNumber: apiData.routeNumber,
+      routeName: apiData.routeName || '',
+      schedules: apiData.schedules.map((schedule) => ({
+        id: schedule._id || crypto.randomUUID(), // Используем _id из БД или генерируем новый
+        period: schedule.period,
+        dayTypes: schedule.dayTypes,
+        vehicles: schedule.vehicles.map((v) => ({
+          id: crypto.randomUUID(), // Клиентский ID для React
+          model: v.model,
+          capacity: v.capacity,
+        })),
+        busStops: schedule.busStops.map((stop) => ({
+          id: crypto.randomUUID(), // Клиентский ID для React
+          orderNumber: stop.orderNumber,
+          name: stop.name,
+          address: stop.address || '',
+          time: stop.time,
+          isSpecialNote: stop.isSpecialNote || false,
+        })),
+        notes: schedule.notes || '',
+      })),
+      isActive: apiData.isActive,
+    };
+  };
+
+  // Заполняем форму данными после загрузки
+  useEffect(() => {
+    if (busRouteData) {
+      const formData = transformApiDataToForm(busRouteData);
+      reset(formData);
+    }
+  }, [busRouteData, reset]);
+
+  /**
+   * Преобразует данные формы в формат для API
+   */
+  const transformFormToApiData = (
+    formData: BusRouteFormValues
+  ): CreateBusRouteDTO => {
+    return {
+      routeNumber: formData.routeNumber,
+      routeName: formData.routeName || undefined,
+      isActive: formData.isActive,
+      schedules: formData.schedules.map((schedule) => ({
+        period: schedule.period,
+        dayTypes: schedule.dayTypes,
+        vehicles: schedule.vehicles.map((v) => ({
+          model: v.model,
+          capacity: v.capacity,
+        })),
+        busStops: schedule.busStops.map((stop) => ({
+          orderNumber: stop.orderNumber,
+          name: stop.name,
+          address: stop.address,
+          time: stop.time,
+          isSpecialNote: stop.isSpecialNote,
+        })),
+        notes: schedule.notes || undefined,
+      })),
+    };
+  };
+
+  /**
+   * Обработчик сохранения изменений
    */
   const handleSave = async (formData: BusRouteFormValues): Promise<void> => {
-    try {
-      // Преобразуем данные для отправки на бэкенд
-      const routeData: CreateBusRouteDTO = {
-        routeNumber: formData.routeNumber,
-        routeName: formData.routeName || undefined,
-        isActive: formData.isActive,
-        schedules: formData.schedules.map((schedule) => ({
-          period: schedule.period,
-          dayTypes: schedule.dayTypes,
-          vehicles: schedule.vehicles.map((v) => ({
-            model: v.model,
-            capacity: v.capacity,
-          })),
-          busStops: schedule.busStops.map((stop) => ({
-            orderNumber: stop.orderNumber,
-            name: stop.name,
-            address: stop.address,
-            time: stop.time,
-            isSpecialNote: stop.isSpecialNote,
-          })),
-          notes: schedule.notes || undefined,
-        })),
-      };
+    if (!id) return;
 
-      await createBusRoute(routeData).unwrap();
+    try {
+      const routeData = transformFormToApiData(formData);
+
+      await updateBusRoute({ id, data: routeData }).unwrap();
 
       setSnackbar({
         open: true,
-        message: `Маршрут №${formData.routeNumber} успешно создан`,
+        message: `Маршрут №${formData.routeNumber} успешно обновлен`,
         severity: 'success',
       });
 
-      resetForm();
-
-      // Через 1.5 секунды переходим назад
       setTimeout(() => {
         navigate(-1);
       }, 1500);
     } catch (error) {
       setSnackbar({
         open: true,
-        message: 'Ошибка при создании маршрута',
+        message: 'Ошибка при обновлении маршрута',
         severity: 'error',
       });
     }
@@ -150,7 +223,6 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
    */
   const handleAddSchedule = (): void => {
     addSchedule('morning');
-    // Переключаемся на новую вкладку после добавления
     setTimeout(() => {
       setActiveTab(schedulesFields.length);
     }, 0);
@@ -161,7 +233,6 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
    */
   const handleRemoveSchedule = (index: number): void => {
     removeSchedule(index);
-    // Переключаемся на предыдущую вкладку если удалили последнюю
     setTimeout(() => {
       if (index === schedulesFields.length - 1 && index > 0) {
         setActiveTab(index - 1);
@@ -178,7 +249,7 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
           <BusIcon color="primary" sx={{ fontSize: 40 }} />
           <Typography variant="h4" gutterBottom sx={{ mb: 0 }}>
-            Создание маршрута {routeNumber && `№${routeNumber}`}
+            Редактирование маршрута {routeNumber && `№${routeNumber}`}
           </Typography>
           <Chip
             label={isActive ? 'Активный' : 'Неактивный'}
@@ -188,61 +259,57 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
           />
         </Box>
 
-        <form onSubmit={handleSubmit(handleSave)}>
-          {/* Основная информация */}
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-              Основная информация
-            </Typography>
+        <LoadingErrorWrapper isLoading={isLoadingRoute} error={routeError}>
+          <form onSubmit={handleSubmit(handleSave)}>
+            {/* Основная информация */}
+            <Paper sx={{ p: 3, mb: 2 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                Основная информация
+              </Typography>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={3}>
-                <UIFormInput
-                  name="routeNumber"
-                  control={formMethods.control}
-                  label="Номер маршрута"
-                  required
-                  disabled={isFormDisabled}
-                  textFieldProps={{
-                    placeholder: 'Например: 1, 2, 3',
-                  }}
-                />
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={3}>
+                  <UIFormInput
+                    name="routeNumber"
+                    control={formMethods.control}
+                    label="Номер маршрута"
+                    required
+                    disabled={isFormDisabled}
+                    textFieldProps={{
+                      placeholder: 'Например: 1, 2, 3',
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={7}>
+                  <UIFormInput
+                    name="routeName"
+                    control={formMethods.control}
+                    label="Название маршрута (опционально)"
+                    disabled={isFormDisabled}
+                    textFieldProps={{
+                      placeholder: 'Например: Автовокзал - ТЭЦ-2 - ЦТП',
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={2}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={isActive}
+                        onChange={(e) => setValue('isActive', e.target.checked)}
+                        disabled={isFormDisabled}
+                      />
+                    }
+                    label="Маршрут активен"
+                  />
+                </Grid>
               </Grid>
+            </Paper>
 
-              <Grid item xs={12} md={7}>
-                <UIFormInput
-                  name="routeName"
-                  control={formMethods.control}
-                  label="Название маршрута (опционально)"
-                  disabled={isFormDisabled}
-                  textFieldProps={{
-                    placeholder: 'Например: Автовокзал - ТЭЦ-2 - ЦТП',
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={2}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={isActive}
-                      onChange={(e) => setValue('isActive', e.target.checked)}
-                      disabled={isFormDisabled}
-                    />
-                  }
-                  label="Маршрут активен"
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Расписания */}
-          <Paper sx={{ p: 3 }}>
-            <LoadingErrorWrapper
-              isLoading={isCreating}
-              error={createError}
-              
-            >
+            {/* Расписания */}
+            <Paper sx={{ p: 3 }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs
                   value={activeTab}
@@ -285,14 +352,14 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                     />
                   ))}
                   <Button
-                    variant='contained'
+                    variant="contained"
                     size="small"
-                    startIcon={<AddIcon />}
+                    startIcon={<ScheduleIcon />}
                     onClick={handleAddSchedule}
                     disabled={isFormDisabled}
                     sx={{ ml: 2, my: 1 }}
                   >
-                    Добавить
+                    Добавить расписание
                   </Button>
                 </Tabs>
               </Box>
@@ -356,12 +423,12 @@ export const CreateBusRoutePanel: React.FC = (): JSX.Element => {
                   type="submit"
                   disabled={isFormDisabled}
                 >
-                  Создать маршрут
+                  Сохранить изменения
                 </Button>
               </Box>
-            </LoadingErrorWrapper>
-          </Paper>
-        </form>
+            </Paper>
+          </form>
+        </LoadingErrorWrapper>
 
         {/* Уведомления */}
         <Snackbar
