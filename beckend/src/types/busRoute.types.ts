@@ -63,6 +63,7 @@ export type ScheduleEntry = {
   vehicles: VehicleType[]; // Какие ТС используются
   busStops: BusStop[]; // Остановки с временем
   notes?: string; // Дополнительные примечания
+  routeMap?: string;
 };
 
 // Основной тип маршрута (для БД)

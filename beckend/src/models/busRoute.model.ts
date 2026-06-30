@@ -75,7 +75,7 @@ const busStopSchema = new Schema<BusStop>(
     },
     address: {
       type: String,
-      required: function(this: BusStop) {
+      required: function (this: BusStop) {
         // Адрес обязателен только для обычных остановок (не специальных отметок)
         return !this.isSpecialNote;
       },
@@ -129,6 +129,10 @@ const scheduleEntrySchema = new Schema<ScheduleEntry>(
     vehicles: [vehicleTypeSchema],
     busStops: [busStopSchema],
     notes: String,
+    routeMap: {
+      type: String,
+      required: false,
+    },
   },
   { _id: true }
 );
