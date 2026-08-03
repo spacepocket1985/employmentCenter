@@ -25,7 +25,6 @@ type TestListProps = {
 
 /**
  * Компонент списка тестов
- * Отображает список тестов в виде карточек с возможностью начать прохождение
  */
 export const TestList: React.FC<TestListProps> = ({
   tests,

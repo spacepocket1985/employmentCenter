@@ -1,14 +1,14 @@
 // Описание: Слайс для управления состоянием тестов
-// Содержит reducer, actions и селекторы
+// Содержит reducer, actions, селекторы и async thunk
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { 
-  TestType, 
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import {
+  TestType,
   TestResultType,
   TestAnswerModel,
   QuestionType,
 } from 'src/types/tests.types';
-// Импортируем тип из store.ts
+import { fetchTestById } from '@api/testsApi';
 import type { AppRootState } from '@store/store';
 
 // ============================================
@@ -26,25 +26,28 @@ export type TestPageState = 'idle' | 'testing' | 'result';
 export type TestState = {
   /** Текущая страница */
   pageState: TestPageState;
-  
+
   /** Список всех тестов */
   tests: TestType[];
-  
+
   /** Текущий выбранный тест */
   currentTest: TestType | null;
-  
+
   /** Индекс текущего вопроса (0-based) */
   currentQuestionIndex: number;
-  
+
   /** Ответы пользователя */
   answers: TestAnswerModel[];
-  
+
   /** Результат теста (после отправки) */
   result: TestResultType | null;
-  
+
   /** Флаг отправки результатов */
   isSubmitting: boolean;
-  
+
+  /** Флаг загрузки теста */
+  isLoading: boolean;
+
   /** Ошибка (если есть) */
   error: string | null;
 };
@@ -61,8 +64,36 @@ const initialState: TestState = {
   answers: [],
   result: null,
   isSubmitting: false,
+  isLoading: false,
   error: null,
 };
+
+// ============================================
+// АСИНХРОННЫЙ THUNK ДЛЯ ЗАГРУЗКИ ТЕСТА
+// ============================================
+
+/**
+ * Загрузка теста по ID с перемешиванием вопросов и ответов
+ * @param testId - ID теста
+ * @param shuffleOptions - перемешивать ли вопросы и ответы (по умолчанию true)
+ */
+export const fetchTestThunk = createAsyncThunk<
+  TestType,
+  { testId: string; shuffleOptions?: boolean },
+  { rejectValue: string }
+>(
+  'test/fetchTest',
+  async ({ testId, shuffleOptions = true }, { rejectWithValue }) => {
+    try {
+      const response = await fetchTestById(testId, shuffleOptions);
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Не удалось загрузить тест';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 
 // ============================================
 // SLICE
@@ -84,7 +115,7 @@ const testSlice = createSlice({
     },
 
     /**
-     * Начало прохождения теста
+     * Начало прохождения теста (синхронный вариант)
      */
     startTest: (state: TestState, action: PayloadAction<TestType>): void => {
       state.pageState = 'testing';
@@ -94,14 +125,18 @@ const testSlice = createSlice({
       state.result = null;
       state.error = null;
       state.isSubmitting = false;
+      state.isLoading = false;
     },
 
     /**
      * Сохранение ответа на вопрос
      */
-    setAnswer: (state: TestState, action: PayloadAction<TestAnswerModel>): void => {
+    setAnswer: (
+      state: TestState,
+      action: PayloadAction<TestAnswerModel>
+    ): void => {
       const { questionId, optionIds }: TestAnswerModel = action.payload;
-      
+
       // Ищем существующий ответ
       const existingIndex: number = state.answers.findIndex(
         (answer: TestAnswerModel): boolean => answer.questionId === questionId
@@ -114,7 +149,7 @@ const testSlice = createSlice({
         // Добавляем новый ответ
         state.answers.push({ questionId, optionIds });
       }
-      
+
       state.error = null;
     },
 
@@ -123,12 +158,12 @@ const testSlice = createSlice({
      */
     nextQuestion: (state: TestState): void => {
       if (!state.currentTest) return;
-      
+
       const nextIndex: number = state.currentQuestionIndex + 1;
       const isLast: boolean = nextIndex >= state.currentTest.questions.length;
-      
+
       if (isLast) return;
-      
+
       state.currentQuestionIndex = nextIndex;
       state.error = null;
     },
@@ -139,7 +174,7 @@ const testSlice = createSlice({
     prevQuestion: (state: TestState): void => {
       const prevIndex: number = state.currentQuestionIndex - 1;
       if (prevIndex < 0) return;
-      
+
       state.currentQuestionIndex = prevIndex;
       state.error = null;
     },
@@ -147,7 +182,10 @@ const testSlice = createSlice({
     /**
      * Установка результата теста
      */
-    setResult: (state: TestState, action: PayloadAction<TestResultType>): void => {
+    setResult: (
+      state: TestState,
+      action: PayloadAction<TestResultType>
+    ): void => {
       state.pageState = 'result';
       state.result = action.payload;
       state.isSubmitting = false;
@@ -175,6 +213,7 @@ const testSlice = createSlice({
     setError: (state: TestState, action: PayloadAction<string>): void => {
       state.error = action.payload;
       state.isSubmitting = false;
+      state.isLoading = false;
     },
 
     /**
@@ -190,7 +229,7 @@ const testSlice = createSlice({
     reset: (state: TestState): void => {
       // Сохраняем список тестов
       const tests: TestType[] = state.tests;
-      
+
       // Возвращаем начальное состояние, но сохраняем тесты
       Object.assign(state, {
         ...initialState,
@@ -204,6 +243,62 @@ const testSlice = createSlice({
     goToList: (state: TestState): void => {
       state.pageState = 'idle';
     },
+
+    /**
+     * Установка текущего вопроса (для перехода по индексу)
+     */
+    setCurrentQuestionIndex: (
+      state: TestState,
+      action: PayloadAction<number>
+    ): void => {
+      const index: number = action.payload;
+      if (
+        state.currentTest &&
+        index >= 0 &&
+        index < state.currentTest.questions.length
+      ) {
+        state.currentQuestionIndex = index;
+        state.error = null;
+      }
+    },
+
+    /**
+     * Очистка ответов (без сброса состояния)
+     */
+    clearAnswers: (state: TestState): void => {
+      state.answers = [];
+      state.currentQuestionIndex = 0;
+    },
+  },
+  // Обработка асинхронных действий (extraReducers)
+  extraReducers: (builder) => {
+    builder
+      // Загрузка теста началась
+      .addCase(fetchTestThunk.pending, (state: TestState) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      // Загрузка теста успешна
+      .addCase(
+        fetchTestThunk.fulfilled,
+        (state: TestState, action: PayloadAction<TestType>) => {
+          state.isLoading = false;
+          state.currentTest = action.payload;
+          state.pageState = 'testing';
+          state.currentQuestionIndex = 0;
+          state.answers = [];
+          state.result = null;
+          state.error = null;
+          state.isSubmitting = false;
+        }
+      )
+      // Загрузка теста с ошибкой
+      .addCase(fetchTestThunk.rejected, (state: TestState, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Не удалось загрузить тест';
+        state.currentTest = null;
+        state.pageState = 'idle';
+      });
   },
 });
 
@@ -224,6 +319,8 @@ export const {
   clearError,
   reset,
   goToList,
+  setCurrentQuestionIndex,
+  clearAnswers,
 } = testSlice.actions;
 
 // ============================================
@@ -239,7 +336,9 @@ export default testSlice.reducer;
 /**
  * Получение текущего вопроса
  */
-export const selectCurrentQuestion = (state: AppRootState): QuestionType | null => {
+export const selectCurrentQuestion = (
+  state: AppRootState
+): QuestionType | null => {
   const { currentTest, currentQuestionIndex }: TestState = state.test;
   if (!currentTest) return null;
   return currentTest.questions[currentQuestionIndex] || null;
@@ -251,7 +350,7 @@ export const selectCurrentQuestion = (state: AppRootState): QuestionType | null 
 export const selectProgress = (state: AppRootState): number => {
   const { currentTest, currentQuestionIndex }: TestState = state.test;
   if (!currentTest || currentTest.questions.length === 0) return 0;
-  
+
   return Math.round(
     ((currentQuestionIndex + 1) / currentTest.questions.length) * 100
   );
@@ -286,7 +385,7 @@ export const selectAnsweredCount = (state: AppRootState): number => {
 export const selectIsAllAnswered = (state: AppRootState): boolean => {
   const { currentTest, answers }: TestState = state.test;
   if (!currentTest) return false;
-  
+
   // Проверяем только обязательные вопросы
   const requiredQuestions: QuestionType[] = currentTest.questions.filter(
     (q: QuestionType): boolean => q.required
@@ -294,9 +393,9 @@ export const selectIsAllAnswered = (state: AppRootState): boolean => {
   const answeredQuestionIds: string[] = answers.map(
     (a: TestAnswerModel): string => a.questionId
   );
-  
-  return requiredQuestions.every(
-    (q: QuestionType): boolean => answeredQuestionIds.includes(q.id)
+
+  return requiredQuestions.every((q: QuestionType): boolean =>
+    answeredQuestionIds.includes(q.id)
   );
 };
 
@@ -304,7 +403,7 @@ export const selectIsAllAnswered = (state: AppRootState): boolean => {
  * Получение ответа на конкретный вопрос
  */
 export const selectAnswerByQuestionId = (
-  state: AppRootState, 
+  state: AppRootState,
   questionId: string
 ): TestAnswerModel | undefined => {
   return state.test.answers.find(
@@ -370,10 +469,20 @@ export const selectAllTests = (state: AppRootState): TestType[] => {
   return state.test.tests;
 };
 
+export const selectTestsWithoutCoruption = (
+  state: AppRootState
+): TestType[] => {
+  return state.test.tests.filter(
+    (t) => t.category !== 'Антикоррупционное обучение'
+  );
+};
+
 /**
  * Получение результата теста
  */
-export const selectTestResult = (state: AppRootState): TestResultType | null => {
+export const selectTestResult = (
+  state: AppRootState
+): TestResultType | null => {
   return state.test.result;
 };
 
@@ -382,6 +491,13 @@ export const selectTestResult = (state: AppRootState): TestResultType | null => 
  */
 export const selectIsSubmitting = (state: AppRootState): boolean => {
   return state.test.isSubmitting;
+};
+
+/**
+ * Проверка, идет ли загрузка теста
+ */
+export const selectIsLoading = (state: AppRootState): boolean => {
+  return state.test.isLoading;
 };
 
 /**

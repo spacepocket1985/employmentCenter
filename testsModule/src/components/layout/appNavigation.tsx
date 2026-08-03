@@ -4,23 +4,29 @@
 import React from 'react';
 import { Container, Box } from '@mui/material';
 import { useAppSelector } from '@hooks/storeHooks';
-import {
-  selectIsIdle,
-  selectIsTesting,
-  selectIsResult,
-} from '@store/slices/testSlice';
-import { TestsPage } from '@pages/testsPage';
+import { selectIsTesting, selectIsResult } from '@store/slices/testSlice';
+import { PsychologyTestsPage } from '@pages/psychologyTestsPage';
+import { CorruptionTestsPage } from '@pages/corruptionTestsPage';
 import { TestTakingPage } from '@pages/testTakingPage';
 import { TestResultPage } from '@pages/testResultPage';
+
+/**
+ * Props для AppNavigation
+ */
+type AppNavigationProps = {
+  /** Тип страницы: 'psychology' или 'corruption' */
+  pageType: 'psychology' | 'corruption';
+};
 
 /**
  * Компонент навигации
  * Определяет, какую страницу показывать на основе состояния
  */
-export const AppNavigation: React.FC = (): React.ReactElement => {
+export const AppNavigation: React.FC<AppNavigationProps> = ({
+  pageType,
+}): React.ReactElement => {
   // Получаем состояние из Redux
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isIdle: boolean = useAppSelector(selectIsIdle);
+
   const isTesting: boolean = useAppSelector(selectIsTesting);
   const isResult: boolean = useAppSelector(selectIsResult);
 
@@ -34,15 +40,18 @@ export const AppNavigation: React.FC = (): React.ReactElement => {
       return <TestResultPage />;
     }
 
-    // По умолчанию (isIdle) показываем список тестов
-    return <TestsPage />;
+    // В зависимости от типа страницы показываем нужный список
+    if (pageType === 'corruption') {
+      return <CorruptionTestsPage />;
+    }
+
+    // По умолчанию (psychology) показываем психологические тесты
+    return <PsychologyTestsPage />;
   };
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 3 }}>
-        {renderPage()}
-      </Box>
+      <Box sx={{ py: 3 }}>{renderPage()}</Box>
     </Container>
   );
 };

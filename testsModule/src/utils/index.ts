@@ -1,2 +1,2 @@
-export * from './scaleTranslations';
 export * from './testsUtils';
+export * from './scaleTranslations';

@@ -31,7 +31,7 @@ export const TestsPage: React.FC = (): React.ReactElement => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <PageTitle 
         title="Психологические тесты"
         subtitle="Выберите тест и узнайте больше о себе"

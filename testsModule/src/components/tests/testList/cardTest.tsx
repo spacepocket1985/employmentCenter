@@ -1,8 +1,8 @@
 // Описание: Карточка теста для отображения в списке
-// Содержит заголовок, описание, метаданные и кнопку действия
+// Содержит заголовок, полное описание, метаданные и кнопку действия
 
 import React from 'react';
-import { Box, Typography, Paper, Divider } from '@mui/material';
+import { Box, Paper, Divider, Typography } from '@mui/material';
 
 import type { TestType } from 'src/types/tests.types';
 import { TestHeader, TestMeta, TestActions } from '@components/tests';
@@ -19,7 +19,6 @@ type TestCardProps = {
 
 /**
  * Карточка теста в списке
- * Отображает всю информацию о тесте и кнопку для начала
  */
 export const TestCard: React.FC<TestCardProps> = ({
   test,
@@ -48,17 +47,17 @@ export const TestCard: React.FC<TestCardProps> = ({
     >
       <TestHeader title={test.title} category={test.category} />
 
+      {/* Полное описание с выравниванием по ширине */}
       <Typography
         variant="body2"
         color="text.secondary"
         sx={{
+          pl: 7,
           mb: 2.5,
-          pl: 7, // Отступ под иконку
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          textAlign: 'justify',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          lineHeight: 1.6,
         }}
       >
         {test.description}

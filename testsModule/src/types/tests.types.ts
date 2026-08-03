@@ -106,13 +106,13 @@ export type QuestionScoreType = {
 export type TestResultType = {
   /** Общий балл по тесту */
   totalScore: number;
-  
+
   /** Результаты по шкалам (если есть) */
   scaleScores?: ScaleScoreType[];
-  
+
   /** Интерпретация результата */
   interpretation: ResultInterpretationType;
-  
+
   /** Результаты по каждому вопросу (для детализации) */
   questionScores?: QuestionScoreType[];
 };
@@ -208,4 +208,27 @@ export type SnackbarState = {
   open: boolean;
   message: string;
   severity: 'success' | 'error' | 'warning' | 'info';
+};
+
+export type QuestionReviewType = {
+  /** ID вопроса */
+  questionId: string;
+  /** Текст вопроса */
+  questionText: string;
+  /** Ответ пользователя */
+  userAnswer: string;
+  /** Правильный ответ */
+  correctAnswer: string;
+  /** Правильно ли ответил пользователь */
+  isCorrect: boolean;
+  /** Пояснение (опционально) */
+  explanation?: string;
+};
+
+/**
+ * Расширенный результат теста с разбором ответов
+ */
+export type ExtendedTestResultType = TestResultType & {
+  /** Детальный разбор по каждому вопросу */
+  questionReviews?: QuestionReviewType[];
 };

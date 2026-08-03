@@ -23,13 +23,21 @@ export const fetchTests = (): Promise<TestsApiResponse> => {
 };
 
 /**
- * Получение теста по ID
- * GET /tests/:id
+ * Получение теста по ID с возможностью перемешивания
+ * GET /tests/:id?shuffleOptions=true
  * @param id - ID теста
+ * @param shuffleOptions - перемешивать ли вопросы и ответы
  * @returns Promise с данными теста
  */
-export const fetchTestById = (id: string): Promise<TestApiResponse> => {
-  return request<TestApiResponse>(`${testsEndpoint}/${id}`, { method: 'GET' });
+export const fetchTestById = (
+  id: string,
+  shuffleOptions: boolean = true
+): Promise<TestApiResponse> => {
+  const url = shuffleOptions
+    ? `${testsEndpoint}/${id}?shuffleOptions=true`
+    : `${testsEndpoint}/${id}`;
+  
+  return request<TestApiResponse>(url, { method: 'GET' });
 };
 
 /**

@@ -13,9 +13,17 @@ import {
   ResultSummary,
   ResultDetails,
   ResultRecommendations,
+  AnswerReview,
 } from '@components/tests';
 import { TestHeader } from '@components/tests';
-import type { TestResultType } from 'src/types/tests.types';
+import type { TestResultType, ExtendedTestResultType } from 'src/types/tests.types';
+
+/**
+ * Проверка, является ли результат расширенным (с разбором ответов)
+ */
+function isExtendedResult(result: TestResultType): result is ExtendedTestResultType {
+  return 'questionReviews' in result && Array.isArray((result as ExtendedTestResultType).questionReviews);
+}
 
 /**
  * Страница с результатом теста
@@ -65,6 +73,11 @@ export const TestResultPage: React.FC = (): React.ReactElement => {
     0
   );
 
+  // Проверяем, есть ли разбор ответов
+  const questionReviews = isExtendedResult(result) 
+    ? result.questionReviews 
+    : undefined;
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ p: 2 }}>
@@ -85,10 +98,16 @@ export const TestResultPage: React.FC = (): React.ReactElement => {
           interpretation={result.interpretation}
         />
 
-        {/* Детали по шкалам (только они, без дублирования) */}
+        {/* Детали по шкалам */}
         {result.scaleScores && result.scaleScores.length > 0 && (
           <ResultDetails scaleScores={result.scaleScores} />
         )}
+
+        {/* РАЗБОР ОТВЕТОВ (только для обучающих тестов) */}
+        <AnswerReview 
+          reviews={questionReviews} 
+          title="Разбор ответов"
+        />
 
         {/* Рекомендации */}
         {result.interpretation.recommendations && 

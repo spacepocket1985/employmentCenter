@@ -4,9 +4,10 @@
 import { useApi } from '@hooks/useApi';
 
 
-import type { TestsApiResponse } from 'src/types/tests.types';
+import type { TestApiResponse, TestsApiResponse } from 'src/types/tests.types';
 import { useAppDispatch, useAppSelector } from '@hooks/storeHooks';
 import { selectAllTests, setError, setTests } from '@store/slices';
+import { testsEndpoint } from '@api/endPoints';
 
 /**
  * Хук для загрузки и управления тестами
@@ -45,4 +46,13 @@ export const useTests = (): {
     error,
     refetch,
   };
+};
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const useTestById = (id: string, shuffleOptions: boolean = true) => {
+  return useApi<TestApiResponse>(
+    `${testsEndpoint}/${id}?shuffleOptions=${shuffleOptions}`,
+    { method: 'GET' },
+    { autoLoad: !!id }
+  );
 };

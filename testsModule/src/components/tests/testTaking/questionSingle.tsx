@@ -1,5 +1,4 @@
 // Описание: Компонент вопроса с одиночным выбором
-// Использует RadioGroup для выбора одного варианта
 
 import React from 'react';
 import {
@@ -12,25 +11,14 @@ import {
 } from '@mui/material';
 import type { AnswerOptionType } from 'src/types/tests.types';
 
-/**
- * Props для QuestionSingle
- */
 type QuestionSingleProps = {
-  /** ID вопроса */
   questionId: string;
-  /** Текст вопроса */
   text: string;
-  /** Варианты ответов */
   options: AnswerOptionType[];
-  /** Выбранный ID варианта */
   selectedId: string | null;
-  /** Обработчик выбора */
   onSelect: (optionId: string) => void;
 };
 
-/**
- * Компонент вопроса с одиночным выбором
- */
 export const QuestionSingle: React.FC<QuestionSingleProps> = ({
   questionId,
   text,
@@ -38,14 +26,17 @@ export const QuestionSingle: React.FC<QuestionSingleProps> = ({
   selectedId,
   onSelect,
 }: QuestionSingleProps): React.ReactElement => {
+  
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     onSelect(event.target.value);
   };
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-        {text}
+      {/* Убедитесь, что текст отображается */}
+      <Typography variant="h6" gutterBottom sx={{ mb: 3, fontWeight:600, color:'#103896' }}>
+        {text || 'Текст вопроса отсутствует'}  {/* ← Временная проверка */}
       </Typography>
       
       <FormControl component="fieldset" fullWidth>
