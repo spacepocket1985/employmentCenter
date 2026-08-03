@@ -19,4 +19,6 @@ export type TestCreateModel = {
   showScore: boolean;
   randomizeQuestions?: boolean;
   requireAllQuestions: boolean;
+  randomizeOptions?: boolean;
+  showCorrectAnswers?: boolean;
 };

@@ -60,6 +60,8 @@ export type TestType = {
   showProgress: boolean;
   showScore: boolean;
   randomizeQuestions?: boolean;
+  randomizeOptions?: boolean;
+  showCorrectAnswers?: boolean;
   requireAllQuestions: boolean;
 };
 
@@ -168,6 +170,16 @@ const testSchema = new Schema<TestType>(
       type: Boolean,
       required: true,
       default: true,
+    },
+    randomizeOptions: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    showCorrectAnswers: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   { timestamps: true }

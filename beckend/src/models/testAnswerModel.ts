@@ -10,3 +10,12 @@ export type TestSubmissionModel = {
   answers: TestAnswerModel[];
   timeSpent?: number;
 };
+
+export type QuestionReviewType = {
+  questionId: string;
+  questionText: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  explanation?: string;
+};

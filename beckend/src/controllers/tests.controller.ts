@@ -12,6 +12,7 @@ import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from '../types/types';
 import { testService } from '../services/test.service';
 
@@ -34,13 +35,18 @@ class TestController {
       .json({ data: tests, msg: `Tests for category "${category}" have been fetched!` });
   }
 
-  // Получение одного теста по ID
+  /**
+   * Получение одного теста по ID с поддержкой перемешивания
+   * GET /tests/:id?shuffleOptions=true
+   */
   async getTestById(
-    req: RequestWithParams<{ id: string }>,
+    req: RequestWithParams<{ id: string }> & RequestWithQuery<{ shuffleOptions?: string }>,
     res: Response<ViewModel<TestType>>
   ): Promise<void> {
     const { id } = req.params;
-    const test = await testService.getTestById(id);
+    const shuffleOptions = req.query?.shuffleOptions === 'true';
+
+    const test = await testService.getTestById(id, shuffleOptions);
 
     if (!test) {
       res.status(StatusCodes.NOT_FOUND).json({ msg: 'Requested test not found!' });
@@ -113,6 +119,14 @@ class TestController {
           recommendations?: string[];
         };
         questionScores: { questionId: string; score: number; text: string }[];
+        questionReviews?: {
+          questionId: string;
+          questionText: string;
+          userAnswer: string;
+          correctAnswer: string;
+          isCorrect: boolean;
+          explanation?: string;
+        }[];
       }>
     >
   ): Promise<void> {

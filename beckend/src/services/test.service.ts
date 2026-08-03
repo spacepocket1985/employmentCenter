@@ -4,10 +4,74 @@
 import { Test, TestType } from '../models/test.model';
 import { TestCreateModel } from '../models/testCreateModel';
 import { TestUpdateModel } from '../models/testUpdateModel';
-import { TestSubmissionModel } from '../models/testAnswerModel';
+import {
+  QuestionReviewType,
+  TestSubmissionModel,
+} from '../models/testAnswerModel';
 import { Types } from 'mongoose';
 
 class TestService {
+  /**
+   * Подготовка детального разбора ответов (только для обучающих тестов)
+   */
+  private prepareQuestionReviews(
+    test: TestType,
+    answers: { questionId: string; optionIds: string[] }[]
+  ): QuestionReviewType[] {
+    return answers.map((answer) => {
+      const question = test.questions.find((q) => q.id === answer.questionId);
+
+      if (!question) {
+        return {
+          questionId: answer.questionId,
+          questionText: 'Вопрос не найден',
+          userAnswer: '',
+          correctAnswer: '',
+          isCorrect: false,
+        };
+      }
+
+      // Находим правильный ответ (вариант с максимальным баллом)
+      const correctOption = question.options.find(
+        (opt) => opt.score === Math.max(...question.options.map((o) => o.score))
+      );
+      const correctText = correctOption
+        ? correctOption.text
+        : 'Правильный ответ не найден';
+
+      // Находим ответ пользователя
+      const userOption = question.options.find((opt) =>
+        answer.optionIds.includes(opt.id)
+      );
+      const userText = userOption ? userOption.text : 'Не выбрано';
+
+      const isCorrect = userOption?.id === correctOption?.id;
+
+      return {
+        questionId: question.id,
+        questionText: question.text,
+        userAnswer: userText,
+        correctAnswer: correctText,
+        isCorrect,
+        explanation: isCorrect
+          ? undefined
+          : 'Рекомендуется изучить этот вопрос подробнее',
+      };
+    });
+  }
+
+  /**
+   * Перемешивание массива (алгоритм Фишера-Йетса)
+   */
+  private shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   // Получение всех активных тестов
   async getAllTests(): Promise<TestType[]> {
     return await Test.find({ isActive: true }).sort('-createdAt');
@@ -21,12 +85,46 @@ class TestService {
     }).sort('-createdAt');
   }
 
-  // Получение одного теста по ID
-  async getTestById(id: string): Promise<TestType | null> {
+  /**
+   * Получение одного теста по ID с возможностью перемешивания
+   * @param id - ID теста
+   * @param shuffleOptions - перемешивать ли вопросы и ответы
+   */
+  async getTestById(
+    id: string,
+    shuffleOptions: boolean = false
+  ): Promise<TestType | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
     }
-    return await Test.findOne({ _id: id, isActive: true });
+
+    // Используем lean() для получения plain JavaScript объекта
+    const test = await Test.findOne({ _id: id, isActive: true }).lean();
+
+    if (!test) {
+      return null;
+    }
+
+    // Если не нужно перемешивать, возвращаем как есть
+    if (!shuffleOptions) {
+      return test as TestType;
+    }
+
+    // Перемешиваем вопросы
+    let shuffledQuestions = this.shuffleArray(test.questions);
+
+    // Если нужно перемешивать варианты ответов
+    if (test.randomizeOptions) {
+      shuffledQuestions = shuffledQuestions.map((question) => ({
+        ...question,
+        options: this.shuffleArray(question.options),
+      }));
+    }
+
+    return {
+      ...test,
+      questions: shuffledQuestions,
+    } as TestType;
   }
 
   // Создание нового теста (для администрирования)
@@ -35,7 +133,10 @@ class TestService {
   }
 
   // Обновление теста (для администрирования)
-  async updateTest(id: string, testData: TestUpdateModel): Promise<TestType | null> {
+  async updateTest(
+    id: string,
+    testData: TestUpdateModel
+  ): Promise<TestType | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
     }
@@ -62,7 +163,6 @@ class TestService {
 
     // Если вопрос обратный, инвертируем балл
     if (question.isReversed) {
-      // Для шкалы 1-6: инверсия (maxScore + 1 - score)
       const maxScore = Math.max(...question.options.map((o) => o.score));
       score = maxScore + 1 - score;
     }
@@ -83,15 +183,12 @@ class TestService {
     }[];
     totalScore: number;
   } {
-    // Если нет шкал, возвращаем пустой результат
     if (!test.scales || test.scales.length === 0) {
       return { scaleScores: [], totalScore: 0 };
     }
 
-    // Группируем ответы по вопросам
     const answerMap = new Map(answers.map((a) => [a.questionId, a.optionIds]));
 
-    // Считаем баллы по каждой шкале
     const scaleScores = test.scales.map((scale) => {
       let totalScaleScore = 0;
       let maxPossibleScore = 0;
@@ -104,7 +201,6 @@ class TestService {
         const score = this.calculateQuestionScore(question, selectedOptions);
         totalScaleScore += score;
 
-        // Максимальный балл для вопроса
         const maxScore = Math.max(...question.options.map((o) => o.score));
         maxPossibleScore += question.isReversed ? maxScore : maxScore;
       });
@@ -117,7 +213,6 @@ class TestService {
       };
     });
 
-    // Общий балл (сумма по всем шкалам)
     const totalScore = scaleScores.reduce((sum, s) => sum + s.score, 0);
 
     return { scaleScores, totalScore };
@@ -134,6 +229,7 @@ class TestService {
     }[];
     interpretation: TestType['interpretations'][0];
     questionScores: { questionId: string; score: number; text: string }[];
+    questionReviews?: QuestionReviewType[];
   }> {
     // Проверяем валидность ID теста
     if (!Types.ObjectId.isValid(submissionData.testId)) {
@@ -148,7 +244,9 @@ class TestService {
 
     // Проверяем, что все обязательные вопросы отвечены
     if (test.requireAllQuestions) {
-      const answeredQuestionIds = submissionData.answers.map((a) => a.questionId);
+      const answeredQuestionIds = submissionData.answers.map(
+        (a) => a.questionId
+      );
       const allQuestionsAnswered = test.questions
         .filter((q) => q.required)
         .every((q) => answeredQuestionIds.includes(q.id));
@@ -185,25 +283,43 @@ class TestService {
       | undefined;
 
     // В зависимости от метода подсчёта
-    if (test.scoringMethod === 'scale_based' && test.scales && test.scales.length > 0) {
-      // Многошкальный подсчёт
+    if (
+      test.scoringMethod === 'scale_based' &&
+      test.scales &&
+      test.scales.length > 0
+    ) {
       const result = this.calculateScaleScores(test, submissionData.answers);
       totalScore = result.totalScore;
       scaleScores = result.scaleScores;
     } else {
-      // Простой подсчёт (sum или average)
       const total = questionScores.reduce((sum, q) => sum + q.score, 0);
-      totalScore = test.scoringMethod === 'average' ? total / test.questions.length : total;
+      totalScore =
+        test.scoringMethod === 'average'
+          ? total / test.questions.length
+          : total;
     }
 
     // Находим интерпретацию
-    const interpretation = this.findInterpretation(test.interpretations, totalScore);
+    const interpretation = this.findInterpretation(
+      test.interpretations,
+      totalScore
+    );
+
+    // Подготавливаем разбор ответов (только для обучающих тестов)
+    let questionReviews: QuestionReviewType[] | undefined = undefined;
+    if (test.showCorrectAnswers) {
+      questionReviews = this.prepareQuestionReviews(
+        test,
+        submissionData.answers
+      );
+    }
 
     return {
       totalScore,
       scaleScores,
       interpretation,
       questionScores,
+      questionReviews,
     };
   }
 
@@ -217,13 +333,15 @@ class TestService {
     );
 
     if (!interpretation) {
-      return interpretations[0] || {
-        id: 'default',
-        rangeMin: 0,
-        rangeMax: 100,
-        title: 'Результат',
-        description: 'Интерпретация не найдена',
-      };
+      return (
+        interpretations[0] || {
+          id: 'default',
+          rangeMin: 0,
+          rangeMax: 100,
+          title: 'Результат',
+          description: 'Интерпретация не найдена',
+        }
+      );
     }
 
     return interpretation;
