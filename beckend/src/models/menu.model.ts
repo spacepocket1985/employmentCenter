@@ -1,7 +1,10 @@
 import { Schema, model } from 'mongoose';
-import { IMenuDocument, IMenuModel } from '../types/menu.types';
+import { IMenuDocument, IMenuModel, IDish } from '../types/menu.types';
 
-const dishSchema = new Schema(
+/**
+ * Схема для блюда
+ */
+const dishSchema = new Schema<IDish>(
   {
     number: {
       type: Number,
@@ -28,17 +31,78 @@ const dishSchema = new Schema(
       type: String,
       trim: true,
     },
+
+    // Поля из 1С
+    id1C: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    code1C: {
+      type: String,
+      trim: true,
+    },
+    unit1C: {
+      type: String,
+      trim: true,
+    },
+    docDate: {
+      type: String,
+      trim: true,
+    },
+    docNumber: {
+      type: String,
+      trim: true,
+    },
+    source: {
+      type: String,
+      enum: ['csv', '1c'],
+      default: 'csv',
+    },
+
+    // ========== НОВЫЕ ПОЛЯ ==========
+    category: {
+      type: String,
+      enum: [
+        'dairy',
+        'drinks',
+        'soups',
+        'sides',
+        'salads',
+        'meat',
+        'fish',
+        'poultry',
+        'baking',
+        'desserts',
+        'other',
+      ],
+      trim: true,
+      description: 'Категория блюда',
+    },
+    isChefRecommend: {
+      type: Boolean,
+      default: false,
+      description: 'Выбор шефа (рандомно)',
+    },
   },
   { _id: false }
 );
 
-const menuSchema = new Schema(
+/**
+ * Схема для меню на день
+ */
+const menuSchema = new Schema<IMenuDocument>(
   {
     date: {
       type: String,
       required: [true, 'Дата обязательна'],
       trim: true,
-      match: [/^\d{2}\.\d{2}\.\d{2}$/, 'Неверный формат даты'],
+      match: [
+        /^\d{2}\.\d{2}\.\d{2}$/,
+        'Неверный формат даты (ожидается ДД.ММ.ГГ)',
+      ],
+      unique: true,
+      index: true,
     },
     dayOfWeek: {
       type: String,
@@ -74,10 +138,30 @@ const menuSchema = new Schema(
   }
 );
 
-// Индекс для быстрого поиска по дате
+// === Индексы ===
+
+// Уникальный индекс по дате
 menuSchema.index({ date: 1 }, { unique: true });
 
-// Статический метод для удаления всех меню
+// ========== НОВЫЕ ИНДЕКСЫ ==========
+// Индекс для поиска по категории
+menuSchema.index({ 'dishes.category': 1 });
+
+// Индекс для поиска по флагу "Выбор шефа"
+menuSchema.index({ 'dishes.isChefRecommend': 1 });
+
+// Композитный индекс для быстрого поиска рекомендаций
+menuSchema.index({ date: 1, 'dishes.isChefRecommend': 1 });
+
+// Существующие индексы
+menuSchema.index({ 'dishes.source': 1 });
+menuSchema.index({ 'dishes.id1C': 1 });
+menuSchema.index({ 'dishes.docNumber': 1 });
+menuSchema.index({ 'dishes.source': 1, 'dishes.id1C': 1 });
+
+/**
+ * Очищает все меню
+ */
 menuSchema.statics.clearAll = async function (): Promise<{
   deletedCount: number;
 }> {
@@ -85,23 +169,46 @@ menuSchema.statics.clearAll = async function (): Promise<{
   return { deletedCount: result.deletedCount || 0 };
 };
 
-// Статический метод для получения всего меню с правильной сортировкой по дате
-menuSchema.statics.getFullMenu = async function(): Promise<IMenuDocument[]> {
+/**
+ * Получает все меню с правильной сортировкой по дате
+ */
+menuSchema.statics.getFullMenu = async function (): Promise<IMenuDocument[]> {
   const menu = await this.find({});
-  
-  // Явно указываем типы для параметров сортировки
+
   return menu.sort((a: IMenuDocument, b: IMenuDocument) => {
-    // Разбираем даты из формата DD.MM.YY
     const [dayA, monthA, yearA] = a.date.split('.');
     const [dayB, monthB, yearB] = b.date.split('.');
-    
-    // Создаем строку в формате YYMMDD для корректного сравнения
     const dateA = `${yearA}${monthA}${dayA}`;
     const dateB = `${yearB}${monthB}${dayB}`;
-    
-    // Сравниваем как строки (теперь это работает правильно)
     return dateA.localeCompare(dateB);
   });
+};
+
+/**
+ * Получить меню по дате
+ */
+menuSchema.statics.getByDate = async function (
+  date: string
+): Promise<IMenuDocument | null> {
+  const normalizedDate = date.length === 10 ? date.slice(0, 8) : date;
+
+  return this.findOne({ date: normalizedDate });
+};
+
+/**
+ * Получить меню за период
+ */
+menuSchema.statics.getByPeriod = async function (
+  dateFrom: string,
+  dateTo: string
+): Promise<IMenuDocument[]> {
+  const normalizedFrom =
+    dateFrom.length === 10 ? dateFrom.slice(0, 8) : dateFrom;
+  const normalizedTo = dateTo.length === 10 ? dateTo.slice(0, 8) : dateTo;
+
+  return this.find({
+    date: { $gte: normalizedFrom, $lte: normalizedTo },
+  }).sort({ date: 1 });
 };
 
 // Создаем модель

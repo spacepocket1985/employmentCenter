@@ -18,9 +18,14 @@ import { testService } from '../services/test.service';
 
 class TestController {
   // Получение всех тестов
-  async getAllTests(req: Request, res: Response<ViewModel<TestType[]>>): Promise<void> {
+  async getAllTests(
+    req: Request,
+    res: Response<ViewModel<TestType[]>>
+  ): Promise<void> {
     const tests = await testService.getAllTests();
-    res.status(StatusCodes.OK).json({ data: tests, msg: 'All tests have been fetched!' });
+    res
+      .status(StatusCodes.OK)
+      .json({ data: tests, msg: 'All tests have been fetched!' });
   }
 
   // Получение тестов по категории
@@ -32,7 +37,10 @@ class TestController {
     const tests = await testService.getTestsByCategory(category);
     res
       .status(StatusCodes.OK)
-      .json({ data: tests, msg: `Tests for category "${category}" have been fetched!` });
+      .json({
+        data: tests,
+        msg: `Tests for category "${category}" have been fetched!`,
+      });
   }
 
   /**
@@ -40,7 +48,8 @@ class TestController {
    * GET /tests/:id?shuffleOptions=true
    */
   async getTestById(
-    req: RequestWithParams<{ id: string }> & RequestWithQuery<{ shuffleOptions?: string }>,
+    req: RequestWithParams<{ id: string }> &
+      RequestWithQuery<{ shuffleOptions?: string }>,
     res: Response<ViewModel<TestType>>
   ): Promise<void> {
     const { id } = req.params;
@@ -49,9 +58,13 @@ class TestController {
     const test = await testService.getTestById(id, shuffleOptions);
 
     if (!test) {
-      res.status(StatusCodes.NOT_FOUND).json({ msg: 'Requested test not found!' });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested test not found!' });
     } else {
-      res.status(StatusCodes.OK).json({ data: test, msg: 'Test fetched successfully!' });
+      res
+        .status(StatusCodes.OK)
+        .json({ data: test, msg: 'Test fetched successfully!' });
     }
   }
 
@@ -75,7 +88,9 @@ class TestController {
     const updatedTest = await testService.updateTest(id, req.body);
 
     if (!updatedTest) {
-      res.status(StatusCodes.NOT_FOUND).json({ msg: 'Requested test not found!' });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested test not found!' });
     } else {
       res
         .status(StatusCodes.OK)
@@ -92,7 +107,9 @@ class TestController {
     const deletedTest = await testService.deleteTest(id);
 
     if (!deletedTest) {
-      res.status(StatusCodes.NOT_FOUND).json({ msg: 'Requested test not found!' });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'Requested test not found!' });
     } else {
       res
         .status(StatusCodes.OK)
@@ -100,7 +117,10 @@ class TestController {
     }
   }
 
-  // Обработка результатов теста
+  /**
+   * Обработка результатов теста (с поддержкой интерпретаций по шкалам)
+   * POST /tests/submit
+   */
   async submitTestResults(
     req: RequestWithBody<TestSubmissionModel>,
     res: Response<
@@ -111,6 +131,16 @@ class TestController {
           score: number;
           maxScore: number;
           percentage: number;
+        }[];
+        /** Интерпретации для каждой шкалы (для DASS-21 и подобных) */
+        scaleInterpretations?: {
+          scaleId: string;
+          interpretation: {
+            id: string;
+            title: string;
+            description: string;
+            recommendations?: string[];
+          };
         }[];
         interpretation: {
           id: string;
@@ -137,7 +167,8 @@ class TestController {
         msg: 'Test results processed successfully!',
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       res.status(StatusCodes.BAD_REQUEST).json({ msg: errorMessage });
     }
   }

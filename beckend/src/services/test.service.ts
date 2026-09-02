@@ -1,5 +1,6 @@
 // Service level (Business Logic Layer):
 // Description: Implements the logic for working with test data.
+// Поддерживает интерпретации по шкалам (для DASS-21 и подобных тестов)
 
 import { Test, TestType } from '../models/test.model';
 import { TestCreateModel } from '../models/testCreateModel';
@@ -72,12 +73,20 @@ class TestService {
     return shuffled;
   }
 
-  // Получение всех активных тестов
+  // ============================================
+  // БАЗОВЫЕ CRUD МЕТОДЫ
+  // ============================================
+
+  /**
+   * Получение всех активных тестов
+   */
   async getAllTests(): Promise<TestType[]> {
     return await Test.find({ isActive: true }).sort('-createdAt');
   }
 
-  // Получение тестов по категории
+  /**
+   * Получение тестов по категории
+   */
   async getTestsByCategory(category: string): Promise<TestType[]> {
     return await Test.find({
       isActive: true,
@@ -90,15 +99,11 @@ class TestService {
    * @param id - ID теста
    * @param shuffleOptions - перемешивать ли вопросы и ответы
    */
-  async getTestById(
-    id: string,
-    shuffleOptions: boolean = false
-  ): Promise<TestType | null> {
+  async getTestById(id: string, shuffleOptions: boolean = false): Promise<TestType | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
     }
 
-    // Используем lean() для получения plain JavaScript объекта
     const test = await Test.findOne({ _id: id, isActive: true }).lean();
 
     if (!test) {
@@ -127,12 +132,16 @@ class TestService {
     } as TestType;
   }
 
-  // Создание нового теста (для администрирования)
+  /**
+   * Создание нового теста (для администрирования)
+   */
   async createTest(testData: TestCreateModel): Promise<TestType> {
     return await Test.create(testData);
   }
 
-  // Обновление теста (для администрирования)
+  /**
+   * Обновление теста (для администрирования)
+   */
   async updateTest(
     id: string,
     testData: TestUpdateModel
@@ -143,7 +152,9 @@ class TestService {
     return await Test.findByIdAndUpdate(id, testData, { new: true });
   }
 
-  // Удаление теста (для администрирования)
+  /**
+   * Удаление теста (для администрирования)
+   */
   async deleteTest(id: string): Promise<TestType | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
@@ -151,7 +162,13 @@ class TestService {
     return await Test.findByIdAndDelete(id);
   }
 
-  // Подсчёт балла для вопроса с учётом реверсивности
+  // ============================================
+  // МЕТОДЫ ПОДСЧЁТА
+  // ============================================
+
+  /**
+   * Подсчёт балла для вопроса с учётом реверсивности
+   */
   private calculateQuestionScore(
     question: TestType['questions'][0],
     selectedOptionIds: string[]
@@ -170,7 +187,9 @@ class TestService {
     return score;
   }
 
-  // Подсчёт результатов по шкалам (для scale_based)
+  /**
+   * Подсчёт результатов по шкалам (для scale_based)
+   */
   private calculateScaleScores(
     test: TestType,
     answers: { questionId: string; optionIds: string[] }[]
@@ -218,7 +237,71 @@ class TestService {
     return { scaleScores, totalScore };
   }
 
-  // Обработка результатов теста
+  // ============================================
+  // МЕТОДЫ ПОИСКА ИНТЕРПРЕТАЦИЙ
+  // ============================================
+
+  /**
+   * Поиск интерпретации по баллу
+   */
+  private findInterpretation(
+    interpretations: TestType['interpretations'],
+    score: number
+  ): TestType['interpretations'][0] {
+    const interpretation = interpretations.find(
+      (interp) => score >= interp.rangeMin && score <= interp.rangeMax
+    );
+
+    if (!interpretation) {
+      return (
+        interpretations[0] || {
+          id: 'default',
+          scaleId: undefined,
+          rangeMin: 0,
+          rangeMax: 100,
+          title: 'Результат',
+          description: 'Интерпретация не найдена',
+        }
+      );
+    }
+
+    return interpretation;
+  }
+
+  /**
+   * Поиск интерпретации для конкретной шкалы
+   * @param interpretations - Все интерпретации теста
+   * @param scaleId - ID шкалы
+   * @param score - Балл по шкале
+   * @returns Интерпретация для шкалы или null
+   */
+  private findScaleInterpretation(
+    interpretations: TestType['interpretations'],
+    scaleId: string,
+    score: number
+  ): TestType['interpretations'][0] | null {
+    // Фильтруем интерпретации, привязанные к этой шкале
+    const scaleInterpretations = interpretations.filter(
+      (interp) => interp.scaleId === scaleId
+    );
+
+    // Если нет интерпретаций для этой шкалы, возвращаем null
+    if (scaleInterpretations.length === 0) {
+      return null;
+    }
+
+    // Ищем интерпретацию по диапазону баллов
+    return this.findInterpretation(scaleInterpretations, score);
+  }
+
+  // ============================================
+  // ОСНОВНОЙ МЕТОД ОБРАБОТКИ РЕЗУЛЬТАТОВ
+  // ============================================
+
+  /**
+   * Обработка результатов теста (с поддержкой интерпретаций по шкалам)
+   * Для DASS-21 и подобных тестов возвращает интерпретации для каждой шкалы
+   */
   async processTestResults(submissionData: TestSubmissionModel): Promise<{
     totalScore: number;
     scaleScores?: {
@@ -227,6 +310,12 @@ class TestService {
       maxScore: number;
       percentage: number;
     }[];
+    /** Интерпретации для каждой шкалы (для DASS-21 и подобных) */
+    scaleInterpretations?: {
+      scaleId: string;
+      interpretation: TestType['interpretations'][0];
+    }[];
+    /** Общая интерпретация (по totalScore) */
     interpretation: TestType['interpretations'][0];
     questionScores: { questionId: string; score: number; text: string }[];
     questionReviews?: QuestionReviewType[];
@@ -299,11 +388,65 @@ class TestService {
           : total;
     }
 
-    // Находим интерпретацию
-    const interpretation = this.findInterpretation(
-      test.interpretations,
-      totalScore
+    // ============================================
+    // НОВАЯ ЛОГИКА: Интерпретации по шкалам
+    // Для DASS-21 и подобных тестов
+    // ============================================
+
+    let scaleInterpretations:
+      | {
+          scaleId: string;
+          interpretation: TestType['interpretations'][0];
+        }[]
+      | undefined = undefined;
+
+    // Если есть шкалы и интерпретации с scaleId
+    if (test.scales && test.scales.length > 0 && scaleScores) {
+      // Проверяем, есть ли интерпретации с scaleId
+      const hasScaleInterpretations = test.interpretations.some(
+        (interp) => interp.scaleId !== undefined
+      );
+
+      if (hasScaleInterpretations) {
+        scaleInterpretations = test.scales.map((scale) => {
+          const scaleScore = scaleScores.find(
+            (s) => s.scaleId === scale.id
+          );
+          const score = scaleScore?.score || 0;
+
+          const interpretation = this.findScaleInterpretation(
+            test.interpretations,
+            scale.id,
+            score
+          );
+
+          return {
+            scaleId: scale.id,
+            interpretation:
+              interpretation || {
+                id: 'default',
+                scaleId: scale.id,
+                rangeMin: 0,
+                rangeMax: 100,
+                title: 'Нет интерпретации',
+                description: 'Интерпретация для этой шкалы не найдена',
+                recommendations: [],
+              },
+          };
+        });
+      }
+    }
+
+    // Находим общую интерпретацию (только интерпретации без scaleId)
+    const overallInterpretations = test.interpretations.filter(
+      (interp) => interp.scaleId === undefined
     );
+
+    // Если есть интерпретации без scaleId, используем их
+    // Иначе используем первую интерпретацию (для обратной совместимости)
+    const interpretation = overallInterpretations.length > 0
+      ? this.findInterpretation(overallInterpretations, totalScore)
+      : this.findInterpretation(test.interpretations, totalScore);
 
     // Подготавливаем разбор ответов (только для обучающих тестов)
     let questionReviews: QuestionReviewType[] | undefined = undefined;
@@ -317,34 +460,11 @@ class TestService {
     return {
       totalScore,
       scaleScores,
+      scaleInterpretations,
       interpretation,
       questionScores,
       questionReviews,
     };
-  }
-
-  // Поиск интерпретации по баллу
-  private findInterpretation(
-    interpretations: TestType['interpretations'],
-    score: number
-  ): TestType['interpretations'][0] {
-    const interpretation = interpretations.find(
-      (interp) => score >= interp.rangeMin && score <= interp.rangeMax
-    );
-
-    if (!interpretation) {
-      return (
-        interpretations[0] || {
-          id: 'default',
-          rangeMin: 0,
-          rangeMax: 100,
-          title: 'Результат',
-          description: 'Интерпретация не найдена',
-        }
-      );
-    }
-
-    return interpretation;
   }
 }
 

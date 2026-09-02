@@ -2,6 +2,7 @@ import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
+import serverConfig from './config/server.config';
 
 import vacancyRoutes from './routes/vacancy.routes';
 import authRoutes from './routes/auth.routes';
@@ -13,17 +14,26 @@ import scheduleRoutes from './routes/schedules.routes';
 import busRoutes from './routes/bus.routes';
 import routeMapsRoutes from './routes/routeMaps.routes';
 import testRoutes from './routes/tests.routes';
+import foodMenuRoutes from './routes/foodMenu.routes';
+
 
 export const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
 app.use(express.json({ limit: '1mb' }));
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 MyPassport(passport);
 
-export const port = process.env.PORT || 5000;
+export const port = serverConfig.port;
 
 app.get('/', (req, res) => {
   res.send('<h1>tec2 staff center</h1>');
@@ -39,3 +49,4 @@ app.use('/schedules', scheduleRoutes);
 app.use('/busRoutes', busRoutes);
 app.use('/routeMaps', routeMapsRoutes);
 app.use('/tests', testRoutes);
+app.use('/food-menu', foodMenuRoutes);

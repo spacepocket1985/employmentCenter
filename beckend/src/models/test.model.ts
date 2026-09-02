@@ -35,6 +35,7 @@ export type ScaleType = {
 // Тип для интерпретации результата
 export type ResultInterpretationType = {
   id: string;
+  scaleId?: string;
   rangeMin: number;
   rangeMax: number;
   title: string;
@@ -94,6 +95,7 @@ const scaleSchema = new Schema<ScaleType>({
 
 const resultInterpretationSchema = new Schema<ResultInterpretationType>({
   id: { type: String, required: true },
+  scaleId: { type: String, required: false },
   rangeMin: { type: Number, required: true },
   rangeMax: { type: Number, required: true },
   title: { type: String, required: true },

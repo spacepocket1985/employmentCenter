@@ -1,8 +1,10 @@
 //"mongodb://localhost:27017/tec2Center"
 
+import serverConfig from './server.config';
+
 const keys = {
-  mongoURI: process.env.mongoURI || "mongodb://localhost:27017/tec2Center",
-  jwt: "tec2-center-jwt",
+  mongoURI: serverConfig.mongoUri,
+  jwt: serverConfig.jwtSecret,
 };
 
 export default keys;
