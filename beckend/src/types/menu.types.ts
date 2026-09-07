@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 
-// ========== ДОБАВЛЯЕМ ТИП КАТЕГОРИИ ==========
+// ========== ТИП КАТЕГОРИИ ==========
 export type TDishCategory = 
   | 'dairy'      // Творог, молочные, затирка
   | 'drinks'     // Напитки
@@ -10,9 +10,14 @@ export type TDishCategory =
   | 'meat'       // Мясо (говядина, свинина, печень, сердце, плов)
   | 'fish'       // Рыба
   | 'poultry'    // Птица
-  | 'baking'     // Выпечка
-  | 'desserts'   // Десерты
+  | 'culinary'   // КУЛИНАРИЯ (объединяет выпечку, десерты, кондитерку)
   | 'other';     // Другое
+
+// ========== ВНИМАНИЕ: УСТАРЕВШИЕ ТИПЫ ==========
+// Типы 'baking' и 'desserts' больше не используются
+// Они заменены на 'culinary'
+// Оставлены для обратной совместимости при миграции
+export type TDishCategoryDeprecated = 'baking' | 'desserts';
 
 /**
  * Блюдо в меню (MongoDB)
@@ -37,7 +42,6 @@ export interface IDish {
   docNumber?: string;
   source?: 'csv' | '1c';
   
-  // ========== НОВЫЕ ПОЛЯ ==========
   /** Категория блюда для сортировки и фильтрации */
   category?: TDishCategory;
   /** Флаг "Выбор шефа" (рандомно, сохраняется в БД) */

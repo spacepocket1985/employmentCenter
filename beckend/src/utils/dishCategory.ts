@@ -5,6 +5,19 @@ export type TDishCategoryInfo = {
   order: number;
 };
 
+export const CATEGORY_ORDER: Record<TDishCategory, number> = {
+  dairy: 1,
+  drinks: 2,
+  soups: 3,
+  sides: 4,
+  salads: 5,
+  meat: 6,
+  fish: 7,
+  poultry: 8,
+  culinary: 9,
+  other: 10,
+};
+
 export const CATEGORY_MAP: {
   keywords: string[];
   category: TDishCategory;
@@ -16,8 +29,10 @@ export const CATEGORY_MAP: {
       'творог',
       'сырник',
       'творожник',
-      'запеканка из творога',
+      'запеканка',
       'затирка',
+      'вареники',
+      'лимон с сахаром',
     ],
     category: 'dairy',
     order: 1,
@@ -37,7 +52,10 @@ export const CATEGORY_MAP: {
       'нектар',
       'квас',
       'желе',
-      'морс',
+      // 'морс' - убираем, чтобы не конфликтовать с 'морской'
+      // Вместо этого используем более точные ключевые слова
+      'морс ', // с пробелом в конце
+      'морс,', // с запятой
     ],
     category: 'drinks',
     order: 2,
@@ -87,9 +105,16 @@ export const CATEGORY_MAP: {
     order: 4,
   },
 
-  // 5. Салаты
+  // 5. Салаты - ПЕРЕМЕЩАЕМ ВВЕРХ, чтобы проверять раньше напитков
   {
-    keywords: ['салат', 'винегрет', 'ассорти овощн', 'морковь пряная'],
+    keywords: [
+      'салат',
+      'винегрет',
+      'ассорти овощн',
+      'морковь пряная',
+      'морской',
+      'морская',
+    ],
     category: 'salads',
     order: 5,
   },
@@ -118,6 +143,7 @@ export const CATEGORY_MAP: {
       'сердце',
       'плов',
       'кнели',
+      'колбаски',
     ],
     category: 'meat',
     order: 6,
@@ -155,39 +181,43 @@ export const CATEGORY_MAP: {
       'окорочек',
       'бедро',
       'грудка куриная',
+      'цыплята',
     ],
     category: 'poultry',
     order: 8,
   },
 
-  // 9. Выпечка
+  // ============================================================
+  // 9. КУЛИНАРИЯ (объединяет выпечку и десерты)
+  // ============================================================
   {
     keywords: [
+      // ===== ВЫПЕЧКА =====
       'булочка',
       'хлеб',
       'пирожок',
       'плетенка',
-      'сочни',
       'рожок',
       'батончик',
       'слойка',
-      'коврижка',
       'коржик',
-      'кекс',
-      'печенье',
-      'круассан',
       'полоса песочная',
+      'сочни',
+      'коврижка',
+      'круассан',
+      'плюшка',
       'языки слоеные',
       'сандвичи песочные',
-      'плюшка',
-    ],
-    category: 'baking',
-    order: 9,
-  },
+      'завитушки слоеные',
+      'пирожки',
+      'заварное',
+      'кольцо',
+      'винтики',
+      'полоска',
+      'палочки',
+      'юмбрик',
 
-  // 10. Десерты
-  {
-    keywords: [
+      // ===== ДЕСЕРТЫ =====
       'десерт',
       'сладость',
       'рулет',
@@ -197,21 +227,59 @@ export const CATEGORY_MAP: {
       'пудинг',
       'вареники ленивые',
       'яблоки печеные',
-      'завитушки слоеные',
       'пай',
-      'творожник',
       'кекс',
+
+      // ===== КОНДИТЕРСКИЕ ИЗДЕЛИЯ =====
+      'печенье', // ← ВАЖНО: 'печенье' ДОЛЖНО БЫТЬ ПЕРЕД 'печень'
+      'пряник',
+      'вафли',
+      'конфеты',
+      'мармелад',
+      'зефир',
+      'пастила',
+      'шоколад',
     ],
-    category: 'desserts',
+    category: 'culinary',
+    order: 9,
+  },
+
+  // 10. Другое
+  {
+    keywords: [],
+    category: 'other',
     order: 10,
   },
 ];
 
+/**
+ * Определяет категорию блюда по его названию
+ *
+ * ВАЖНО:
+ * - Сначала проверяем 'печенье' (кондитерка) → culinary
+ * - Потом 'печень' (субпродукт) → meat
+ * - Это решает конфликт ключевых слов
+ */
 export function getDishCategory(name: string): TDishCategoryInfo {
   const lowerName = name.toLowerCase();
 
   for (const item of CATEGORY_MAP) {
     for (const keyword of item.keywords) {
+      // ===== СПЕЦИАЛЬНАЯ ОБРАБОТКА КОНФЛИКТА 'печень' =====
+      if (keyword === 'печень' && lowerName.includes('печенье')) {
+        continue;
+      }
+
+      // ===== СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ 'морс' =====
+      // Если ключевое слово 'морс' и в названии есть 'морской' или 'морская'
+      // то пропускаем (это обработается в салатах)
+      if (
+        keyword === 'морс' &&
+        (lowerName.includes('морской') || lowerName.includes('морская'))
+      ) {
+        continue;
+      }
+
       if (lowerName.includes(keyword)) {
         return { category: item.category, order: item.order };
       }
@@ -221,12 +289,20 @@ export function getDishCategory(name: string): TDishCategoryInfo {
   return { category: 'other', order: 999 };
 }
 
-export function sortDishesByCategory<T extends { name: string }>(
-  dishes: T[]
-): T[] {
+/**
+ * Сортирует блюда по категориям
+ */
+export function sortDishesByCategory<
+  T extends { name: string; category?: TDishCategory }
+>(dishes: T[]): T[] {
   return [...dishes].sort((a, b) => {
-    const catA = getDishCategory(a.name);
-    const catB = getDishCategory(b.name);
+    const catA = a.category
+      ? { category: a.category, order: CATEGORY_ORDER[a.category] || 999 }
+      : getDishCategory(a.name);
+
+    const catB = b.category
+      ? { category: b.category, order: CATEGORY_ORDER[b.category] || 999 }
+      : getDishCategory(b.name);
 
     if (catA.order !== catB.order) {
       return catA.order - catB.order;
@@ -234,4 +310,31 @@ export function sortDishesByCategory<T extends { name: string }>(
 
     return a.name.localeCompare(b.name);
   });
+}
+
+/**
+ * Получает порядок категории
+ */
+export function getCategoryOrder(category: TDishCategory): number {
+  return CATEGORY_ORDER[category] || 999;
+}
+
+/**
+ * Проверяет, является ли категория валидной
+ */
+export function isValidCategory(category: string): category is TDishCategory {
+  return category in CATEGORY_ORDER;
+}
+
+/**
+ * Получает все доступные категории с их порядком
+ */
+export function getAllCategories(): {
+  category: TDishCategory;
+  order: number;
+}[] {
+  return Object.entries(CATEGORY_ORDER).map(([category, order]) => ({
+    category: category as TDishCategory,
+    order,
+  }));
 }

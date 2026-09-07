@@ -60,7 +60,6 @@ const dishSchema = new Schema<IDish>(
       default: 'csv',
     },
 
-    // ========== НОВЫЕ ПОЛЯ ==========
     category: {
       type: String,
       enum: [
@@ -72,8 +71,8 @@ const dishSchema = new Schema<IDish>(
         'meat',
         'fish',
         'poultry',
-        'baking',
-        'desserts',
+        'culinary',
+
         'other',
       ],
       trim: true,

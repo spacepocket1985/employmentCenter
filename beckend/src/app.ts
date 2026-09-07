@@ -16,17 +16,22 @@ import routeMapsRoutes from './routes/routeMaps.routes';
 import testRoutes from './routes/tests.routes';
 import foodMenuRoutes from './routes/foodMenu.routes';
 
-
 export const app = express();
 
-app.use(
-  cors({
-    origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+// ============================================================
+// === CORS - РАЗРЕШАЕМ ВСЕ ДЛЯ РАЗРАБОТКИ ===
+// ============================================================
+
+// Самый простой вариант - разрешаем все
+app.use(cors());
+
+// Или с явными параметрами (для наглядности):
+// app.use(cors({
+//   origin: '*',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// }));
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));

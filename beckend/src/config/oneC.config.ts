@@ -45,7 +45,7 @@ export const oneCConfig: TOneCConfig = {
   menuJournalId: process.env.ONE_C_MENU_JOURNAL_ID || '3BC',
   menuMonthsToLoad: parseInt(process.env.ONE_C_MENU_MONTHS_TO_LOAD || '2', 10),
   menuParseCron: process.env.ONE_C_MENU_PARSE_CRON || '0 6 * * *',
-  menuParseCronFriday: process.env.ONE_C_MENU_PARSE_CRON_FRIDAY || '0 17 * * 5',
+  menuParseCronFriday: process.env.ONE_C_MENU_PARSE_CRON_FRIDAY || '0 15 * * 5',
 };
 
 export default oneCConfig;

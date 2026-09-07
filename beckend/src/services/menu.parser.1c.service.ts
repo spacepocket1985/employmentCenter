@@ -1,11 +1,10 @@
-import oneCConfig from "../config/oneC.config";
-import { MenuModel } from "../models/menu.model";
-import { menuOneCRepository } from "../repositories/menu.1c.repository";
-import { IDish } from "../types/menu.types";
-import { TOneCDish, TOneCMenuItemResult } from "../types/oneC.types";
-import { getDishCategory } from "../utils/dishCategory";
-import { MenuDateUtils } from "../utils/menuDateUtils";
-
+import oneCConfig from '../config/oneC.config';
+import { MenuModel } from '../models/menu.model';
+import { menuOneCRepository } from '../repositories/menu.1c.repository';
+import { IDish } from '../types/menu.types';
+import { TOneCDish, TOneCMenuItemResult } from '../types/oneC.types';
+import { getDishCategory } from '../utils/dishCategory';
+import { MenuDateUtils } from '../utils/menuDateUtils';
 
 export type TParseResult = {
   success: boolean;
@@ -46,9 +45,11 @@ export class MenuParserOneCService {
       const dateFrom = new Date(now);
       dateFrom.setMonth(dateFrom.getMonth() - oneCConfig.menuMonthsToLoad);
       dateFrom.setHours(0, 0, 0, 0);
-      
-      console.log(`📅 Загружаем данные за последние ${oneCConfig.menuMonthsToLoad} месяца`);
-      
+
+      console.log(
+        `📅 Загружаем данные за последние ${oneCConfig.menuMonthsToLoad} месяца`
+      );
+
       stats.dateFrom = dateFrom.toLocaleDateString('ru-RU');
       stats.dateTo = now.toLocaleDateString('ru-RU');
 
@@ -168,13 +169,15 @@ export class MenuParserOneCService {
 
       for (const [date, items] of groupedByDate) {
         try {
-          const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+          const sortedItems = items.sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
           const dayOfWeek = MenuDateUtils.getDayOfWeek(date);
 
           // Формируем блюда с категориями
           const dishesForSave: IDish[] = sortedItems.map((item, index) => {
             const categoryInfo = getDishCategory(item.name);
-            
+
             return {
               number: index + 1,
               name: item.name,
@@ -207,9 +210,12 @@ export class MenuParserOneCService {
           );
 
           savedDays++;
-          console.log(`   ✅ Сохранено: ${date} (${dishesForSave.length} блюд)`);
+          console.log(
+            `   ✅ Сохранено: ${date} (${dishesForSave.length} блюд)`
+          );
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+          const errorMessage =
+            error instanceof Error ? error.message : 'Неизвестная ошибка';
           errors.push(`Ошибка сохранения ${date}: ${errorMessage}`);
           console.error(`   ❌ Ошибка сохранения ${date}:`, errorMessage);
         }
@@ -227,7 +233,8 @@ export class MenuParserOneCService {
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Неизвестная ошибка';
       console.error('❌ Ошибка при парсинге 1С:', errorMessage);
       return {
         success: false,
@@ -243,12 +250,16 @@ export class MenuParserOneCService {
    * - soups (супы)
    * - salads (салаты)
    * - sides (гарниры)
+   * - culinary (кулинария: выпечка, десерты, кондитерка)
    * - meat + poultry (мясо и птица вместе)
+   *
+   * Обновлено: добавлена категория culinary
+   * Убраны: baking, desserts (объединены в culinary)
    */
   private setChefRecommendations(dishes: IDish[]): void {
     // Группируем блюда по категориям
     const groupedByCategory = new Map<string, IDish[]>();
-    
+
     for (const dish of dishes) {
       const category = dish.category || 'other';
       if (!groupedByCategory.has(category)) {
@@ -257,9 +268,13 @@ export class MenuParserOneCService {
       groupedByCategory.get(category)!.push(dish);
     }
 
-    // Категории для "Выбора шефа"
-    // meat и poultry объединяем в одну группу
-    const targetCategories = ['soups', 'salads', 'sides'];
+    // ===== КАТЕГОРИИ ДЛЯ "ВЫБОРА ШЕФА" =====
+    // 1. Супы
+    // 2. Салаты
+    // 3. Гарниры
+    // 4. Кулинария (выпечка, десерты, кондитерка)
+    // 5. Мясо + Птица (объединены в одну группу)
+    const targetCategories = ['soups', 'salads', 'sides', 'culinary'];
 
     // Отдельно обрабатываем meat + poultry как одну группу
     const meatAndPoultry: IDish[] = [
@@ -273,16 +288,24 @@ export class MenuParserOneCService {
       if (items && items.length > 0) {
         const randomIndex = Math.floor(Math.random() * items.length);
         items[randomIndex].isChefRecommend = true;
-        console.log(`   ⭐ "Выбор шефа" в категории ${category}: ${items[randomIndex].name}`);
+        console.log(
+          `   ⭐ "Выбор шефа" в категории ${category}: ${items[randomIndex].name}`
+        );
       }
     }
 
-    // Выбираем 1 блюдо из meat + poultry
+    // Выбираем 1 блюдо из meat + poultry (объединенная группа)
     if (meatAndPoultry.length > 0) {
       const randomIndex = Math.floor(Math.random() * meatAndPoultry.length);
       meatAndPoultry[randomIndex].isChefRecommend = true;
-      console.log(`   ⭐ "Выбор шефа" в категории meat/poultry: ${meatAndPoultry[randomIndex].name}`);
+      console.log(
+        `   ⭐ "Выбор шефа" в категории meat/poultry: ${meatAndPoultry[randomIndex].name}`
+      );
     }
+
+    // ===== ДОПОЛНИТЕЛЬНАЯ ЛОГИКА (опционально) =====
+    // Если в какой-то категории нет блюд, можно добавить из other
+    // Но пока оставляем как есть
   }
 
   private groupByDate(

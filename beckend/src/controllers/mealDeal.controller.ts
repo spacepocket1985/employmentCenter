@@ -229,6 +229,51 @@ export class MealDealController {
   }
 
   /**
+   * GET /api/food-menu/meal-deal/chef-choice
+   * "Выбор шефа" - обед из рекомендованных блюд
+   * Query: ?date=01.09.26
+   */
+  async getChefChoiceMealDeal(req: Request, res: Response): Promise<void> {
+    try {
+      const { date } = req.query;
+      const data = await mealDealService.getChefChoiceMealDeal(date as string);
+
+      if (!data) {
+        const response: IApiResponse<never> = {
+          success: false,
+          message: 'Меню не найдено',
+          errors: [`Нет данных на ${date || 'сегодня'}`],
+        };
+        res.status(404).json(response);
+        return;
+      }
+
+      const response: IApiResponse<typeof data> = {
+        success: true,
+        message: '"Выбор шефа" успешно получен',
+        data,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.error(
+        'Ошибка в MealDealController.getChefChoiceMealDeal:',
+        errorMessage
+      );
+
+      const response: IApiResponse<never> = {
+        success: false,
+        message: 'Не удалось получить "Выбор шефа"',
+        errors: [errorMessage],
+      };
+
+      res.status(500).json(response);
+    }
+  }
+
+  /**
    * GET /api/food-menu/meal-deal/fish
    * Рыбный обед
    * Query: ?date=01.09.26

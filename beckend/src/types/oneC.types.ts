@@ -36,22 +36,22 @@ export type TOneCMenuItem = {
   SP4300: string; // Дата (Тдата)
 };
 
-/** Категория блюда для сортировки */
-export type TDishCategory =
-  | 'dairy' // Творог, молочные
-  | 'drinks' // Напитки
-  | 'soups' // Супы
-  | 'sides' // Гарниры
-  | 'salads' // Салаты
-  | 'meat' // Мясо
-  | 'fish' // Рыба
-  | 'poultry' // Птица
-  | 'baking' // Выпечка
-  | 'desserts' // Десерты
-  | 'other'; // Другое
+// ========== КАТЕГОРИИ ==========
+export type TDishCategory = 
+  | 'dairy'      // Творог, молочные
+  | 'drinks'     // Напитки
+  | 'soups'      // Супы
+  | 'sides'      // Гарниры
+  | 'salads'     // Салаты
+  | 'meat'       // Мясо
+  | 'fish'       // Рыба
+  | 'poultry'    // Птица
+  | 'culinary'   // КУЛИНАРИЯ (выпечка, десерты, кондитерка)
+  | 'other';     // Другое
 
-/** Итоговый тип для позиции меню из 1С */
-
+/**
+ * Итоговый тип для позиции меню из 1С
+ */
 export type TOneCMenuItemResult = {
   id: string;
   name: string;

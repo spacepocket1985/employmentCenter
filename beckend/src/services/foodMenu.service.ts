@@ -39,7 +39,7 @@ export class FoodMenuService {
       return null;
     }
 
-    // Сортируем блюда по категориям
+    // Сортируем блюда по категориям (обновленная функция поддерживает culinary)
     const sortedDishes = sortDishesByCategory(menu.dishes as IDish[]);
 
     const result: TFoodMenuByDateResponse = {
@@ -122,6 +122,7 @@ export class FoodMenuService {
     const days: TFoodMenuDayResponse[] = menus.map((menu: IMenuDocument) => ({
       date: menu.date,
       dayOfWeek: menu.dayOfWeek,
+      // sortDishesByCategory уже поддерживает culinary
       dishes: sortDishesByCategory(menu.dishes as IDish[]),
       count: menu.dishes.length,
     }));

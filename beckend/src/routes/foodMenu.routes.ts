@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { foodMenuController } from '../controllers/foodMenu.controller';
 import { mealDealController } from '../controllers/mealDeal.controller';
+import { MenuController } from '../controllers/menu.controller';
 
 const router = Router();
 
@@ -97,6 +98,19 @@ router.get('/meal-deal/veggie', (req, res) => {
  */
 router.get('/meal-deal/fish', (req, res) => {
   mealDealController.getFishMealDeal(req, res);
+});
+
+/**
+ * GET /food-menu/meal-deal/chef
+ * выбор шефа
+ * Query: ?date=01.09.26
+ */
+router.get('/meal-deal/chef', (req, res) => {
+  mealDealController.getChefChoiceMealDeal(req, res);
+});
+
+router.get('/clear', (req, res) => {
+  MenuController.clearMenu(req, res);
 });
 
 export default router;
