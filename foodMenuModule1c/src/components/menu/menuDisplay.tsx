@@ -15,21 +15,25 @@ import {
   CircularProgress,
   Button,
   Chip,
-  Tooltip,
 } from '@mui/material';
 import {
   Print as PrintIcon,
   Refresh as RefreshIcon,
-  Star as StarIcon,
 } from '@mui/icons-material';
 
 import CompactMenuFilter from './compactMenuFilter';
 
 import { tableStyles } from '@const/menu.conts';
 import { TFoodMenuDayResponse } from 'src/types/foodMenu.types';
-import CategoryDivider from './categoryDivider';
+import { migrateCategory } from '@utils/dishCategoryUtils';
+import { useMealDeal } from '@hooks/useMealDeal';
 import ChefRecommendBadge from './chefRecommendBadge';
+import CategoryDivider from './categoryDivider';
+import MealDealCard from './mealDealCard';
 
+/**
+ * Пропсы компонента MenuDisplay
+ */
 interface MenuDisplayProps {
   menu: TFoodMenuDayResponse[];
   isLoading: boolean;
@@ -41,6 +45,9 @@ interface MenuDisplayProps {
   clearError: () => void;
 }
 
+/**
+ * Компонент отображения меню с рекомендацией обеда
+ */
 const MenuDisplay: React.FC<MenuDisplayProps> = ({
   menu,
   isLoading,
@@ -50,13 +57,27 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
   refetchMenu,
   clearError,
 }) => {
+  // ===== СОСТОЯНИЯ ФИЛЬТРАЦИИ =====
   const [filterType, setFilterType] = useState<'all' | 'day'>('all');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  // ===== ХУК ДЛЯ РЕКОМЕНДАЦИИ ОБЕДА =====
+  const {
+    data: mealDealData,
+    isLoading: isMealDealLoading,
+    error: mealDealError,
+    currentType: mealDealType,
+    setType: setMealDealType,
+    setDate: setMealDealDate,
+    refetch: refetchMealDeal,
+    clearError: clearMealDealError,
+  } = useMealDeal('balanced', selectedDate);
+
+  // ===== ПЕЧАТЬ =====
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
-  // Автоматический выбор сегодняшнего дня
+  // ===== ЭФФЕКТ ДЛЯ АВТОМАТИЧЕСКОГО ВЫБОРА СЕГОДНЯШНЕГО ДНЯ =====
   useEffect(() => {
     if (menu.length > 0) {
       const todayMenu = menu.find((day) => isToday(day.date));
@@ -71,7 +92,13 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
     }
   }, [menu, isToday]);
 
-  const handleFilterTypeChange = (type: 'all' | 'day') => {
+  // ===== СИНХРОНИЗАЦИЯ ДАТЫ С ХУКОМ MEAL_DEAL =====
+  useEffect(() => {
+    setMealDealDate(selectedDate);
+  }, [selectedDate, setMealDealDate]);
+
+  // ===== ОБРАБОТЧИКИ ИЗМЕНЕНИЯ ФИЛЬТРОВ =====
+  const handleFilterTypeChange = (type: 'all' | 'day'): void => {
     setFilterType(type);
 
     if (type === 'all') {
@@ -84,14 +111,15 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
     }
   };
 
-  const handleDateChange = (date: string | null) => {
+  const handleDateChange = (date: string | null): void => {
     setSelectedDate(date);
     if (date) {
       setFilterType('day');
     }
   };
 
-  const filteredMenu = useMemo(() => {
+  // ===== ФИЛЬТРАЦИЯ МЕНЮ =====
+  const filteredMenu = useMemo((): TFoodMenuDayResponse[] => {
     if (filterType === 'all') {
       return menu;
     }
@@ -105,10 +133,25 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
   const displayMenu = filteredMenu.length > 0 ? filteredMenu : menu;
 
-  // Подсчет количества рекомендаций в дне
-  const getRecommendationsCount = (dishes: any[]) => {
-    return dishes.filter((d) => d.isChefRecommend).length;
+  /**
+   * Проверяет, нужно ли показывать рекомендацию
+   */
+  const shouldShowMealDeal = (): boolean => {
+    // Показываем только если выбран конкретный день
+    if (filterType !== 'day' || !selectedDate) {
+      return false;
+    }
+
+    // Проверяем, есть ли выбранная дата в меню
+    const hasData = menu.some((day) => day.date === selectedDate);
+    if (!hasData) {
+      return false;
+    }
+
+    return true;
   };
+
+  // ===== СОСТОЯНИЯ ЗАГРУЗКИ И ОШИБОК =====
 
   if (isLoading) {
     return (
@@ -159,6 +202,8 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
       </Box>
     );
   }
+
+  // ===== РЕНДЕРИНГ КОМПОНЕНТА =====
 
   return (
     <Box
@@ -229,6 +274,28 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
         </Box>
       </Box>
 
+      {/* ============================================================ */}
+      {/* === РЕКОМЕНДАЦИЯ ОБЕДА (MealDealCard) === */}
+      {/* ============================================================ */}
+      {shouldShowMealDeal() && (
+        <Box sx={{ mb: 2 }}>
+          <MealDealCard
+            data={mealDealData}
+            isLoading={isMealDealLoading}
+            error={mealDealError}
+            currentType={mealDealType}
+            formatPrice={formatPrice}
+            onTypeChange={setMealDealType}
+            onRefresh={refetchMealDeal}
+            onClearError={clearMealDealError}
+            showSelector={true}
+            defaultExpanded={false}
+            title="Вариант обеда"
+          />
+        </Box>
+      )}
+
+      {/* Сообщение если нет данных после фильтрации */}
       {displayMenu.length === 0 && filterType === 'day' && (
         <Alert severity="warning" sx={{ mb: 3 }}>
           Нет данных для выбранной даты. Выберите другую дату или покажите все
@@ -238,11 +305,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
       {/* Отображение меню по дням */}
       {displayMenu.map((day: TFoodMenuDayResponse) => {
-        const hasRecommendations = day.dishes.some(
-          (dish) => dish.isChefRecommend
-        );
-        const recommendationsCount = getRecommendationsCount(day.dishes);
-
         return (
           <Paper
             key={day.date}
@@ -298,27 +360,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
               </Typography>
 
               {/* Индикатор рекомендаций в заголовке */}
-              {hasRecommendations && (
-                <Tooltip title={`${recommendationsCount} блюд от шефа`} arrow>
-                  <Chip
-                    icon={
-                      <StarIcon fontSize="small" sx={{ color: '#ffb300' }} />
-                    }
-                    label={`Выбор шефа (${recommendationsCount})`}
-                    color="warning"
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      backgroundColor: '#fff8e1',
-                      borderColor: '#ffb300',
-                      fontWeight: 600,
-                      '& .MuiChip-icon': {
-                        color: '#ffb300',
-                      },
-                    }}
-                  />
-                </Tooltip>
-              )}
             </Box>
 
             {/* Таблица блюд */}
@@ -355,11 +396,12 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
                 <TableBody>
                   {day.dishes.map((dish, index, array) => {
                     const isChefRecommend = dish.isChefRecommend || false;
-                    const currentCategory = dish.category;
+                    const currentCategory = migrateCategory(dish.category);
                     const prevCategory =
-                      index > 0 ? array[index - 1].category : null;
+                      index > 0
+                        ? migrateCategory(array[index - 1].category)
+                        : null;
 
-                    // Показываем разделитель, если категория изменилась
                     const showCategoryDivider =
                       index > 0 &&
                       prevCategory &&
@@ -368,8 +410,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
                     return (
                       <React.Fragment key={dish.number}>
-                        {/* Разделитель категорий */}
-                        {showCategoryDivider && currentCategory && (
+                        {showCategoryDivider && (
                           <TableRow>
                             <TableCell colSpan={4} sx={{ p: 0 }}>
                               <CategoryDivider category={currentCategory} />
@@ -377,19 +418,16 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
                           </TableRow>
                         )}
 
-                        {/* Строка с блюдом */}
                         <TableRow
                           sx={{
                             '&:hover': {
                               bgcolor: isChefRecommend ? '#ffecb3' : '#f8f9fa',
                             },
-                            // Подсветка для рекомендаций шефа
                             bgcolor: isChefRecommend
-                              ? '#fff8e1' // Светло-золотистый фон
+                              ? '#fff8e1'
                               : index % 2 === 0
                               ? '#ffffff'
                               : '#f8f9fa',
-                            // Левая граница для рекомендаций
                             borderLeft: isChefRecommend
                               ? '4px solid #ffb300'
                               : '4px solid transparent',
@@ -397,7 +435,7 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
                           }}
                         >
                           <TableCell align="center" sx={tableStyles.number}>
-                            {dish.number}
+                            {index + 1}
                           </TableCell>
                           <TableCell
                             align="center"
@@ -410,8 +448,6 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
                           >
                             {dish.name[0].toLocaleUpperCase() +
                               dish.name.slice(1)}
-
-                            {/* Отметка "Выбор шефа" - иконка звезды с тултипом */}
                             <ChefRecommendBadge
                               show={isChefRecommend}
                               size="small"

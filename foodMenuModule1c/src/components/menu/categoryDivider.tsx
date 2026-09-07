@@ -1,26 +1,24 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
 import { TDishCategory } from 'src/types/foodMenu.types';
 import {
   getCategoryLabel,
   getCategoryIcon,
   getCategoryColor,
-  getCategoryBackgroundColor,
 } from '@utils/dishCategoryUtils';
 
 interface CategoryDividerProps {
-  category: TDishCategory;
+  category: TDishCategory | string;
 }
 
 /**
  * Визуальный разделитель между категориями блюд
- * С иконкой, цветом и названием категории
+ * Упрощенная версия с нейтральным фоном
  */
 const CategoryDivider: React.FC<CategoryDividerProps> = ({ category }) => {
   const label = getCategoryLabel(category);
-  const IconComponent = getCategoryIcon(category); // Получаем компонент иконки
+  const IconComponent = getCategoryIcon(category);
   const color = getCategoryColor(category);
-  const bgColor = getCategoryBackgroundColor(category);
 
   return (
     <Box
@@ -30,64 +28,44 @@ const CategoryDivider: React.FC<CategoryDividerProps> = ({ category }) => {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 2,
-        py: 1,
+        py: 0.5,
         px: 2,
-        my: 0.5,
-        bgcolor: bgColor,
-        borderTop: `2px solid ${color}`,
-        borderBottom: `2px solid ${color}`,
-        borderRadius: 1,
-        position: 'relative',
+        my: 0.25,
+        bgcolor: '#e7f1ff',
+        borderTop: '1px solid #d0e0f5',
+        borderBottom: '1px solid #d0e0f5',
       }}
     >
-      <Box
-        sx={{
-          flex: 1,
-          height: 1,
-          bgcolor: color,
-          opacity: 0.3,
-        }}
-      />
+      <Divider sx={{ flex: 1, borderColor: '#c5d8f0', opacity: 0.3 }} />
 
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          color: color,
-          fontWeight: 600,
           px: 2,
-          py: 0.5,
+          py: 0.25,
           bgcolor: 'white',
-          borderRadius: 1,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          borderRadius: 1.5,
+          border: '1px solid #d0e0f5',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', color: color }}>
-          <IconComponent fontSize="small" />
-        </Box>
+        <IconComponent sx={{ fontSize: 16, color: color }} />
         <Typography
-          variant="subtitle2"
+          variant="caption"
           sx={{
             fontWeight: 600,
             color: color,
-            letterSpacing: 0.5,
+            letterSpacing: 0.3,
             textTransform: 'uppercase',
-            fontSize: '0.7rem',
+            fontSize: '0.8rem',
           }}
         >
           {label}
         </Typography>
       </Box>
 
-      <Box
-        sx={{
-          flex: 1,
-          height: 1,
-          bgcolor: color,
-          opacity: 0.3,
-        }}
-      />
+      <Divider sx={{ flex: 1, borderColor: '#c5d8f0', opacity: 0.3 }} />
     </Box>
   );
 };
