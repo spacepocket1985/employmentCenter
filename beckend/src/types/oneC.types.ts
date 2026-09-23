@@ -3,13 +3,26 @@
  */
 export type TDbfRecord = Record<string, string | number | null>;
 
-/** Тип для блюда из справочника "Изделия" (SC3172.DBF) */
+/**
+ * Тип для блюда из справочника "Изделия" (SC3172.DBF)
+ *
+ * Поля:
+ * - ID, CODE, DESCR — идентификатор, код, название
+ * - SP3177 — единица измерения (1=шт, 2=кг, 4=порция)
+ * - PARENTID — ID родительской папки в справочнике 1С
+ * - SP4618 — код подкатегории (детальная категоризация)
+ * - ISFOLDER — признак папки (1 = папка, 2 = блюдо)
+ * - ISMARK — метка удаления (пусто = активен, '*' = удален)
+ */
 export type TOneCDish = {
   ID: string;
   CODE: string;
   DESCR: string;
   SP3177: string; // Единица измерения
-  SP3178: string; // Дополнительное свойство
+  PARENTID: string; // ID родительской папки
+  SP4618: string; // Код подкатегории
+  ISFOLDER: string; // Признак папки
+  ISMARK: string; // Метка удаления
 };
 
 /**
@@ -18,8 +31,8 @@ export type TOneCDish = {
  */
 export type TOneCJournal = {
   IDDOC: string; // Идентификатор документа
-  DATE: Date | null; // Дата документа (уже как Date объект)
-  ISMARK: string; // Метка удаления (пусто - активен, '1' - удален)
+  DATE: Date | null; // Дата документа
+  ISMARK: string; // Метка удаления
   DOCNO: string; // Номер документа
   IDJOURNAL: string; // ID журнала
 };
@@ -28,26 +41,26 @@ export type TOneCJournal = {
  * Тип для строки документа "ПланМеню" (DT4295.DBF)
  */
 export type TOneCMenuItem = {
-  IDDOC: string; // Ссылка на заголовок документа
-  LINENO: string; // Номер строки в документе
-  SP4301: string; // Наименование блюда (ID из SC3172)
-  SP4302: string; // Выход блюда (вес/объем)
-  SP4303: string; // Цена блюда
-  SP4300: string; // Дата (Тдата)
+  IDDOC: string;
+  LINENO: string;
+  SP4301: string;
+  SP4302: string;
+  SP4303: string;
+  SP4300: string;
 };
 
 // ========== КАТЕГОРИИ ==========
-export type TDishCategory = 
-  | 'dairy'      // Творог, молочные
-  | 'drinks'     // Напитки
-  | 'soups'      // Супы
-  | 'sides'      // Гарниры
-  | 'salads'     // Салаты
-  | 'meat'       // Мясо
-  | 'fish'       // Рыба
-  | 'poultry'    // Птица
-  | 'culinary'   // КУЛИНАРИЯ (выпечка, десерты, кондитерка)
-  | 'other';     // Другое
+export type TDishCategory =
+  | "dairy"
+  | "drinks"
+  | "soups"
+  | "sides"
+  | "salads"
+  | "meat"
+  | "fish"
+  | "poultry"
+  | "culinary"
+  | "other";
 
 /**
  * Итоговый тип для позиции меню из 1С
@@ -64,19 +77,23 @@ export type TOneCMenuItemResult = {
   itemDate?: string;
   category?: TDishCategory;
   categoryOrder?: number;
+  /** ID родительской папки из справочника 1С */
+  parentId?: string;
+  /** Код подкатегории из 1С */
+  sp4618?: string;
 };
 
 /** Тип для фильтрации меню по дате */
 export type TMenuFilter = {
   dateFrom?: Date;
   dateTo?: Date;
-  period?: 'week' | 'month' | 'custom';
-  date?: string; // Конкретная дата
+  period?: "week" | "month" | "custom";
+  date?: string;
 };
 
 /** Тип для query-параметров запроса */
 export type TMenuQueryParams = {
-  period?: 'week' | 'month';
+  period?: "week" | "month";
   dateFrom?: string;
   dateTo?: string;
 };

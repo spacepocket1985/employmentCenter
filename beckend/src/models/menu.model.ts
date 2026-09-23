@@ -60,6 +60,21 @@ const dishSchema = new Schema<IDish>(
       default: 'csv',
     },
 
+    // ========== НОВЫЕ ПОЛЯ ДЛЯ КАТЕГОРИЗАЦИИ ==========
+    parentId: {
+      type: String,
+      trim: true,
+      index: true,
+      description: 'ID родительской папки из справочника 1С',
+    },
+    sp4618: {
+      type: String,
+      trim: true,
+      index: true,
+      description: 'Код подкатегории из 1С (SP4618)',
+    },
+
+    // ========== СУЩЕСТВУЮЩИЕ ПОЛЯ КАТЕГОРИЗАЦИИ ==========
     category: {
       type: String,
       enum: [
@@ -72,7 +87,6 @@ const dishSchema = new Schema<IDish>(
         'fish',
         'poultry',
         'culinary',
-
         'other',
       ],
       trim: true,
@@ -157,6 +171,12 @@ menuSchema.index({ 'dishes.source': 1 });
 menuSchema.index({ 'dishes.id1C': 1 });
 menuSchema.index({ 'dishes.docNumber': 1 });
 menuSchema.index({ 'dishes.source': 1, 'dishes.id1C': 1 });
+
+// Индекс для поиска по родительской папке
+menuSchema.index({ 'dishes.parentId': 1 });
+
+// Композитный индекс для категоризации
+menuSchema.index({ 'dishes.parentId': 1, 'dishes.sp4618': 1 });
 
 /**
  * Очищает все меню

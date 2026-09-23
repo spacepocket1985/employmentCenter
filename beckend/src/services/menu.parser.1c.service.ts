@@ -140,6 +140,8 @@ export class MenuParserOneCService {
           docDate: docInfo.date.toLocaleDateString('ru-RU'),
           docNumber: docInfo.docNo,
           itemDate: itemDateStr,
+          parentId: dish.PARENTID || undefined,
+          sp4618: dish.SP4618 || undefined,
         });
       }
 
@@ -174,9 +176,17 @@ export class MenuParserOneCService {
           );
           const dayOfWeek = MenuDateUtils.getDayOfWeek(date);
 
-          // Формируем блюда с категориями
           const dishesForSave: IDish[] = sortedItems.map((item, index) => {
-            const categoryInfo = getDishCategory(item.name);
+            // ============================================================
+            // ГИБРИДНАЯ КАТЕГОРИЗАЦИЯ:
+            // 1. parentId + sp4618 (точная категория из 1С)
+            // 2. Fallback на ключевые слова
+            // ============================================================
+            const categoryInfo = getDishCategory(
+              item.name,
+              item.parentId,
+              item.sp4618
+            );
 
             return {
               number: index + 1,
@@ -190,6 +200,8 @@ export class MenuParserOneCService {
               docDate: item.docDate,
               docNumber: item.docNumber,
               source: '1c' as const,
+              parentId: item.parentId,
+              sp4618: item.sp4618,
               category: categoryInfo.category,
               isChefRecommend: false,
             };

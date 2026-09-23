@@ -12,7 +12,11 @@
     "lint": "eslint . --ext .ts",
     "copy1c": "ts-node src/scripts/copyOneCFiles.ts",
     "parse1c": "ts-node src/scripts/parseOneC.ts",
-    "sync1c": "ts-node src/scripts/syncOneC.ts"
+    "sync1c": "ts-node src/scripts/syncOneC.ts",
+    "test:category": "ts-node src/scripts/testCategory.ts",
+    "stats:categories": "ts-node src/scripts/statsCategories.ts",
+    "check:dish": "ts-node src/scripts/checkDish.ts",
+    "check:parser": "ts-node src/scripts/checkParser.ts"
   },
   "keywords": [],
   "author": "",
