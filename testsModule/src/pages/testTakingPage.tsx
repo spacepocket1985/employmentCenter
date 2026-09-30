@@ -13,10 +13,13 @@ import {
   selectAnswers,
   selectIsLastQuestion,
   selectIsFirstQuestion,
-  reset,
+  selectSelectedEmployee,
+  selectEmployeeSelectionMode,
+  selectManualEmployeeName,
   nextQuestion,
   prevQuestion,
   setAnswer,
+  selectIsEmployeeConfirmed,
 } from '@store/slices/testSlice';
 import { useSubmitTest } from '@hooks/useSubmitTest';
 import {
@@ -24,8 +27,8 @@ import {
   ProgressBar,
   QuestionRenderer,
   NavigationButtons,
+  EmployeeSelector,
 } from '@components/tests';
-
 import type { TestAnswerModel } from 'src/types/tests.types';
 
 /**
@@ -36,8 +39,12 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
   const { submit, isSubmitting, error: submitError } = useSubmitTest();
 
   const [startTime] = useState<number>(Date.now());
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  // Получаем данные из store
+  // ============================================
+  // ДАННЫЕ ИЗ STORE
+  // ============================================
+
   const currentTest = useAppSelector(selectCurrentTest);
   const currentIndex: number = useAppSelector(selectCurrentQuestionIndex);
   const totalQuestions: number = useAppSelector(selectTotalQuestions);
@@ -47,22 +54,38 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
   const isLastQuestion: boolean = useAppSelector(selectIsLastQuestion);
   const isFirstQuestion: boolean = useAppSelector(selectIsFirstQuestion);
 
-  // Локальное состояние для ошибок
-  const [localError, setLocalError] = useState<string | null>(null);
+  // Данные о сотруднике
+  const selectedEmployee = useAppSelector(selectSelectedEmployee);
+  const employeeSelectionMode = useAppSelector(selectEmployeeSelectionMode);
+  const manualEmployeeName = useAppSelector(selectManualEmployeeName);
+  const isEmployeeConfirmed: boolean = useAppSelector(
+    selectIsEmployeeConfirmed
+  );
 
-  // Получаем текущий вопрос
-  const currentQuestion = currentTest?.questions[currentIndex];
+  // ============================================
+  // ПРОВЕРКА: НУЖЕН ЛИ ВЫБОР СОТРУДНИКА
+  // ============================================
 
-  // Получаем выбранные ответы для текущего вопроса
-  const selectedOptionIds: string[] =
-    answers.find(
-      (a: TestAnswerModel): boolean => a.questionId === currentQuestion?.id
-    )?.optionIds || [];
+  /**
+   * Нужно ли показывать экран выбора сотрудника:
+   * - Тест требует идентификации
+   * - Выбор сотрудника ещё не завершён
+   */
+  const needsEmployeeSelection: boolean =
+    (currentTest?.requiresIdentification ?? false) && !isEmployeeConfirmed;
+  // ============================================
+  // ОБРАБОТЧИКИ
+  // ============================================
 
-  // Есть ли ответ на текущий вопрос
-  const hasCurrentAnswer: boolean = selectedOptionIds.length > 0;
+  /**
+   * Обработчик начала теста после выбора сотрудника
+   */
+  const handleStartAfterSelection = (): void => {
+    // Выбор уже сохранён в Redux через EmployeeSelector
+    // Здесь просто ничего не делаем — компонент перерендерится
+    console.log('✅ Сотрудник выбран, начинаем тест');
+  };
 
-  // Обработчики
   const handleNext = (): void => {
     dispatch(nextQuestion());
   };
@@ -81,18 +104,47 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
     );
   };
 
+  /**
+   * Отправка результатов теста
+   */
   const handleSubmit = async (): Promise<void> => {
     if (!currentTest) return;
 
-    const timeSpent = Math.round((Date.now() - startTime) / 1000); // в секундах
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
 
     setLocalError(null);
+
+    // ============================================
+    // ФОРМИРОВАНИЕ ДАННЫХ ДЛЯ ОТПРАВКИ
+    // ============================================
 
     const submissionData = {
       testId: currentTest._id,
       answers: answers,
-      imeSpent: timeSpent,
+      timeSpent: timeSpent,
+
+      // Данные сотрудника
+      employeeId: selectedEmployee?._id || null,
+      employeeName:
+        employeeSelectionMode === 'manual'
+          ? manualEmployeeName
+          : selectedEmployee?.name || undefined,
+      employeePosition: selectedEmployee?.job || undefined,
+      employeeDepartment: selectedEmployee?.department || undefined,
+
+      // Мероприятие
+      eventName: currentTest.eventName || undefined,
+      eventDate: currentTest.eventDate || undefined,
+      eventPlace: currentTest.eventPlace || undefined,
+
+      // Флаг логирования
+      shouldLog: employeeSelectionMode !== 'anonymous',
     };
+
+    console.log('🔍 Отправка данных:', {
+      ...submissionData,
+      answersCount: submissionData.answers.length,
+    });
 
     const result = await submit(submissionData);
 
@@ -101,13 +153,24 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReset = (): void => {
-    dispatch(reset());
-  };
+  // ============================================
+  // ПОЛУЧЕНИЕ ТЕКУЩЕГО ВОПРОСА
+  // ============================================
 
-  // Если нет текущего теста
-  if (!currentTest || !currentQuestion) {
+  const currentQuestion = currentTest?.questions[currentIndex];
+
+  const selectedOptionIds: string[] =
+    answers.find(
+      (a: TestAnswerModel): boolean => a.questionId === currentQuestion?.id
+    )?.optionIds || [];
+
+  const hasCurrentAnswer: boolean = selectedOptionIds.length > 0;
+
+  // ============================================
+  // РЕНДЕР: ЕСЛИ НЕТ ТЕСТА
+  // ============================================
+
+  if (!currentTest) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -119,7 +182,36 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
     );
   }
 
-  // Ошибка при отправке
+  // ============================================
+  // РЕНДЕР: ВЫБОР СОТРУДНИКА (если нужен)
+  // ============================================
+
+  if (needsEmployeeSelection) {
+    return (
+      <Container maxWidth="md">
+        <Box sx={{ p: 2 }}>
+          <EmployeeSelector onStart={handleStartAfterSelection} />
+        </Box>
+      </Container>
+    );
+  }
+
+  // ============================================
+  // РЕНДЕР: ОСНОВНОЙ ЭКРАН ТЕСТА
+  // ============================================
+
+  if (!currentQuestion) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Вопрос не найден
+          </Alert>
+        </Box>
+      </Container>
+    );
+  }
+
   const displayError: string | null = submitError || localError;
 
   return (
@@ -139,6 +231,26 @@ export const TestTakingPage: React.FC = (): React.ReactElement => {
               category={currentTest.category}
             />
           </Box>
+
+          {/* Информация о сотруднике (если выбран) */}
+          {selectedEmployee && employeeSelectionMode === 'list' && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Сотрудник: <strong>{selectedEmployee.name}</strong> —{' '}
+              {selectedEmployee.job} ({selectedEmployee.department})
+            </Alert>
+          )}
+
+          {employeeSelectionMode === 'manual' && manualEmployeeName && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Сотрудник: <strong>{manualEmployeeName}</strong>
+            </Alert>
+          )}
+
+          {employeeSelectionMode === 'anonymous' && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Режим тренировки — результат не будет сохранён
+            </Alert>
+          )}
 
           {/* Прогресс */}
           <ProgressBar

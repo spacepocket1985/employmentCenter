@@ -15,6 +15,10 @@ type ResultSummaryProps = {
   maxScore?: number;
   /** Интерпретация результата */
   interpretation: ResultInterpretationType;
+  /** Скрыть интерпретацию (используется для DASS-21, где интерпретации показываются по шкалам) */
+  hideInterpretation?: boolean;
+  /** Дополнительный текст под баллом (пояснение) */
+  subtitle?: string;
 };
 
 /**
@@ -24,12 +28,14 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({
   totalScore,
   maxScore,
   interpretation,
+  hideInterpretation = false,
+  subtitle,
 }: ResultSummaryProps): React.ReactElement => {
   // Определяем цвет в зависимости от уровня
   const getScoreColor = (): string => {
     const range = interpretation.rangeMax - interpretation.rangeMin;
     const percentage = (totalScore - interpretation.rangeMin) / range;
-    
+
     if (percentage < 0.33) return '#2e7d32'; // зелёный
     if (percentage < 0.66) return '#ed6c02'; // оранжевый
     return '#d32f2f'; // красный
@@ -56,6 +62,7 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({
         Ваш результат
       </Typography>
 
+      {/* Круг с баллами */}
       <Box
         sx={{
           display: 'inline-flex',
@@ -71,14 +78,14 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               fontWeight: 700,
               fontSize: {
-                xs: '2rem',    // мобильные устройства
-                sm: '2.5rem',  // планшеты
-                md: '3rem',    // десктоп
+                xs: '2rem',
+                sm: '2.5rem',
+                md: '3rem',
               },
               lineHeight: 1,
             }}
@@ -86,9 +93,9 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({
             {displayScore}
           </Typography>
           {maxScore && (
-            <Typography 
-              variant="h6" 
-              sx={{ 
+            <Typography
+              variant="h6"
+              sx={{
                 opacity: 0.8,
                 fontSize: {
                   xs: '0.9rem',
@@ -103,20 +110,44 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({
         </Box>
       </Box>
 
-      <Typography
-        variant="h5"
-        sx={{
-          color: scoreColor,
-          fontWeight: 600,
-          mb: 1,
-        }}
-      >
-        {interpretation.title}
-      </Typography>
+      {/* Пояснение под баллом (если передано) */}
+      {subtitle && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mb: 2,
+            maxWidth: 500,
+            mx: 'auto',
+            fontStyle: 'italic',
+          }}
+        >
+          {subtitle}
+        </Typography>
+      )}
 
-      <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-        {interpretation.description}
-      </Typography>
+      {/* Интерпретация (скрываем, если hideInterpretation = true) */}
+      {!hideInterpretation && (
+        <>
+          <Typography
+            variant="h5"
+            sx={{
+              color: scoreColor,
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
+            {interpretation.title}
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ maxWidth: 600, mx: 'auto' }}
+          >
+            {interpretation.description}
+          </Typography>
+        </>
+      )}
     </Paper>
   );
 };

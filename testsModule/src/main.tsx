@@ -3,20 +3,21 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from '@store/store';
 import App from './App';
+import type { SectionType } from './App';
 
-const rootElement = document.getElementById('psy-tests');
-//const rootElement = document.getElementById('corruption-tests');
-// const rootElement = document.getElementById('root');
-const pageType =
-  (rootElement?.dataset.pageType as 'psychology' | 'corruption') ||
-  'psychology';
+// Получаем корневой элемент
+const rootElement = document.getElementById('root');
 
+// Читаем data-section из HTML
+const section = (rootElement?.dataset.section as SectionType) || 'psychology';
+
+// Создаём корень
 const root = ReactDOM.createRoot(rootElement as HTMLElement);
 
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App pageType={pageType} />
+      <App section={section} />
     </Provider>
   </React.StrictMode>
 );

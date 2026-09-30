@@ -10,6 +10,7 @@ import {
 } from 'src/types/tests.types';
 import { fetchTestById } from '@api/testsApi';
 import type { AppRootState } from '@store/store';
+import type { EmployeeType } from 'src/types/employee.types';
 
 // ============================================
 // ТИПЫ СОСТОЯНИЯ
@@ -19,6 +20,14 @@ import type { AppRootState } from '@store/store';
  * Возможные состояния страницы
  */
 export type TestPageState = 'idle' | 'testing' | 'result';
+
+/**
+ * Режим выбора сотрудника
+ * - list: выбор из списка мастеров
+ * - manual: ручной ввод ФИО
+ * - anonymous: анонимное прохождение (тренировка)
+ */
+export type EmployeeSelectionMode = 'list' | 'manual' | 'anonymous';
 
 /**
  * Состояние всего приложения (тесты)
@@ -50,6 +59,20 @@ export type TestState = {
 
   /** Ошибка (если есть) */
   error: string | null;
+
+  // ============================================
+  // ВЫБОР СОТРУДНИКА
+  // ============================================
+
+  /** Выбранный сотрудник (для именных тестов) */
+  selectedEmployee: EmployeeType | null;
+
+  /** Режим выбора сотрудника */
+  employeeSelectionMode: EmployeeSelectionMode;
+
+  /** ФИО, введённое вручную */
+  manualEmployeeName: string;
+  isEmployeeConfirmed: boolean; // ← НОВОЕ
 };
 
 // ============================================
@@ -66,6 +89,10 @@ const initialState: TestState = {
   isSubmitting: false,
   isLoading: false,
   error: null,
+  selectedEmployee: null,
+  employeeSelectionMode: 'list',
+  manualEmployeeName: '',
+  isEmployeeConfirmed: false,
 };
 
 // ============================================
@@ -106,6 +133,10 @@ const testSlice = createSlice({
   name: 'test',
   initialState,
   reducers: {
+    // ============================================
+    // ТЕСТЫ
+    // ============================================
+
     /**
      * Установка списка тестов
      */
@@ -126,7 +157,12 @@ const testSlice = createSlice({
       state.error = null;
       state.isSubmitting = false;
       state.isLoading = false;
+      // Не сбрасываем selectedEmployee — он может быть выбран заранее
     },
+
+    // ============================================
+    // ОТВЕТЫ НА ВОПРОСЫ
+    // ============================================
 
     /**
      * Сохранение ответа на вопрос
@@ -180,6 +216,36 @@ const testSlice = createSlice({
     },
 
     /**
+     * Установка текущего вопроса (для перехода по индексу)
+     */
+    setCurrentQuestionIndex: (
+      state: TestState,
+      action: PayloadAction<number>
+    ): void => {
+      const index: number = action.payload;
+      if (
+        state.currentTest &&
+        index >= 0 &&
+        index < state.currentTest.questions.length
+      ) {
+        state.currentQuestionIndex = index;
+        state.error = null;
+      }
+    },
+
+    /**
+     * Очистка ответов (без сброса состояния)
+     */
+    clearAnswers: (state: TestState): void => {
+      state.answers = [];
+      state.currentQuestionIndex = 0;
+    },
+
+    // ============================================
+    // РЕЗУЛЬТАТЫ
+    // ============================================
+
+    /**
      * Установка результата теста
      */
     setResult: (
@@ -207,6 +273,10 @@ const testSlice = createSlice({
       state.isSubmitting = false;
     },
 
+    // ============================================
+    // ОШИБКИ
+    // ============================================
+
     /**
      * Установка ошибки
      */
@@ -222,6 +292,10 @@ const testSlice = createSlice({
     clearError: (state: TestState): void => {
       state.error = null;
     },
+
+    // ============================================
+    // НАВИГАЦИЯ
+    // ============================================
 
     /**
      * Сброс состояния (возврат к списку)
@@ -244,33 +318,68 @@ const testSlice = createSlice({
       state.pageState = 'idle';
     },
 
+    // ============================================
+    // СОТРУДНИК
+    // ============================================
+
     /**
-     * Установка текущего вопроса (для перехода по индексу)
+     * Установка выбранного сотрудника
      */
-    setCurrentQuestionIndex: (
+    setSelectedEmployee: (
       state: TestState,
-      action: PayloadAction<number>
+      action: PayloadAction<EmployeeType>
     ): void => {
-      const index: number = action.payload;
-      if (
-        state.currentTest &&
-        index >= 0 &&
-        index < state.currentTest.questions.length
-      ) {
-        state.currentQuestionIndex = index;
-        state.error = null;
-      }
+      state.selectedEmployee = action.payload;
+      state.error = null;
     },
 
     /**
-     * Очистка ответов (без сброса состояния)
+     * Очистка выбранного сотрудника
      */
-    clearAnswers: (state: TestState): void => {
-      state.answers = [];
-      state.currentQuestionIndex = 0;
+    clearSelectedEmployee: (state: TestState): void => {
+      state.selectedEmployee = null;
+    },
+
+    /**
+     * Установка режима выбора сотрудника
+     */
+    setEmployeeSelectionMode: (
+      state: TestState,
+      action: PayloadAction<EmployeeSelectionMode>
+    ): void => {
+      state.employeeSelectionMode = action.payload;
+      state.error = null;
+    },
+
+    /**
+     * Установка ФИО для ручного ввода
+     */
+    setManualEmployeeName: (
+      state: TestState,
+      action: PayloadAction<string>
+    ): void => {
+      state.manualEmployeeName = action.payload;
+      state.error = null;
+    },
+
+    confirmEmployeeSelection: (state: TestState): void => {
+      state.isEmployeeConfirmed = true;
+    },
+
+    /**
+     * Сброс выбора сотрудника (режим + данные)
+     */
+
+    resetEmployeeSelection: (state: TestState): void => {
+      state.selectedEmployee = null;
+      state.employeeSelectionMode = 'list';
+      state.manualEmployeeName = '';
+      state.isEmployeeConfirmed = false; // ← Сброс
     },
   },
-  // Обработка асинхронных действий (extraReducers)
+  // ============================================
+  // EXTRA REDUCERS (для async thunk)
+  // ============================================
   extraReducers: (builder) => {
     builder
       // Загрузка теста началась
@@ -307,20 +416,32 @@ const testSlice = createSlice({
 // ============================================
 
 export const {
+  // Тесты
   setTests,
   startTest,
+  // Ответы
   setAnswer,
   nextQuestion,
   prevQuestion,
+  setCurrentQuestionIndex,
+  clearAnswers,
+  // Результаты
   setResult,
   submitStart,
   submitEnd,
+  // Ошибки
   setError,
   clearError,
+  // Навигация
   reset,
   goToList,
-  setCurrentQuestionIndex,
-  clearAnswers,
+  // Сотрудник
+  setSelectedEmployee,
+  clearSelectedEmployee,
+  setEmployeeSelectionMode,
+  setManualEmployeeName,
+  resetEmployeeSelection,
+  confirmEmployeeSelection,
 } = testSlice.actions;
 
 // ============================================
@@ -333,6 +454,10 @@ export default testSlice.reducer;
 // СЕЛЕКТОРЫ
 // ============================================
 
+// --------------------------------------------
+// ВОПРОСЫ
+// --------------------------------------------
+
 /**
  * Получение текущего вопроса
  */
@@ -342,6 +467,22 @@ export const selectCurrentQuestion = (
   const { currentTest, currentQuestionIndex }: TestState = state.test;
   if (!currentTest) return null;
   return currentTest.questions[currentQuestionIndex] || null;
+};
+
+/**
+ * Получение общего количества вопросов
+ */
+export const selectTotalQuestions = (state: AppRootState): number => {
+  const { currentTest }: TestState = state.test;
+  if (!currentTest) return 0;
+  return currentTest.questions.length;
+};
+
+/**
+ * Получение текущего индекса вопроса
+ */
+export const selectCurrentQuestionIndex = (state: AppRootState): number => {
+  return state.test.currentQuestionIndex;
 };
 
 /**
@@ -370,6 +511,17 @@ export const selectIsLastQuestion = (state: AppRootState): boolean => {
  */
 export const selectIsFirstQuestion = (state: AppRootState): boolean => {
   return state.test.currentQuestionIndex === 0;
+};
+
+// --------------------------------------------
+// ОТВЕТЫ
+// --------------------------------------------
+
+/**
+ * Получение всех ответов пользователя
+ */
+export const selectAnswers = (state: AppRootState): TestAnswerModel[] => {
+  return state.test.answers;
 };
 
 /**
@@ -411,12 +563,9 @@ export const selectAnswerByQuestionId = (
   );
 };
 
-/**
- * Получение всех ответов пользователя
- */
-export const selectAnswers = (state: AppRootState): TestAnswerModel[] => {
-  return state.test.answers;
-};
+// --------------------------------------------
+// СОСТОЯНИЕ СТРАНИЦЫ
+// --------------------------------------------
 
 /**
  * Проверка, есть ли тест в процессе прохождения
@@ -439,21 +588,9 @@ export const selectIsIdle = (state: AppRootState): boolean => {
   return state.test.pageState === 'idle';
 };
 
-/**
- * Получение общего количества вопросов
- */
-export const selectTotalQuestions = (state: AppRootState): number => {
-  const { currentTest }: TestState = state.test;
-  if (!currentTest) return 0;
-  return currentTest.questions.length;
-};
-
-/**
- * Получение текущего индекса вопроса
- */
-export const selectCurrentQuestionIndex = (state: AppRootState): number => {
-  return state.test.currentQuestionIndex;
-};
+// --------------------------------------------
+// ТЕСТЫ
+// --------------------------------------------
 
 /**
  * Получение текущего теста
@@ -468,6 +605,10 @@ export const selectCurrentTest = (state: AppRootState): TestType | null => {
 export const selectAllTests = (state: AppRootState): TestType[] => {
   return state.test.tests;
 };
+
+/**
+ * Получение тестов без коррупции
+ */
 
 export const selectTestsWithoutCoruption = (
   state: AppRootState
@@ -485,6 +626,10 @@ export const selectTestResult = (
 ): TestResultType | null => {
   return state.test.result;
 };
+
+// --------------------------------------------
+// ФЛАГИ
+// --------------------------------------------
 
 /**
  * Проверка, идет ли отправка
@@ -505,4 +650,68 @@ export const selectIsLoading = (state: AppRootState): boolean => {
  */
 export const selectError = (state: AppRootState): string | null => {
   return state.test.error;
+};
+
+// --------------------------------------------
+// СОТРУДНИК
+// --------------------------------------------
+
+/**
+ * Получение выбранного сотрудника
+ */
+export const selectSelectedEmployee = (
+  state: AppRootState
+): EmployeeType | null => {
+  return state.test.selectedEmployee;
+};
+
+/**
+ * Проверка, выбран ли сотрудник
+ */
+export const selectIsEmployeeSelected = (state: AppRootState): boolean => {
+  return state.test.selectedEmployee !== null;
+};
+
+/**
+ * Получение режима выбора сотрудника
+ */
+export const selectEmployeeSelectionMode = (
+  state: AppRootState
+): EmployeeSelectionMode => {
+  return state.test.employeeSelectionMode;
+};
+
+/**
+ * Получение ФИО для ручного ввода
+ */
+export const selectManualEmployeeName = (state: AppRootState): string => {
+  return state.test.manualEmployeeName;
+};
+
+/**
+ * Проверка, можно ли начать тест (выбор сотрудника завершён)
+ * - list: выбран сотрудник
+ * - manual: введено ФИО
+ * - anonymous: всегда true
+ */
+export const selectIsEmployeeSelectionComplete = (
+  state: AppRootState
+): boolean => {
+  const { employeeSelectionMode, selectedEmployee, manualEmployeeName } =
+    state.test;
+
+  switch (employeeSelectionMode) {
+    case 'list':
+      return selectedEmployee !== null;
+    case 'manual':
+      return manualEmployeeName.trim().length > 0;
+    case 'anonymous':
+      return true;
+    default:
+      return false;
+  }
+};
+
+export const selectIsEmployeeConfirmed = (state: AppRootState): boolean => {
+  return state.test.isEmployeeConfirmed;
 };

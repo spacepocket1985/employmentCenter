@@ -16,13 +16,18 @@ import {
   AnswerReview,
 } from '@components/tests';
 import { TestHeader } from '@components/tests';
-import type { TestResultType, ExtendedTestResultType } from 'src/types/tests.types';
+import type {
+  TestResultType,
+  ExtendedTestResultType,
+} from 'src/types/tests.types';
 
 /**
- * Проверка, является ли результат расширенным (с разбором ответов)
+ * Проверка, является ли результат расширенным (с разбором ответов или интерпретациями по шкалам)
  */
-function isExtendedResult(result: TestResultType): result is ExtendedTestResultType {
-  return 'questionReviews' in result && Array.isArray((result as ExtendedTestResultType).questionReviews);
+function isExtendedResult(
+  result: TestResultType
+): result is ExtendedTestResultType {
+  return 'questionReviews' in result || 'scaleInterpretations' in result;
 }
 
 /**
@@ -30,7 +35,7 @@ function isExtendedResult(result: TestResultType): result is ExtendedTestResultT
  */
 export const TestResultPage: React.FC = (): React.ReactElement => {
   const dispatch = useAppDispatch();
-  
+
   // Получаем данные из store
   const result: TestResultType | null = useAppSelector(selectTestResult);
   const currentTest = useAppSelector(selectCurrentTest);
@@ -50,8 +55,8 @@ export const TestResultPage: React.FC = (): React.ReactElement => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Пройдите тест, чтобы увидеть результат
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleReset}
             sx={{
               backgroundColor: '#103896',
@@ -73,10 +78,18 @@ export const TestResultPage: React.FC = (): React.ReactElement => {
     0
   );
 
-  // Проверяем, есть ли разбор ответов
-  const questionReviews = isExtendedResult(result) 
-    ? result.questionReviews 
-    : undefined;
+  // Проверяем, есть ли расширенные поля
+  const extended = isExtendedResult(result)
+    ? (result as ExtendedTestResultType)
+    : null;
+
+  // Проверяем, есть ли разбор ответов (для обучающих тестов)
+  const hasQuestionReviews =
+    extended?.questionReviews && extended.questionReviews.length > 0;
+
+  // Проверяем, есть ли интерпретации по шкалам (для DASS-21 и подобных)
+  const hasScaleInterpretations =
+    extended?.scaleInterpretations && extended.scaleInterpretations.length > 0;
 
   return (
     <Container maxWidth="lg">
@@ -84,38 +97,64 @@ export const TestResultPage: React.FC = (): React.ReactElement => {
         {/* Заголовок теста */}
         {currentTest && (
           <Box sx={{ mb: 3 }}>
-            <TestHeader 
+            <TestHeader
               title={currentTest.title}
               category={currentTest.category}
             />
           </Box>
         )}
 
-        {/* Общий результат */}
+        {/* ============================================ */}
+        {/* ОБЩИЙ РЕЗУЛЬТАТ */}
+        {/* ============================================ */}
+        {/* Для DASS-21 скрываем интерпретацию в общем результате, */}
+        {/* так как она показывается отдельно для каждой шкалы */}
         <ResultSummary
           totalScore={result.totalScore}
           maxScore={maxScore}
           interpretation={result.interpretation}
+          hideInterpretation={hasScaleInterpretations}
+          subtitle={
+            hasScaleInterpretations
+              ? 'Суммарный балл по всем шкалам. Детальная расшифровка представлена ниже.'
+              : undefined
+          }
         />
 
-        {/* Детали по шкалам */}
+        {/* ============================================ */}
+        {/* ДЕТАЛИ ПО ШКАЛАМ (единый компонент) */}
+        {/* ============================================ */}
+        {/* ResultDetails сам определяет, показывать интерпретации или нет */}
         {result.scaleScores && result.scaleScores.length > 0 && (
-          <ResultDetails scaleScores={result.scaleScores} />
-        )}
-
-        {/* РАЗБОР ОТВЕТОВ (только для обучающих тестов) */}
-        <AnswerReview 
-          reviews={questionReviews} 
-          title="Разбор ответов"
-        />
-
-        {/* Рекомендации */}
-        {result.interpretation.recommendations && 
-         result.interpretation.recommendations.length > 0 && (
-          <ResultRecommendations 
-            recommendations={result.interpretation.recommendations} 
+          <ResultDetails
+            scaleScores={result.scaleScores}
+            scaleInterpretations={extended?.scaleInterpretations}
           />
         )}
+
+        {/* ============================================ */}
+        {/* РАЗБОР ОТВЕТОВ (для обучающих тестов) */}
+        {/* ============================================ */}
+        {hasQuestionReviews && extended?.questionReviews && (
+          <AnswerReview
+            reviews={extended.questionReviews}
+            title="Разбор ответов"
+          />
+        )}
+
+        {/* ============================================ */}
+        {/* ОБЩИЕ РЕКОМЕНДАЦИИ */}
+        {/* ============================================ */}
+        {/* Показываем только если нет интерпретаций по шкалам, */}
+        {/* иначе рекомендации уже показаны в ResultDetails */}
+        {!hasScaleInterpretations &&
+          result.interpretation.recommendations &&
+          result.interpretation.recommendations.length > 0 && (
+            <ResultRecommendations
+              recommendations={result.interpretation.recommendations}
+              title="Рекомендации"
+            />
+          )}
 
         {/* Кнопка возврата */}
         <Box sx={{ textAlign: 'center', mt: 3 }}>

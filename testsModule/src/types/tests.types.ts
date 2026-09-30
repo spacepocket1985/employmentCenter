@@ -54,6 +54,7 @@ export type ResultInterpretationType = {
 };
 
 // Основная модель теста
+// Основная модель теста
 export type TestType = {
   _id: string;
   title: string;
@@ -72,6 +73,23 @@ export type TestType = {
   showScore: boolean;
   randomizeQuestions?: boolean;
   requireAllQuestions: boolean;
+  randomizeOptions?: boolean;
+  showCorrectAnswers?: boolean;
+
+  // ============================================
+  // НОВЫЕ ПОЛЯ (для именных тестов)
+  // ============================================
+
+  /** Требует ли тест идентификации пользователя */
+  requiresIdentification?: boolean;
+  /** Логировать ли результаты в БД (коллекция testsessions) */
+  logResults?: boolean;
+  /** Название мероприятия (опционально, для именных тестов) */
+  eventName?: string;
+  /** Дата мероприятия (опционально) */
+  eventDate?: string;
+  /** Место проведения мероприятия (опционально) */
+  eventPlace?: string;
 };
 
 // ============================================
@@ -191,10 +209,25 @@ export type TestAnswerModel = {
 /**
  * Модель отправки результатов теста
  */
+
 export type TestSubmissionModel = {
   testId: string;
   answers: TestAnswerModel[];
   timeSpent?: number;
+
+  // Данные сотрудника
+  employeeId?: string | null;
+  employeeName?: string;
+  employeePosition?: string;
+  employeeDepartment?: string;
+
+  // Мероприятие
+  eventName?: string;
+  eventDate?: string;
+  eventPlace?: string;
+
+  // Флаг логирования
+  shouldLog?: boolean;
 };
 
 // ============================================
@@ -228,7 +261,25 @@ export type QuestionReviewType = {
 /**
  * Расширенный результат теста с разбором ответов
  */
+
+/**
+ * Интерпретация для одной шкалы
+ * Используется для тестов, где интерпретация применяется к каждой шкале отдельно
+ * (например, DASS-21: депрессия, тревога, стресс)
+ */
+export type ScaleInterpretationType = {
+  /** ID шкалы */
+  scaleId: string;
+  /** Интерпретация для этой шкалы */
+  interpretation: ResultInterpretationType;
+};
+
+/**
+ * Расширенный результат теста с интерпретациями по шкалам
+ */
 export type ExtendedTestResultType = TestResultType & {
-  /** Детальный разбор по каждому вопросу */
+  /** Детальный разбор по каждому вопросу (для обучающих тестов) */
   questionReviews?: QuestionReviewType[];
+  /** Интерпретации для каждой шкалы (для DASS-21 и подобных) */
+  scaleInterpretations?: ScaleInterpretationType[];
 };

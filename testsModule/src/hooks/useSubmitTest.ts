@@ -2,16 +2,15 @@
 // Использует request для POST запроса
 
 import { useState, useCallback } from 'react';
-
-import { 
+import {
   submitStart,
   submitEnd,
   setResult,
   setError,
 } from '@store/slices/testSlice';
 import { submitTestResults } from '@api/testsApi';
-import type { 
-  TestSubmissionModel, 
+import type {
+  TestSubmissionModel,
   TestResultType,
   TestResultApiResponse,
 } from 'src/types/tests.types';
@@ -27,7 +26,7 @@ export const useSubmitTest = (): {
   error: string | null;
 } => {
   const dispatch = useAppDispatch();
-  
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setErrorState] = useState<string | null>(null);
 
@@ -55,13 +54,14 @@ export const useSubmitTest = (): {
 
         return null;
       } catch (err: unknown) {
-        const errorMessage: string = err instanceof Error 
-          ? err.message 
-          : 'Неизвестная ошибка при отправке';
-        
+        const errorMessage: string =
+          err instanceof Error
+            ? err.message
+            : 'Неизвестная ошибка при отправке';
+
         setErrorState(errorMessage);
         dispatch(setError(errorMessage));
-        
+
         return null;
       } finally {
         // Завершаем отправку

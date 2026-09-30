@@ -16,6 +16,7 @@ export default mergeConfig(baseConfig, {
       input: {
         psychology: resolve(__dirname, 'index.psychology.html'),
         corruption: resolve(__dirname, 'index.corruption.html'),
+        registeredTests: resolve(__dirname, 'index.registeredTests.html'),
       },
     },
   },
