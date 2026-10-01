@@ -116,6 +116,7 @@ class EmployeeController {
         .json({ data: deletedEmployee, msg: 'Employee successfully deleted!' });
     }
   }
+
   /**
    * Получить всех сотрудников группы responsibleOnWeekends
    * (включая подгруппы и отдельных сотрудников)
@@ -131,12 +132,10 @@ class EmployeeController {
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'No responsible on weekends employees found!' });
     } else {
-      res
-        .status(StatusCodes.OK)
-        .json({ 
-          data: employees, 
-          msg: 'Responsible on weekends employees fetched successfully!' 
-        });
+      res.status(StatusCodes.OK).json({ 
+        data: employees, 
+        msg: 'Responsible on weekends employees fetched successfully!' 
+      });
     }
   }
 
@@ -155,12 +154,10 @@ class EmployeeController {
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'No safety officers employees found!' });
     } else {
-      res
-        .status(StatusCodes.OK)
-        .json({ 
-          data: employees, 
-          msg: 'Safety officers employees fetched successfully!' 
-        });
+      res.status(StatusCodes.OK).json({ 
+        data: employees, 
+        msg: 'Safety officers employees fetched successfully!' 
+      });
     }
   }
 
@@ -180,12 +177,10 @@ class EmployeeController {
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: `No employees found in group: ${groupName}` });
     } else {
-      res
-        .status(StatusCodes.OK)
-        .json({ 
-          data: employees, 
-          msg: `Employees in group "${groupName}" fetched successfully!` 
-        });
+      res.status(StatusCodes.OK).json({ 
+        data: employees, 
+        msg: `Employees in group "${groupName}" fetched successfully!` 
+      });
     }
   }
 
@@ -205,12 +200,10 @@ class EmployeeController {
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'Requested employee not found!' });
     } else {
-      res
-        .status(StatusCodes.OK)
-        .json({ 
-          data: updatedEmployee, 
-          msg: `Group "${groupName}" successfully added to employee!` 
-        });
+      res.status(StatusCodes.OK).json({ 
+        data: updatedEmployee, 
+        msg: `Group "${groupName}" successfully added to employee!` 
+      });
     }
   }
 
@@ -230,12 +223,36 @@ class EmployeeController {
         .status(StatusCodes.NOT_FOUND)
         .json({ msg: 'Requested employee not found!' });
     } else {
+      res.status(StatusCodes.OK).json({ 
+        data: updatedEmployee, 
+        msg: `Group "${groupName}" successfully removed from employee!` 
+      });
+    }
+  }
+
+  // ============================================
+  // НОВЫЙ МЕТОД: Получение списка мастеров
+  // ============================================
+
+  /**
+   * Получить всех сотрудников с должностью "мастер"
+   * GET /employees/masters
+   */
+  async getMasters(
+    req: Request,
+    res: Response<EmployeeViewModel<EmployeeType[]>>
+  ): Promise<void> {
+    const masters = await employeeService.getMasters();
+
+    if (!masters || masters.length === 0) {
       res
-        .status(StatusCodes.OK)
-        .json({ 
-          data: updatedEmployee, 
-          msg: `Group "${groupName}" successfully removed from employee!` 
-        });
+        .status(StatusCodes.NOT_FOUND)
+        .json({ msg: 'No masters found!' });
+    } else {
+      res.status(StatusCodes.OK).json({
+        data: masters,
+        msg: 'Masters fetched successfully!',
+      });
     }
   }
 }

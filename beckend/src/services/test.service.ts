@@ -1,6 +1,6 @@
 // Service level (Business Logic Layer):
 // Description: Implements the logic for working with test data.
-// Поддерживает интерпретации по шкалам (для DASS-21 и подобных тестов)
+// Поддерживает интерпретации по шкалам и логирование результатов
 
 import { Test, TestType } from '../models/test.model';
 import { TestCreateModel } from '../models/testCreateModel';
@@ -9,9 +9,24 @@ import {
   QuestionReviewType,
   TestSubmissionModel,
 } from '../models/testAnswerModel';
-import { Types } from 'mongoose';
+import {
+  TestSession,
+  TestSessionType,
+  TestSessionAnswerType,
+  TestSessionScaleScoreType,
+  TestSessionScaleInterpretationType,
+  TestSessionInterpretationType,
+  TestSessionTypeEnum,
+} from '../models/testSession.model';
+import { TestSessionFilterModel } from '../models/testSessionFilterModel';
+import { Employee } from '../models/employee.model';
+import { Types, FilterQuery } from 'mongoose';
 
 class TestService {
+  // ============================================
+  // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+  // ============================================
+
   /**
    * Подготовка детального разбора ответов (только для обучающих тестов)
    */
@@ -32,7 +47,6 @@ class TestService {
         };
       }
 
-      // Находим правильный ответ (вариант с максимальным баллом)
       const correctOption = question.options.find(
         (opt) => opt.score === Math.max(...question.options.map((o) => o.score))
       );
@@ -40,7 +54,6 @@ class TestService {
         ? correctOption.text
         : 'Правильный ответ не найден';
 
-      // Находим ответ пользователя
       const userOption = question.options.find((opt) =>
         answer.optionIds.includes(opt.id)
       );
@@ -96,10 +109,11 @@ class TestService {
 
   /**
    * Получение одного теста по ID с возможностью перемешивания
-   * @param id - ID теста
-   * @param shuffleOptions - перемешивать ли вопросы и ответы
    */
-  async getTestById(id: string, shuffleOptions: boolean = false): Promise<TestType | null> {
+  async getTestById(
+    id: string,
+    shuffleOptions: boolean = false
+  ): Promise<TestType | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
     }
@@ -110,15 +124,12 @@ class TestService {
       return null;
     }
 
-    // Если не нужно перемешивать, возвращаем как есть
     if (!shuffleOptions) {
       return test as TestType;
     }
 
-    // Перемешиваем вопросы
     let shuffledQuestions = this.shuffleArray(test.questions);
 
-    // Если нужно перемешивать варианты ответов
     if (test.randomizeOptions) {
       shuffledQuestions = shuffledQuestions.map((question) => ({
         ...question,
@@ -173,12 +184,10 @@ class TestService {
     question: TestType['questions'][0],
     selectedOptionIds: string[]
   ): number {
-    // Суммируем баллы выбранных вариантов
     let score = question.options
       .filter((option) => selectedOptionIds.includes(option.id))
       .reduce((sum, option) => sum + option.score, 0);
 
-    // Если вопрос обратный, инвертируем балл
     if (question.isReversed) {
       const maxScore = Math.max(...question.options.map((o) => o.score));
       score = maxScore + 1 - score;
@@ -194,12 +203,7 @@ class TestService {
     test: TestType,
     answers: { questionId: string; optionIds: string[] }[]
   ): {
-    scaleScores: {
-      scaleId: string;
-      score: number;
-      maxScore: number;
-      percentage: number;
-    }[];
+    scaleScores: TestSessionScaleScoreType[];
     totalScore: number;
   } {
     if (!test.scales || test.scales.length === 0) {
@@ -270,28 +274,196 @@ class TestService {
 
   /**
    * Поиск интерпретации для конкретной шкалы
-   * @param interpretations - Все интерпретации теста
-   * @param scaleId - ID шкалы
-   * @param score - Балл по шкале
-   * @returns Интерпретация для шкалы или null
    */
   private findScaleInterpretation(
     interpretations: TestType['interpretations'],
     scaleId: string,
     score: number
   ): TestType['interpretations'][0] | null {
-    // Фильтруем интерпретации, привязанные к этой шкале
     const scaleInterpretations = interpretations.filter(
       (interp) => interp.scaleId === scaleId
     );
 
-    // Если нет интерпретаций для этой шкалы, возвращаем null
     if (scaleInterpretations.length === 0) {
       return null;
     }
 
-    // Ищем интерпретацию по диапазону баллов
     return this.findInterpretation(scaleInterpretations, score);
+  }
+
+  // ============================================
+  // МЕТОД ЛОГИРОВАНИЯ
+  // ============================================
+
+  /**
+   * Сохранение сессии теста в БД (логирование результатов)
+   * Поддерживает:
+   * - registered: сотрудник выбран из списка или найден по ФИО
+   * - manual: сотрудник введён вручную, не найден в базе
+   * - shouldLog: false — результат не сохраняется (тренировка)
+   */
+  private async saveTestSession(
+    test: TestType,
+    submissionData: TestSubmissionModel,
+    totalScore: number,
+    scaleScores: TestSessionScaleScoreType[] | undefined,
+    scaleInterpretations: TestSessionScaleInterpretationType[] | undefined,
+    interpretation: TestType['interpretations'][0]
+  ): Promise<void> {
+    // ============================================
+    // ПРОВЕРКА: нужно ли логировать
+    // ============================================
+
+    if (submissionData.shouldLog === false) {
+      console.log(
+        '🔍 Логирование отключено (тренировка) — сессия не сохранена'
+      );
+      return;
+    }
+
+    // ============================================
+    // ОПРЕДЕЛЕНИЕ ДАННЫХ СОТРУДНИКА
+    // ============================================
+
+    let employeeId: Types.ObjectId | null = null;
+    let employeeName: string = submissionData.employeeName || '';
+    let employeePosition: string = submissionData.employeePosition || '';
+    let employeeDepartment: string = submissionData.employeeDepartment || '';
+    let sessionType: TestSessionTypeEnum = 'manual';
+
+    // Вариант 1: Передан employeeId (выбор из списка)
+    if (
+      submissionData.employeeId &&
+      Types.ObjectId.isValid(submissionData.employeeId)
+    ) {
+      const employee = await Employee.findById(submissionData.employeeId);
+
+      if (employee) {
+        // ✅ Явное приведение к Types.ObjectId
+        employeeId = new Types.ObjectId(employee._id.toString());
+        employeeName = employee.name;
+        employeePosition = employee.job;
+        employeeDepartment = employee.department;
+        sessionType = 'registered';
+        console.log('✅ Сотрудник найден по ID:', employeeName);
+      }
+    }
+    // Вариант 2: Передано ФИО (ручной ввод) — ищем в базе
+    else if (submissionData.employeeName) {
+      const escapedName = submissionData.employeeName.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&'
+      );
+
+      const employee = await Employee.findOne({
+        name: { $regex: `^${escapedName}$`, $options: 'i' },
+      });
+
+      if (employee) {
+        // ✅ Явное приведение к Types.ObjectId
+        employeeId = new Types.ObjectId(employee._id.toString());
+        employeeName = employee.name;
+        employeePosition = employee.job;
+        employeeDepartment = employee.department;
+        sessionType = 'registered';
+        console.log('✅ Сотрудник найден по ФИО:', employeeName);
+      } else {
+        sessionType = 'manual';
+        console.log('⚠️ Сотрудник не найден — manual:', employeeName);
+      }
+    } else {
+      console.log('❌ Нет данных сотрудника — сессия не сохранена');
+      return;
+    }
+
+    // ============================================
+    // ФОРМИРОВАНИЕ ОТВЕТОВ
+    // ============================================
+
+    const sessionAnswers: TestSessionAnswerType[] = submissionData.answers.map(
+      (answer) => {
+        const question = test.questions.find((q) => q.id === answer.questionId);
+
+        if (!question) {
+          return {
+            questionId: answer.questionId,
+            questionText: 'Вопрос не найден',
+            questionType: 'single' as const,
+            optionIds: answer.optionIds,
+            optionTexts: [],
+            score: 0,
+          };
+        }
+
+        const selectedOptions = question.options.filter((opt) =>
+          answer.optionIds.includes(opt.id)
+        );
+        const optionTexts = selectedOptions.map((opt) => opt.text);
+        const score = this.calculateQuestionScore(question, answer.optionIds);
+
+        return {
+          questionId: question.id,
+          questionText: question.text,
+          questionType: question.type,
+          optionIds: answer.optionIds,
+          optionTexts,
+          score,
+        };
+      }
+    );
+
+    // ============================================
+    // ФОРМИРОВАНИЕ ИНТЕРПРЕТАЦИИ
+    // ============================================
+
+    const sessionInterpretation: TestSessionInterpretationType = {
+      title: interpretation.title,
+      description: interpretation.description,
+      recommendations: interpretation.recommendations,
+    };
+
+    // ============================================
+    // ОПРЕДЕЛЕНИЕ МЕРОПРИЯТИЯ
+    // ============================================
+
+    const eventName =
+      submissionData.eventName || test.eventName || 'Не указано';
+    const eventPlace =
+      submissionData.eventPlace || test.eventPlace || 'Не указано';
+    const eventDate = submissionData.eventDate
+      ? new Date(submissionData.eventDate)
+      : test.eventDate || new Date();
+
+    // ============================================
+    // СОЗДАНИЕ СЕССИИ
+    // ============================================
+
+    await TestSession.create({
+      employeeId,
+      employeeName,
+      employeePosition,
+      employeeDepartment,
+      testId: test._id,
+      testTitle: test.title,
+      totalScore,
+      scaleScores: scaleScores || [],
+      scaleInterpretations: scaleInterpretations || [],
+      interpretation: sessionInterpretation,
+      answers: sessionAnswers,
+      eventName,
+      eventDate,
+      eventPlace,
+      sessionType,
+      createdAt: new Date(),
+      completedAt: new Date(),
+      timeSpent: submissionData.timeSpent,
+    });
+
+    console.log('✅ Сессия сохранена:', {
+      employeeName,
+      sessionType,
+      totalScore,
+    });
   }
 
   // ============================================
@@ -299,8 +471,7 @@ class TestService {
   // ============================================
 
   /**
-   * Обработка результатов теста (с поддержкой интерпретаций по шкалам)
-   * Для DASS-21 и подобных тестов возвращает интерпретации для каждой шкалы
+   * Обработка результатов теста (с поддержкой интерпретаций по шкалам и логированием)
    */
   async processTestResults(submissionData: TestSubmissionModel): Promise<{
     totalScore: number;
@@ -310,12 +481,10 @@ class TestService {
       maxScore: number;
       percentage: number;
     }[];
-    /** Интерпретации для каждой шкалы (для DASS-21 и подобных) */
     scaleInterpretations?: {
       scaleId: string;
       interpretation: TestType['interpretations'][0];
     }[];
-    /** Общая интерпретация (по totalScore) */
     interpretation: TestType['interpretations'][0];
     questionScores: { questionId: string; score: number; text: string }[];
     questionReviews?: QuestionReviewType[];
@@ -389,8 +558,7 @@ class TestService {
     }
 
     // ============================================
-    // НОВАЯ ЛОГИКА: Интерпретации по шкалам
-    // Для DASS-21 и подобных тестов
+    // Интерпретации по шкалам
     // ============================================
 
     let scaleInterpretations:
@@ -400,18 +568,14 @@ class TestService {
         }[]
       | undefined = undefined;
 
-    // Если есть шкалы и интерпретации с scaleId
     if (test.scales && test.scales.length > 0 && scaleScores) {
-      // Проверяем, есть ли интерпретации с scaleId
       const hasScaleInterpretations = test.interpretations.some(
         (interp) => interp.scaleId !== undefined
       );
 
       if (hasScaleInterpretations) {
         scaleInterpretations = test.scales.map((scale) => {
-          const scaleScore = scaleScores.find(
-            (s) => s.scaleId === scale.id
-          );
+          const scaleScore = scaleScores.find((s) => s.scaleId === scale.id);
           const score = scaleScore?.score || 0;
 
           const interpretation = this.findScaleInterpretation(
@@ -422,31 +586,44 @@ class TestService {
 
           return {
             scaleId: scale.id,
-            interpretation:
-              interpretation || {
-                id: 'default',
-                scaleId: scale.id,
-                rangeMin: 0,
-                rangeMax: 100,
-                title: 'Нет интерпретации',
-                description: 'Интерпретация для этой шкалы не найдена',
-                recommendations: [],
-              },
+            interpretation: interpretation || {
+              id: 'default',
+              scaleId: scale.id,
+              rangeMin: 0,
+              rangeMax: 100,
+              title: 'Нет интерпретации',
+              description: 'Интерпретация для этой шкалы не найдена',
+              recommendations: [],
+            },
           };
         });
       }
     }
 
-    // Находим общую интерпретацию (только интерпретации без scaleId)
+    // Находим общую интерпретацию
     const overallInterpretations = test.interpretations.filter(
       (interp) => interp.scaleId === undefined
     );
 
-    // Если есть интерпретации без scaleId, используем их
-    // Иначе используем первую интерпретацию (для обратной совместимости)
-    const interpretation = overallInterpretations.length > 0
-      ? this.findInterpretation(overallInterpretations, totalScore)
-      : this.findInterpretation(test.interpretations, totalScore);
+    const interpretation =
+      overallInterpretations.length > 0
+        ? this.findInterpretation(overallInterpretations, totalScore)
+        : this.findInterpretation(test.interpretations, totalScore);
+
+    // ============================================
+    // ЛОГИРОВАНИЕ РЕЗУЛЬТАТОВ
+    // ============================================
+
+    if (test.logResults) {
+      await this.saveTestSession(
+        test,
+        submissionData,
+        totalScore,
+        scaleScores,
+        scaleInterpretations,
+        interpretation
+      );
+    }
 
     // Подготавливаем разбор ответов (только для обучающих тестов)
     let questionReviews: QuestionReviewType[] | undefined = undefined;
@@ -464,6 +641,191 @@ class TestService {
       interpretation,
       questionScores,
       questionReviews,
+    };
+  }
+
+  // ============================================
+  // МЕТОДЫ ПРОСМОТРА РЕЗУЛЬТАТОВ (АДМИНКА)
+  // ============================================
+
+  /**
+   * Получение логированных сессий тестов с фильтрацией
+   */
+  async getTestSessions(filters: TestSessionFilterModel): Promise<{
+    sessions: TestSessionType[];
+    total: number;
+    limit: number;
+    skip: number;
+  }> {
+    const query: FilterQuery<TestSessionType> = {};
+
+    if (filters.employeeId) {
+      if (Types.ObjectId.isValid(filters.employeeId)) {
+        query.employeeId = new Types.ObjectId(filters.employeeId);
+      }
+    }
+
+    if (filters.employeeName) {
+      query.employeeName = { $regex: filters.employeeName, $options: 'i' };
+    }
+
+    if (filters.employeeDepartment) {
+      query.employeeDepartment = filters.employeeDepartment;
+    }
+
+    if (filters.testId) {
+      if (Types.ObjectId.isValid(filters.testId)) {
+        query.testId = new Types.ObjectId(filters.testId);
+      }
+    }
+
+    if (filters.eventName) {
+      query.eventName = { $regex: filters.eventName, $options: 'i' };
+    }
+
+    if (filters.eventDateFrom || filters.eventDateTo) {
+      query.eventDate = {};
+      if (filters.eventDateFrom) {
+        query.eventDate.$gte = new Date(filters.eventDateFrom);
+      }
+      if (filters.eventDateTo) {
+        query.eventDate.$lte = new Date(filters.eventDateTo);
+      }
+    }
+
+    if (filters.completedAtFrom || filters.completedAtTo) {
+      query.completedAt = {};
+      if (filters.completedAtFrom) {
+        query.completedAt.$gte = new Date(filters.completedAtFrom);
+      }
+      if (filters.completedAtTo) {
+        query.completedAt.$lte = new Date(filters.completedAtTo);
+      }
+    }
+
+    // Фильтр по типу сессии
+    if (filters.sessionType) {
+      query.sessionType = filters.sessionType;
+    }
+
+    const limit = filters.limit && filters.limit > 0 ? filters.limit : 100;
+    const skip = filters.skip && filters.skip > 0 ? filters.skip : 0;
+    const sortOrder = filters.sort === 'asc' ? 1 : -1;
+
+    const [sessions, total] = await Promise.all([
+      TestSession.find(query)
+        .sort({ completedAt: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      TestSession.countDocuments(query),
+    ]);
+
+    return {
+      sessions: sessions as TestSessionType[],
+      total,
+      limit,
+      skip,
+    };
+  }
+
+  /**
+   * Получение одной сессии теста по ID
+   */
+  async getTestSessionById(id: string): Promise<TestSessionType | null> {
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+
+    return (await TestSession.findById(id).lean()) as TestSessionType | null;
+  }
+
+  /**
+   * Получение всех сессий конкретного сотрудника
+   */
+  async getTestSessionsByEmployee(
+    employeeId: string
+  ): Promise<TestSessionType[]> {
+    if (!Types.ObjectId.isValid(employeeId)) {
+      return [];
+    }
+
+    return (await TestSession.find({
+      employeeId: new Types.ObjectId(employeeId),
+    })
+      .sort({ completedAt: -1 })
+      .lean()) as TestSessionType[];
+  }
+
+  /**
+   * Получение всех сессий по конкретному тесту
+   */
+  async getTestSessionsByTest(testId: string): Promise<TestSessionType[]> {
+    if (!Types.ObjectId.isValid(testId)) {
+      return [];
+    }
+
+    return (await TestSession.find({
+      testId: new Types.ObjectId(testId),
+    })
+      .sort({ completedAt: -1 })
+      .lean()) as TestSessionType[];
+  }
+
+  /**
+   * Получение статистики по сессиям (средний балл, количество)
+   */
+  async getTestSessionsStats(filters: TestSessionFilterModel): Promise<{
+    total: number;
+    averageScore: number;
+    maxScore: number;
+    minScore: number;
+  }> {
+    const query: FilterQuery<TestSessionType> = {};
+
+    if (filters.testId && Types.ObjectId.isValid(filters.testId)) {
+      query.testId = new Types.ObjectId(filters.testId);
+    }
+
+    if (filters.eventName) {
+      query.eventName = { $regex: filters.eventName, $options: 'i' };
+    }
+
+    if (filters.employeeDepartment) {
+      query.employeeDepartment = filters.employeeDepartment;
+    }
+
+    if (filters.sessionType) {
+      query.sessionType = filters.sessionType;
+    }
+
+    const stats = await TestSession.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          averageScore: { $avg: '$totalScore' },
+          maxScore: { $max: '$totalScore' },
+          minScore: { $min: '$totalScore' },
+        },
+      },
+    ]);
+
+    if (stats.length === 0) {
+      return {
+        total: 0,
+        averageScore: 0,
+        maxScore: 0,
+        minScore: 0,
+      };
+    }
+
+    return {
+      total: stats[0].total,
+      averageScore: Math.round(stats[0].averageScore * 100) / 100,
+      maxScore: stats[0].maxScore,
+      minScore: stats[0].minScore,
     };
   }
 }

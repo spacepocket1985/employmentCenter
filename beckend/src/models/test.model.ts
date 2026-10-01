@@ -3,6 +3,10 @@
 
 import { Schema, model, ObjectId } from 'mongoose';
 
+// ============================================
+// ТИПЫ
+// ============================================
+
 // Тип для варианта ответа
 export type AnswerOptionType = {
   id: string;
@@ -14,12 +18,12 @@ export type AnswerOptionType = {
 export type QuestionType = {
   id: string;
   type: 'single' | 'multiple';
-  text: string; // Текст вопроса с уже учтённым обращением
+  text: string;
   options: AnswerOptionType[];
   order: number;
   required: boolean;
-  isReversed: boolean; // Флаг обратного вопроса (для JSS и подобных)
-  scale: string; // Название шкалы (для многошкальных тестов)
+  isReversed: boolean;
+  scale: string;
 };
 
 // Тип для шкалы
@@ -35,6 +39,7 @@ export type ScaleType = {
 // Тип для интерпретации результата
 export type ResultInterpretationType = {
   id: string;
+  /** ID шкалы (опционально). Если указан, интерпретация применяется к этой шкале */
   scaleId?: string;
   rangeMin: number;
   rangeMax: number;
@@ -55,7 +60,7 @@ export type TestType = {
   isActive: boolean;
   estimatedTime?: number;
   questions: QuestionType[];
-  scales?: ScaleType[]; // Опционально, для многошкальных тестов
+  scales?: ScaleType[];
   scoringMethod: 'sum' | 'average' | 'scale_based';
   interpretations: ResultInterpretationType[];
   showProgress: boolean;
@@ -64,9 +69,27 @@ export type TestType = {
   randomizeOptions?: boolean;
   showCorrectAnswers?: boolean;
   requireAllQuestions: boolean;
+
+  // ============================================
+  // НОВЫЕ ПОЛЯ ДЛЯ ЛОГИРОВАНИЯ
+  // ============================================
+
+  /** Требует ли тест идентификации пользователя */
+  requiresIdentification?: boolean;
+  /** Логировать ли результаты в БД (коллекция testsessions) */
+  logResults?: boolean;
+  /** Название мероприятия (опционально, для именных тестов) */
+  eventName?: string;
+  /** Дата мероприятия (опционально) */
+  eventDate?: Date;
+  /** Место проведения мероприятия (опционально) */
+  eventPlace?: string;
 };
 
-// Схемы для MongoDB
+// ============================================
+// СХЕМЫ ДЛЯ MONGODB
+// ============================================
+
 const answerOptionSchema = new Schema<AnswerOptionType>({
   id: { type: String, required: true },
   text: { type: String, required: true },
@@ -168,11 +191,6 @@ const testSchema = new Schema<TestType>(
       required: false,
       default: false,
     },
-    requireAllQuestions: {
-      type: Boolean,
-      required: true,
-      default: true,
-    },
     randomizeOptions: {
       type: Boolean,
       required: false,
@@ -182,6 +200,37 @@ const testSchema = new Schema<TestType>(
       type: Boolean,
       required: false,
       default: false,
+    },
+    requireAllQuestions: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+
+    // ============================================
+    // НОВЫЕ ПОЛЯ
+    // ============================================
+    requiresIdentification: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    logResults: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    eventName: {
+      type: String,
+      required: false,
+    },
+    eventDate: {
+      type: Date,
+      required: false,
+    },
+    eventPlace: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }
