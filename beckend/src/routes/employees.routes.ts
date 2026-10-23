@@ -24,6 +24,14 @@ router.route('/search/:name').get(employeeController.getEmployeeByName);
 router.route('/masters').get(employeeController.getMasters);
 
 // ============================================
+// [НОВОЕ] Модуль дней рождения — полный список
+// ВАЖНО: должны быть ДО '/:id', иначе 'birthdays'/'departments'
+// будут восприняты как id сотрудника
+// ============================================
+router.route('/birthdays').get(employeeController.getBirthdaysList);
+router.route('/departments').get(employeeController.getDepartments);
+
+// ============================================
 // МАРШРУТЫ ДЛЯ РАБОТЫ С ГРУППАМИ
 // ============================================
 router

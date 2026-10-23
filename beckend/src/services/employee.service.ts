@@ -3,6 +3,7 @@
 
 import { Employee, EmployeeType } from '../models/employee.model';
 import { EmployeeCreateModel } from '../models/employeeCreateModel';
+import { EmployeeBirthdayView } from '../models/employeeViewModel';
 
 class EmployeeService {
   // Константы для иерархии групп
@@ -209,6 +210,109 @@ class EmployeeService {
       department: 1, // Сначала по подразделению
       name: 1, // Затем по имени
     });
+  }
+
+  // ============================================
+  // [НОВОЕ] Модуль дней рождения — полный список
+  // Существующие методы выше НЕ затронуты
+  // ============================================
+
+  /**
+   * [НОВОЕ] Получить список уникальных отделов для фильтра.
+   * Отфильтровывает пустые и null-значения, сортирует по алфавиту (ru).
+   */
+  async getDepartments(): Promise<string[]> {
+    const departments = await Employee.distinct('department');
+    return departments
+      .filter((d): d is string => typeof d === 'string' && d.trim() !== '')
+      .sort((a, b) => a.localeCompare(b, 'ru'));
+  }
+
+  /**
+   * [НОВОЕ] Получить полный список дней рождения с фильтрацией.
+   * Формат birthday в БД: "YYYY-MM-DD" (подтверждено по JSON).
+   *
+   * @param filters.month      - номер месяца 1..12 (строка)
+   * @param filters.department - точное название отдела
+   * @param filters.search     - подстрока ФИО (регистронезависимо)
+   * @returns Promise<EmployeeBirthdayView[]> — сотрудники, отсортированные
+   *          по MM-DD, затем по имени, с флагами isToday/isSoon
+   */
+  async getAllBirthdays(filters: {
+    month?: string;
+    department?: string;
+    search?: string;
+  }): Promise<EmployeeBirthdayView[]> {
+    const query: Record<string, unknown> = {};
+
+    if (filters.search && filters.search.trim() !== '') {
+      query.name = { $regex: filters.search.trim(), $options: 'i' };
+    }
+
+    if (filters.department && filters.department.trim() !== '') {
+      query.department = filters.department.trim();
+    }
+
+    if (filters.month && filters.month.trim() !== '') {
+      const monthNum = parseInt(filters.month, 10);
+      if (monthNum >= 1 && monthNum <= 12) {
+        const monthStr = monthNum.toString().padStart(2, '0');
+        // birthday = "YYYY-MM-DD" → ищем вхождение "-MM-"
+        query.birthday = { $regex: `-${monthStr}-` };
+      }
+    }
+
+    const employees = await Employee.find(query);
+
+    // Сортировка: сначала по MM-DD, затем по имени
+    employees.sort((a, b) => {
+      const aMMDD = a.birthday.substring(5);
+      const bMMDD = b.birthday.substring(5);
+      const cmp = aMMDD.localeCompare(bMMDD);
+      return cmp !== 0 ? cmp : a.name.localeCompare(b.name, 'ru');
+    });
+
+    return this.enrichWithBirthdayStatus(employees);
+  }
+
+  /**
+   * [НОВОЕ, private] Обогащает сотрудников флагами isToday/isSoon.
+   * "Скоро" = сегодня, завтра, послезавтра (окно 3 дня).
+   * Не зависит от getHBEmployees (у него своя логика).
+   */
+  private enrichWithBirthdayStatus(
+    employees: EmployeeType[]
+  ): EmployeeBirthdayView[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayMD = this.getMonthDay(today);
+    const tomorrowMD = this.getMonthDay(
+      new Date(today.getTime() + 24 * 60 * 60 * 1000)
+    );
+    const dayAfterMD = this.getMonthDay(
+      new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000)
+    );
+
+    return employees.map((emp) => {
+      const empMD = emp.birthday.substring(5);
+      const isToday = empMD === todayMD;
+      const isSoon = isToday || empMD === tomorrowMD || empMD === dayAfterMD;
+
+      // Приводим Mongoose-документ к plain-объекту без any
+      const plain = JSON.parse(JSON.stringify(emp)) as EmployeeType;
+      return { ...plain, isToday, isSoon };
+    });
+  }
+
+  /**
+   * [НОВОЕ, private] Возвращает строку "MM-DD" для переданной даты.
+   * Не конфликтует с существующим formatDate (тот отдаёт "YYYY-MM-DD").
+   */
+  private getMonthDay(date: Date): string {
+    const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+    const dd = date.getDate().toString().padStart(2, '0');
+    return `${mm}-${dd}`;
   }
 }
 

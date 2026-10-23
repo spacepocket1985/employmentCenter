@@ -4,7 +4,10 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { EmployeeCreateModel } from '../models/employeeCreateModel';
-import { EmployeeViewModel } from '../models/employeeViewModel';
+import {
+  EmployeeViewModel,
+  BirthdayListViewModel,
+} from '../models/employeeViewModel';
 import { EmployeeType } from '../models/employee.model';
 import { employeeService } from '../services/employee.service';
 
@@ -12,7 +15,18 @@ import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from '../types/types';
+
+/**
+ * [НОВОЕ] Query-параметры для GET /employees/birthdays.
+ * Объявлен над классом — type-алиасы нельзя объявлять внутри класса в TS.
+ */
+type GetAllBirthdaysQuery = {
+  month?: string;
+  department?: string;
+  search?: string;
+};
 
 class EmployeeController {
   async createEmployee(
@@ -252,6 +266,71 @@ class EmployeeController {
       res.status(StatusCodes.OK).json({
         data: masters,
         msg: 'Masters fetched successfully!',
+      });
+    }
+  }
+
+  // ============================================
+  // [НОВОЕ] Модуль дней рождения — полный список
+  // Существующие методы выше НЕ затронуты
+  // ============================================
+
+  /**
+   * [НОВОЕ] GET /employees/departments
+   * Список уникальных отделов для фильтра.
+   */
+  async getDepartments(
+    req: Request,
+    res: Response<EmployeeViewModel<string[]>>
+  ): Promise<void> {
+    const departments = await employeeService.getDepartments();
+    res.status(StatusCodes.OK).json({
+      data: departments,
+      msg: 'Departments fetched successfully!',
+    });
+  }
+
+  /**
+   * [НОВОЕ] GET /employees/birthdays?month=5&department=ЦОП&search=Иванов
+   * Полный список дней рождения с фильтрацией.
+   * В ответе отдаём и сотрудников, и справочник отделов.
+   */
+  async getBirthdaysList(
+    req: RequestWithQuery<GetAllBirthdaysQuery>,
+    res: Response<BirthdayListViewModel>
+  ): Promise<void> {
+    try {
+      const { month, department, search } = req.query;
+
+      // Валидация месяца, если он передан
+      if (month !== undefined && month !== '') {
+        const monthNum = parseInt(month, 10);
+        if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+          res.status(StatusCodes.BAD_REQUEST).json({
+            msg: 'Invalid month. Must be a number from 1 to 12.',
+          });
+          return;
+        }
+      }
+
+      const employees = await employeeService.getAllBirthdays({
+        month,
+        department,
+        search,
+      });
+
+      const departments = await employeeService.getDepartments();
+
+      res.status(StatusCodes.OK).json({
+        data: employees,
+        departments,
+        msg: 'Birthdays list fetched successfully!',
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error';
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        msg: `Error fetching birthdays: ${message}`,
       });
     }
   }
