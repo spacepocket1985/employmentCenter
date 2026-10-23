@@ -1,7 +1,8 @@
 import React from 'react';
 import { Stack, Typography } from '@mui/material';
-import { EmployeeType } from '../../types/types';
+
 import { transformBD } from '../../utils/transformBD';
+import { EmployeeType } from '../../types/employee.types';
 
 export const Employee: React.FC<{ employee: EmployeeType }> = React.memo(
   ({ employee }) => {

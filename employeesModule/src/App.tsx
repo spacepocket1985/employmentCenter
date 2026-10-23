@@ -1,19 +1,16 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 
-import { getEmployeeTodayBirthdays } from './utils/employeeService';
-import { EmployeeType } from './types/types';
 import { EmployeesList } from './components/employees';
+import { todayBirthdaysEndpoint } from './api/endPoints';
+import { useApi } from './hooks/useApi';
+import { EmployeesApiResponse, EmployeeType } from './types/employee.types';
 
 const App: React.FC = () => {
-  const [employees, setEmployees] = useState<EmployeeType[]>([]);
-  useEffect(() => {
-    const getAsyncData = async () => {
-      const data = await getEmployeeTodayBirthdays();
-      if (data) setEmployees(data);
-    };
-    getAsyncData();
-  }, []);
-  return <EmployeesList employees={employees || []} />;
+  const { data } = useApi<EmployeesApiResponse>(todayBirthdaysEndpoint);
+
+  const employees: EmployeeType[] = data?.data ?? [];
+
+  return <EmployeesList employees={employees} />;
 };
 
 export default App;

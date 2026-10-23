@@ -1,12 +1,17 @@
-import React from 'react';
-import { EmployeeType } from '../../types/types';
-import { Box, Card, Typography } from '@mui/material';
-import { Employee } from './Employee';
-import CakeIcon from '@mui/icons-material/Cake';
+import React, { useState } from 'react';
 
-export const EmployeesList: React.FC<{ employees: EmployeeType[] }> = ({
-  employees,
-}) => {
+import { Box, Button, Card, Typography } from '@mui/material';
+import CakeIcon from '@mui/icons-material/Cake';
+import { Employee } from './Employee';
+import { BirthdaysDialog } from './BirthdaysDialog';
+import { EmployeeType } from '../../types/employee.types';
+
+export const EmployeesList: React.FC<{
+  employees: EmployeeType[];
+  showBirthdaysButton?: boolean;
+}> = ({ employees, showBirthdaysButton = true }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
   return (
     <Box
       display="flex"
@@ -23,7 +28,7 @@ export const EmployeesList: React.FC<{ employees: EmployeeType[] }> = ({
           textTransform: 'uppercase',
           padding: '0.5rem 1rem',
           borderRadius: '5px',
-          width:'100%',
+          width: '100%',
           mb: 1,
           mr: 'auto',
         }}
@@ -61,7 +66,37 @@ export const EmployeesList: React.FC<{ employees: EmployeeType[] }> = ({
             </Card>
           </React.Fragment>
         ))}
+
+        {/* [НОВОЕ] Кнопка «Посмотреть все дни рождения» */}
+        {showBirthdaysButton && (
+          <Button
+            fullWidth
+            onClick={() => setIsDialogOpen(true)}
+            startIcon={<CakeIcon />}
+            sx={{
+              mt: 1,
+              mb: 1,
+              backgroundColor: '#103896',
+              color: 'white',
+              textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: '5px',
+              padding: '0.5rem 1rem',
+              '&:hover': {
+                backgroundColor: '#0d2e7a',
+              },
+            }}
+          >
+            Посмотреть все дни рождения
+          </Button>
+        )}
       </Box>
+
+      {/* [НОВОЕ] Модалка со всеми ДР */}
+      <BirthdaysDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
     </Box>
   );
 };
