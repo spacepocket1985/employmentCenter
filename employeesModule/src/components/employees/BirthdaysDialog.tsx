@@ -19,12 +19,9 @@ import {
 } from '@mui/material';
 import CakeIcon from '@mui/icons-material/Cake';
 
-import { EmployeeBirthdayCard } from './EmployeeBirthdayCard';
+import { EmployeeCard } from './EmployeeCard';
 import { fetchBirthdays } from '../../api/employeesApi';
-import {
-  EmployeeBirthdayType,
-  BirthdaysApiResponse,
-} from '../../types/employee.types';
+import { EmployeeBirthdayType, BirthdaysApiResponse } from '../../types/employee.types';
 
 const Months: { value: string; label: string }[] = [
   { value: '', label: 'Все месяцы' },
@@ -59,7 +56,7 @@ export const BirthdaysDialog: React.FC<{
   const [departments, setDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  // [НОВОЕ] Флаг «был хотя бы один ответ» — чтобы не показывать
+  // Флаг «был хотя бы один ответ» — чтобы не показывать
   // «Ничего не найдено» до первой загрузки.
   const [initialized, setInitialized] = useState<boolean>(false);
 
@@ -93,15 +90,12 @@ export const BirthdaysDialog: React.FC<{
         if (response.departments.length > 0) {
           setDepartments(response.departments);
         }
-        // [НОВОЕ] Отмечаем, что первый (или очередной) ответ получен
         setInitialized(true);
       } catch (err: unknown) {
         if (cancelled) return;
         const message: string =
           err instanceof Error ? err.message : 'Неизвестная ошибка';
         setError(message);
-        // [НОВОЕ] Даже при ошибке считаем, что попытка была —
-        // чтобы «Ничего не найдено» не перекрывало Alert.
         setInitialized(true);
       } finally {
         if (!cancelled) {
@@ -126,7 +120,6 @@ export const BirthdaysDialog: React.FC<{
     [departments]
   );
 
-  // [НОВОЕ] Условия рендера состояний
   const showSpinner: boolean = !initialized || loading;
   const showEmpty: boolean =
     initialized && !loading && !error && employees.length === 0;
@@ -159,7 +152,6 @@ export const BirthdaysDialog: React.FC<{
       </DialogTitle>
 
       <DialogContent dividers>
-        {/* Фильтры */}
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
@@ -206,21 +198,18 @@ export const BirthdaysDialog: React.FC<{
           />
         </Stack>
 
-        {/* Спиннер: до первого ответа и во время загрузки */}
         {showSpinner && (
           <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress size={32} />
           </Box>
         )}
 
-        {/* Ошибка */}
         {!loading && error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
 
-        {/* Пустой результат — только после первого ответа */}
         {showEmpty && (
           <Typography
             variant="body2"
@@ -232,7 +221,6 @@ export const BirthdaysDialog: React.FC<{
           </Typography>
         )}
 
-        {/* Список карточек */}
         {showList && (
           <Box>
             {employees.map((employee, index) => (
@@ -246,7 +234,12 @@ export const BirthdaysDialog: React.FC<{
                     index % 2 !== 0 ? 'background.default' : 'action.hover',
                 }}
               >
-                <EmployeeBirthdayCard employee={employee} />
+                {/* [ИЗМЕНЕНО] EmployeeBirthdayCard → EmployeeCard с флагами из employee */}
+                <EmployeeCard
+                  employee={employee}
+                  isToday={employee.isToday}
+                  isSoon={employee.isSoon}
+                />
               </Card>
             ))}
           </Box>
